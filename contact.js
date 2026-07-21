@@ -1,5 +1,5 @@
 // GASをウェブアプリとしてデプロイした後、/exec URLへ置き換えてください。
-const GAS_WEB_APP_URL = '';
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw348zID7L9QOwNH7VhddUG1CXpBTnLTjjqE9sLuo7aOxoCipS4RsDugkJ-7hUXeJLFFw/exec';
 const type = new URLSearchParams(window.location.search).get('type');
 const inquiryType = document.querySelector('#inquiry-type');
 const organizationField = document.querySelector('#organization-field');
@@ -9,7 +9,7 @@ const submitButton = contactForm.querySelector('button[type="submit"]');
 const formStatus = document.querySelector('#form-status');
 
 if (GAS_WEB_APP_URL) {
-  contactForm.action = 'https://script.google.com/macros/s/AKfycbw348zID7L9QOwNH7VhddUG1CXpBTnLTjjqE9sLuo7aOxoCipS4RsDugkJ-7hUXeJLFFw/exec';
+  contactForm.action = GAS_WEB_APP_URL;
 }
 
 if (['individual', 'group', 'technical', 'other'].includes(type)) {
