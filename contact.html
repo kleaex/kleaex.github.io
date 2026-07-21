@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>お問い合わせ | 関西文芸交流会</title>
+  <link rel="stylesheet" href="contact.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="index.html" aria-label="関西文芸交流会 ホーム">
+        <img class="brand-mark" src="./klea_logo_v1.svg" alt="" aria-hidden="true" />
+      </a>
+      <a class="back-link" href="index.html#contact">← サイトへ戻る</a>
+    </div>
+  </header>
+  <main class="form-page">
+    <div class="form-heading">
+      <p class="eyebrow">Contact</p>
+      <h1>お問い合わせ</h1>
+      <p>必要事項をご入力のうえ、送信してください。</p>
+    </div>
+    <form class="contact-sheet" id="contact-form" method="post" target="contact-submit-frame">
+      <div class="form-field wide-field">
+        <label for="inquiry-type">お問い合わせ種別 <span aria-hidden="true">*</span></label>
+        <select id="inquiry-type" name="type" required>
+          <option value="交流会参加・お問い合わせ（個人）" data-type="individual">交流会参加・お問い合わせ（個人）</option>
+          <option value="グループ加盟・お問い合わせ（団体）" data-type="group">グループ加盟・お問い合わせ（団体）</option>
+          <option value="技術協力・依頼・相談" data-type="technical">技術協力・依頼・相談</option>
+          <option value="その他" data-type="other">その他</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label for="name">お名前 <span aria-hidden="true">*</span></label>
+        <input id="name" name="name" autocomplete="name" required />
+      </div>
+      <div class="form-field" id="organization-field" hidden>
+        <label for="organization">団体名</label>
+        <input id="organization" name="organization" autocomplete="organization" />
+      </div>
+      <div class="form-field wide-field">
+        <label for="email">メールアドレス <span aria-hidden="true">*</span></label>
+        <input id="email" name="email" type="email" autocomplete="email" required />
+      </div>
+      <div class="form-field wide-field">
+        <label for="message">お問い合わせ内容 <span aria-hidden="true">*</span></label>
+        <textarea id="message" name="content" rows="8" required></textarea>
+      </div>
+      <div class="honeypot" aria-hidden="true">
+        <label for="website">Webサイト</label>
+        <input id="website" name="website" type="text" tabindex="-1" autocomplete="off" />
+      </div>
+      <div class="form-footer wide-field">
+        <button type="submit">送信する</button>
+        <p id="form-status" aria-live="polite">このページから送信できます。</p>
+      </div>
+    </form>
+    <iframe name="contact-submit-frame" title="送信処理" hidden></iframe>
+  </main>
+  <footer class="site-footer">
+    <span>© 2026 Kansai Literary Exchange Association</span>
+    <span>KLEA / 関西文芸交流会</span>
+  </footer>
+  <script src="contact.js" defer></script>
+</body>
+</html>
