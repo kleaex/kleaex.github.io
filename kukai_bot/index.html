@@ -1,0 +1,118 @@
+﻿<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kukai Bot | 関西文芸交流会</title>
+  <meta name="description" content="Kukai Botは、Discord上で句会のエントリー、投句、選句、結果公開、PDF出力までを補助する句会運営Botです。" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="../index.html" aria-label="関西文芸交流会 ホーム">
+        <img class="brand-mark" src="../klea_logo_v1.svg" alt="" aria-hidden="true" />
+      </a>
+      <nav class="nav" aria-label="主要ナビゲーション">
+        <a href="#features">機能</a>
+        <a href="#flow">流れ</a>
+        <a href="#docs">資料</a>
+        <a href="../#products">製品一覧</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Discord-based haiku session bot</p>
+        <h1>Kukai Bot<span class="small">即開設。即句会。</span></h1>
+        <p class="lead">
+          Discordさえあれば、句会をしたいサーバにbotを導入するだけ。申し込み不要ですぐに句会を開始できます。
+        </p>
+        <div class="hero-actions">
+          <a class="button" href="#docs">資料を見る</a>
+          <a class="button ghost" href="../#contact">問い合わせ</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="content-area">
+      <section class="section" id="features">
+        <div class="section-title">
+          <h2>機能</h2>
+          <p>句会運営に必要な作業をまとめて管理</p>
+        </div>
+        <div class="grid">
+          <article class="panel">
+            <span class="num">01</span>
+            <h3>参加受付</h3>
+            <p>俳号付きのエントリー、承認制、締切後エントリー、参加状況確認に対応します。</p>
+          </article>
+          <article class="panel">
+            <span class="num">02</span>
+            <h3>投句・選句</h3>
+            <p>GUI入力と一括入力に対応し、投句数や選句数の条件を句会ごとに管理します。</p>
+          </article>
+          <article class="panel">
+            <span class="num">03</span>
+            <h3>結果公開</h3>
+            <p>点数順、番号順、作者別の表示を切り替え、総評や作者コメントも扱えます。</p>
+          </article>
+          <article class="panel">
+            <span class="num">04</span>
+            <h3>通知</h3>
+            <p>締切前通知、未達者通知、管理者向け警告、ボイス句会通知を設定できます。</p>
+          </article>
+          <article class="panel">
+            <span class="num">05</span>
+            <h3>PDF出力</h3>
+            <p>投句一覧PDFと結果PDFを作成し、作者公開設定に応じて出力内容を制御します。</p>
+          </article>
+          <article class="panel">
+            <span class="num">06</span>
+            <h3>運用管理</h3>
+            <p>Docker Compose と PostgreSQL を前提に、本番運用、バックアップ、復旧手順を整備しています。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="flow">
+        <div class="section-title">
+          <h2>基本フロー</h2>
+          <p>手動、半自動、全自動の進行に対応</p>
+        </div>
+        <div class="flow" aria-label="句会の基本フロー">
+          <div class="step">エントリー</div>
+          <div class="step">投句</div>
+          <div class="step">投句一覧公開</div>
+          <div class="step">選句</div>
+          <div class="step">結果公開</div>
+        </div>
+      </section>
+
+      <section class="section" id="docs">
+        <div class="section-title">
+          <h2>資料</h2>
+          <p>利用者向けと開発・運用者向けの情報</p>
+        </div>
+        <div class="doc-links">
+          <article class="doc-card">
+            <strong>ユーザ向け取扱説明書</strong>
+            <span>参加者と句会管理者が、Discord上で何をすればよいかを作業順にまとめる資料です。</span>
+          </article>
+          <article class="doc-card">
+            <strong>技術者向け仕様書</strong>
+            <span>実装構造、状態遷移、主要データ、Discord UI制約、運用境界をまとめる資料です。</span>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <span>© 2026 Kansai Literary Exchange Association</span>
+    <span>KLEA / Kukai Bot</span>
+  </footer>
+</body>
+</html>

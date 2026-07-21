@@ -1,0 +1,24 @@
+﻿@import url("common.css");
+
+.content { width: min(var(--max), calc(100% - 40px)); margin: 0 auto; }
+.intro { padding: clamp(48px, 8vw, 96px) 0 clamp(56px, 9vw, 104px); border-bottom: 1px solid var(--line); }
+.eyebrow { margin: 0 0 10px; color: var(--accent); font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; }
+h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700; letter-spacing: .08em; }
+.intro p { margin: 18px 0 0; color: var(--muted); }
+main > .content { position: relative; max-width: none; width: 100%; padding: 42px max(20px, calc((100% - var(--max)) / 2)) 72px; color: var(--ink); background: radial-gradient(circle at 12% 0%, rgba(153,193,205,.26), transparent 29rem), radial-gradient(circle at 88% 10%, rgba(199,227,236,.32), transparent 26rem), linear-gradient(180deg, var(--paper-strong), var(--paper)); }
+section { max-width: var(--max); margin: 0 auto; padding: 32px 0; }
+h2 { display: inline-block; margin: 0 0 10px; padding: 5px 12px; background: linear-gradient(90deg, var(--air-accent), rgba(31,119,116,.7) 70%, rgba(31,119,116,.28)); color: #f9feff; font-size: 1.45rem; font-weight: 700; letter-spacing: .08em; }
+p { margin: 0 0 12px; }
+.pdf-note { color: var(--ink-muted); font-size: .92rem; }
+.pdf-frame { position: relative; min-height: 760px; margin-top: 28px; border: 1px solid var(--line-soft); background: rgba(255,255,255,.84); box-shadow: 0 14px 34px var(--air-shadow); }
+.pdf-frame iframe { width: 100%; height: 760px; border: 0; }
+.pdf-placeholder { display: none; position: absolute; inset: 0; place-content: center; gap: 12px; padding: 32px; text-align: center; color: var(--ink-muted); background: linear-gradient(135deg, rgba(255,255,255,.9), rgba(238,246,249,.9)); pointer-events: none; }
+.pdf-frame.is-placeholder .pdf-placeholder { display: grid; }
+.pdf-placeholder strong { color: var(--ink); font-size: 1.1rem; font-weight: 700; }
+.pdf-placeholder span { font-size: .9rem; }
+.pdf-link { display: inline-flex; margin-top: 20px; color: var(--air-accent); text-decoration: underline; text-underline-offset: 4px; }
+
+@media (max-width: 620px) {
+  .intro { padding: 56px 0 36px; }
+}
+

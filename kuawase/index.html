@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kuawase | 関西文芸交流会</title>
+    <meta
+      name="description"
+      content="Kuawaseは、句合形式の大会で対戦表示、披講、BGM、タイマー、プロジェクター投影をまとめて管理するデスクトップアプリです。"
+    />
+    <link rel="icon" href="assets/logo.svg" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="../index.html" aria-label="関西文芸交流会 ホーム">
+          <img class="brand-mark" src="../klea_logo_v1.svg" alt="" aria-hidden="true" />
+        </a>
+        <nav class="nav" aria-label="主要ナビゲーション">
+          <a href="#features">機能</a>
+          <a href="#workflow">運用手順</a>
+          <a href="#docs">資料</a>
+          <a href="../#products">製品一覧</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div>
+          <p class="eyebrow">Desktop app for <span class="kuawase-name">Kuawase</span>-style competitions</p>
+          <h1 id="hero-title">Kuawase<span class="small">句合大会進行支援アプリ</span></h1>
+          <p class="lead">
+            句合形式の大会で、紅白の対戦表示、披講、BGM、タイマー、プロジェクター投影を一つの管理画面から扱えます。
+          </p>
+          <div class="hero-actions" aria-label="主要アクション">
+            <a class="button" href="https://github.com/blackstraysheep/Kuawase/releases">最新版を入手</a>
+            <a class="button ghost" href="#workflow">運用手順を見る</a>
+          </div>
+        </div>
+      </section>
+
+      <div class="content-area">
+        <section class="section intro" aria-label="概要">
+          <div class="intro-grid">
+            <div class="section-title">
+              <h2>特長</h2>
+            </div>
+            <p>
+              ExcelまたはGoogle スプレッドシートから大会データを読み込み、試合ごとに紅白チームと兼題を選択。進行に合わせて大会TOP、試合TOP、先鋒戦から大将戦までを切り替え、披講やBGMも同じ画面で操作できます。
+            </p>
+          </div>
+        </section>
+
+        <section id="features" class="section" aria-labelledby="features-title">
+          <div class="section-title">
+            <h2 id="features-title">機能</h2>
+            <p>句合の見せ場と裏方操作を両方支える機能</p>
+          </div>
+          <div class="feature-grid">
+            <article class="panel">
+              <span class="num">01</span>
+              <h3>対戦表示</h3>
+              <p>大会TOP、試合TOP、先鋒戦から大将戦までを切り替え、紅白の句とチーム情報を投影できます。</p>
+            </article>
+            <article class="panel">
+              <span class="num">02</span>
+              <h3>データ読み込み</h3>
+              <p>ExcelファイルとGoogle スプレッドシートに対応。大会名、チーム、兼題、句を管理画面に取り込みます。</p>
+            </article>
+            <article class="panel">
+              <span class="num">03</span>
+              <h3>披講・BGM</h3>
+              <p>紅披講、白披講、入場、退場、待機BGMを用途別に設定し、進行に合わせて再生できます。</p>
+            </article>
+            <article class="panel">
+              <span class="num">04</span>
+              <h3>タイマー</h3>
+              <p>分秒指定の上タイマーと、秒指定の下タイマーを搭載。保存、開始、一時停止、リセットに対応します。</p>
+            </article>
+            <article class="panel">
+              <span class="num">05</span>
+              <h3>表示テーマ</h3>
+              <p>標準、ダーク、和紙、ネオの対戦デザインを選択できます。ユーザーCSSで独自演出も追加できます。</p>
+            </article>
+            <article class="panel">
+              <span class="num">06</span>
+              <h3>投影同期</h3>
+              <p>管理画面のプレビューとプロジェクター画面を同期。外部ディスプレイで大会表示を扱いやすくします。</p>
+            </article>
+          </div>
+        </section>
+
+        <section id="workflow" class="section" aria-labelledby="workflow-title">
+          <div class="section-title">
+            <h2 id="workflow-title">運用手順</h2>
+            <p>Workflow</p>
+          </div>
+          <ol class="steps">
+            <li>
+              <span>01</span>
+              <div>
+                <h3>データを準備</h3>
+                <p>ExcelまたはGoogle スプレッドシートに大会名、チーム、兼題、句を入力します。</p>
+              </div>
+            </li>
+            <li>
+              <span>02</span>
+              <div>
+                <h3>Kuawaseへ読み込み</h3>
+                <p>句データ管理からファイルまたは共有URLを読み込み、選択肢に反映されたことを確認します。</p>
+              </div>
+            </li>
+            <li>
+              <span>03</span>
+              <div>
+                <h3>試合を指定</h3>
+                <p>紅チーム、白チーム、兼題、試合名を選び、保存して対戦画面へ反映します。</p>
+              </div>
+            </li>
+            <li>
+              <span>04</span>
+              <div>
+                <h3>進行に合わせて操作</h3>
+                <p>画面切り替え、披講、BGM、タイマーを管理画面から操作し、投影画面を進めます。</p>
+              </div>
+            </li>
+          </ol>
+        </section>
+
+        <section id="docs" class="section" aria-labelledby="docs-title">
+          <div class="section-title">
+            <h2 id="docs-title">資料</h2>
+            <p>導入前に確認する資料</p>
+          </div>
+          <div class="doc-links">
+            <article class="doc-card">
+              <strong>ユーザ向け取扱説明書</strong>
+              <span>データ準備、当日運用、BGM、トラブル対応をまとめる資料です。</span>
+            </article>
+            <article class="doc-card">
+              <strong>技術者向け仕様書</strong>
+              <span>構成、IPC、データモデル、ビルド、拡張境界をまとめる資料です。</span>
+            </article>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <span>© 2026 Kansai Literary Exchange Association</span>
+      <span>KLEA / <span class="kuawase-name">Kuawase</span></span>
+    </footer>
+  </body>
+</html>
