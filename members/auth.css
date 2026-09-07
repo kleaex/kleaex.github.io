@@ -2,7 +2,6 @@ html[data-members-locked] body > :not(.members-gate):not(noscript) { display: no
 .members-gate { width: min(460px, calc(100% - 40px)); margin: clamp(40px, 12vh, 120px) auto; padding: clamp(24px, 5vw, 40px); background: var(--paper-strong); border: 1px solid var(--line-soft); }
 .members-gate[hidden] { display: none; }
 .members-gate h1 { margin: 0 0 18px; font-size: 1.6rem; }
-.members-gate p, .members-gate form { font-family: "Yu Gothic", Meiryo, sans-serif; }
 .members-gate label { display: block; margin-bottom: 8px; }
 .members-gate input { display: block; width: 100%; padding: 12px; font: inherit; border: 1px solid var(--line); background: white; }
 .members-gate button { width: 100%; margin-top: 18px; padding: 12px; font: inherit; color: white; border: 1px solid var(--accent); background: var(--accent); cursor: pointer; }
