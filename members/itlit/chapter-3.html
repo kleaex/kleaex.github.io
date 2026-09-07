@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ja" data-members-locked><head>
+<meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>第3章　個人情報 | 関西文芸交流会</title>
+<link rel="icon" href="../../klea_logo_v1.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="../../styles.css" /><link rel="stylesheet" href="../styles.css" /><link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="../auth.css" />
+<script src="../auth-config.js"></script><script src="../auth.js"></script>
+<script src="lesson.js" defer></script>
+</head><body>
+<noscript><p class="members-noscript">メンバーページの表示にはJavaScriptを有効にしてください。</p></noscript>
+<a class="skip-link" href="#top">本文へ移動</a>
+<header class="site-header"><div class="header-inner"><a class="brand" href="../index.html" aria-label="関西文芸交流会 メンバーホーム"><img class="brand-mark" src="../../klea_logo_v1.svg" alt="" /><span class="brand-name">MEMBERS</span></a><nav class="nav" aria-label="主要ナビゲーション"><a href="index.html">研修トップ</a><a href="../index.html">メンバートップ</a></nav></div></header>
+<main id="top" class="lesson-page"><div class="lesson-heading"><p class="eyebrow">Information literacy / 3 of 9</p><h1>第3章　個人情報</h1><a class="back-link" href="index.html">← 研修の章一覧</a></div>
+<div class="lesson-layout"><aside class="lesson-sidebar"><details class="lesson-toc" open><summary>この章の目次</summary><nav aria-label="章内目次"><ol><li><a href="#section-1">個人情報とは何か</a></li><li><a href="#section-2">法令に基づく定義</a></li><li><a href="#section-6">個人情報が発生する場面</a></li><li><a href="#section-7">個人情報の適切な使用</a></li><li><a href="#section-8">個人情報の扱いの原則</a></li><li><a href="#section-9">保存期間と削除</a></li><li><a href="#section-10">アクセス権限の設計</a></li><li><a href="#section-11">削除と匿名化</a></li><li><a href="#section-13">事故が起きたとき</a></li><li><a href="#section-14">参考資料</a></li><li><a href="#section-15">確認</a></li><li><a href="#answers">確認の解答</a></li></ol></nav></details></aside>
+<div class="lesson-reading"><div class="section-controls" role="group" aria-label="見出しの一括開閉" hidden><button type="button" data-sections="expand">見出しをすべて開く</button><button type="button" data-sections="collapse">見出しをすべて閉じる</button></div>
+<article class="lesson-body" aria-label="第3章　個人情報 本文"><p>本章では，組織で活動するに当たって避けては通れない個人情報について扱います．個人情報の不適切な管理は取り返しのつかない問題に発展することも多いため，正確な理解が重要です．</p>
+<details class="lesson-section" open><summary><h2 id="section-1">個人情報とは何か</h2></summary><div class="section-content">
+<p>個人情報とは，「生存する特定の個人を識別できる情報」のことを指します．これには，氏名や住所，電話番号だけでなく，メールアドレス，顔写真，所属，履歴，組み合わせによって個人が特定できる情報も含まれます．また，個人情報保護法では「個人識別符号」を含む情報も個人情報に含まれます（詳細は後述）．</p>
+<p>個人情報は小規模であっても適切な管理が必要です．1人分の個人情報でも，漏洩すれば当人に被害が発生し，団体の信用も失われます．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-2">法令に基づく定義</h2></summary><div class="section-content">
+<p>この章の「個人情報」は，日本の個人情報保護法（個人情報の保護に関する法律）における用語を前提とします．実務では，一般的な感覚だけでなく，法令上の区分を理解して扱う必要があります．</p>
+<details class="lesson-section" open><summary><h3 id="section-3">用語の概要</h3></summary><div class="section-content">
+<ul>
+<li>個人情報：生存する個人に関する情報であって，(1) 氏名・生年月日等の記述等により特定の個人を識別できるもの（他の情報と容易に照合でき，結果として識別できるものを含む），または (2) 個人識別符号を含むもの．</li>
+<li>個人識別符号：それ自体で特定の個人を識別できる符号（例：旅券番号，健康保険の被保険者記号・番号等の番号類，指紋・顔等の身体特徴を一定の方法で変換した符号など）．個人識別符号が含まれる情報は，それだけで個人情報になります．</li>
+<li>要配慮個人情報：差別や偏見等の不利益が生じないよう，取扱いに特に配慮を要する記述等が含まれる個人情報（例：人種，信条，社会的身分，病歴，犯罪の経歴，犯罪により害を被った事実など）．</li>
+</ul>
+</div></details><details class="lesson-section" open><summary><h3 id="section-4">「個人情報」から「個人データ」へ</h3></summary><div class="section-content">
+<p>個人情報保護法では，個人情報のうち，管理形態によりさらに用語が分かれます．</p>
+<ul>
+<li>個人情報データベース等：個人情報を含む情報の集合物で，検索できるように体系的に構成されたもの（コンピュータ上の名簿だけでなく，紙であっても索引等により容易に検索できる形で整理されていれば該当します）．</li>
+<li>個人データ：個人情報データベース等を構成する個人情報．</li>
+<li>保有個人データ：個人情報取扱事業者が，開示・訂正・利用停止・消去・第三者提供停止等の請求に応じ得る権限を有する個人データ（一定の例外あり）．</li>
+</ul>
+<p>実務上は，次の関係で理解すると安全です．</p>
+<ul>
+<li>個人情報（広い概念）
+<ul>
+<li>個人データ（個人情報データベース等に載せて管理しているもの）
+<ul>
+<li>保有個人データ（開示等の対象になり得るもの）</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div></details><details class="lesson-section" open><summary><h3 id="section-5">（参考）個人関連情報</h3></summary><div class="section-content">
+<p>個人情報に該当しない場合でも，個人に関する行動履歴等は「個人関連情報」として位置付けられ，提供の場面等で追加の制限が問題となることがあります（例：Cookie等の端末識別子により収集される閲覧履歴，位置情報，購買履歴など）．</p>
+</div></details></div></details><details class="lesson-section" open><summary><h2 id="section-6">個人情報が発生する場面</h2></summary><div class="section-content">
+<p>特別な場面だけでなく，日常業務の中で個人情報は自然に発生します．</p>
+<p>個人情報が発生する場面の例：</p>
+<ul>
+<li>フォームによる申込や応募</li>
+<li>名簿や連絡先リスト</li>
+<li>メールのやり取り</li>
+<li>アンケート結果</li>
+<li>写真や記録データ</li>
+</ul>
+<p>アンケート等であっても，氏名等が含まれる，会員ID等とひも付く，回答内容が他の情報と容易に照合できる，といった場合は個人情報として扱う必要があります．これらは業務に必要な情報である一方で，管理方法を誤ると重大な問題になります．重要なのは，「どこで個人情報が発生しているか」を把握していることです．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-7">個人情報の適切な使用</h2></summary><div class="section-content">
+<p>個人情報の事故は，「漏洩」だけでなく，「目的外の使用」でも発生します．</p>
+<p>例えば，</p>
+<ul>
+<li>連絡のために集めたメールアドレスを，別の案内に無断で使う</li>
+<li>応募時に提出された情報を，別用途に転用する</li>
+<li>名簿を，当初想定していなかった範囲に共有する</li>
+</ul>
+<p>これらは漏洩していなくても，適切な取り扱いとはいえません．</p>
+<p>重要なのは，</p>
+<ul>
+<li>何の目的で収集したか</li>
+<li>その目的の範囲内でのみ使用しているか</li>
+</ul>
+<p>を常に意識することです．目的外利用は，信頼を損なう大きな原因になります．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-8">個人情報の扱いの原則</h2></summary><div class="section-content">
+<p>個人情報を扱うときは，目的・保存期間・共有範囲を意識することが重要です．</p>
+<p>たとえばイベント申込で氏名やメールアドレスを受け取るのは，参加者へ連絡し，当日の受付を行うためです．この目的が終わった後まで同じ情報を持ち続ける理由があるか，改めて考える必要があります．「次回の案内にも使えるかもしれない」という理由は，今回の申込の目的とは別です．</p>
+<p>同様に，運営に関わる人全員が申込情報を見られる必要があるとは限りません．受付を担当する人，連絡を担当する人，会計処理を担当する人では，必要な情報や期間が異なることがあります．</p>
+<p>該当の目的のもと，保存期間と共有範囲を最小限にすることが原則といえます．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-9">保存期間と削除</h2></summary><div class="section-content">
+<p>個人情報は，「持っているだけ」でリスクになります．不要になった個人情報を長期間保存していることは，事故の確率を上げる行為です．</p>
+<p>そのため，</p>
+<ul>
+<li>何の目的で収集したか</li>
+<li>いつまで保存する必要があるか</li>
+<li>不要になったらどう削除するか</li>
+</ul>
+<p>をあらかじめ決めておく必要があります．</p>
+<p>削除のルールが決まっていないと，「とりあえず残しておく」という状態が続き，データが蓄積されていきます．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-10">アクセス権限の設計</h2></summary><div class="section-content">
+<p>個人情報は，必要な人だけがアクセスできる状態にする必要があります．「共有フォルダに置いておけば便利」という発想は，事故の原因になります．</p>
+<p>重要なのは，</p>
+<ul>
+<li>誰が閲覧できるか</li>
+<li>誰が編集できるか</li>
+<li>誰がダウンロードできるか</li>
+</ul>
+<p>を明確に分けることです．</p>
+<p>アクセスできる人が多いほど，事故の確率は高くなります．</p>
+<ul>
+<li>面識のない相手を To/CC に並べて一斉送信する（メールアドレス漏洩）</li>
+<li>「リンクを知っている人は全員閲覧可」で名簿を共有する</li>
+</ul>
+<p>などは不適切な取り扱いの代表例です．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-11">削除と匿名化</h2></summary><div class="section-content">
+<p>集計や実績のためにデータを残したい場合でも，個人情報のまま残す必要がないことが多いです．なお，ここでいう「匿名化」は一般的な意味であり，法令上の「匿名加工情報」等（要件のある概念）と同義ではありません．匿名化が不十分で再識別できる場合，個人情報として扱う必要があります．</p>
+<p>匿名化の例：</p>
+<ul>
+<li>氏名・メールは削除し，参加人数・属性の集計だけ残す</li>
+<li>連絡先一覧は更新し，退会者の情報は消す</li>
+</ul>
+<p>「残す価値がある情報」と「持っているだけでリスクとなる情報」を分け，前者のみを保存することはよい方針といえるでしょう．</p>
+<details class="lesson-section" open><summary><h3 id="section-12" class="example-heading">現実の事例：上智大学，全正規生13,949人分の情報を誤送信（2024年）</h3></summary><div class="section-content">
+<p>上智大学では，海外の協定校へ留学プログラム参加者のリストを送る際に，学生情報を含むマスターデータのシートを削除しないままファイルを送信しました．その結果，全正規生13,949人分の学生情報が外部へ渡る事案となりました．</p>
+<p>この事例の中心は，メールの操作ミスだけではありません．本来は限られた参加者の情報だけを扱えばよい場面で，より広範な個人情報を含むマスターデータが同じファイルに残っていたことにあります．</p>
+<p>個人情報の管理では，「元データを持っているか」だけでなく，そこから作られた集計表・共有用ファイル・ダウンロード済みのコピーに，どの情報が残っているかを考える必要があります．目的に必要な情報だけを取り出した共有用データを作ることは，誤送信時の影響を小さくすることにもつながります．メール送信時の添付ファイル確認については <a href="chapter-5.html">第5章　メール</a> を参照してください．</p>
+</div></details></div></details><details class="lesson-section" open><summary><h2 id="section-13">事故が起きたとき</h2></summary><div class="section-content">
+<p>個人情報の漏洩・誤送信・誤共有が疑われる場合は，<a href="chapter-1.html">第1章　フェイルセーフとインシデント対応</a> の原則に従い，</p>
+<ul>
+<li>被害拡大を止める（共有停止/権限剥奪/公開取り下げ）</li>
+<li>速やかに関係者に共有する</li>
+</ul>
+<p>ことを優先します．</p>
+<p>また，個人情報の漏えい等では，内容や規模によって，本人への通知や個人情報保護委員会への報告が必要になる場合があります．細かい手続を暗記する必要はありませんが，**「個人情報の事故は内部対応だけで完結しないことがある」**と理解しておくことが重要です．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-14">参考資料</h2></summary><div class="section-content">
+<ul>
+<li><a href="https://laws.e-gov.go.jp/document?lawid=415AC0000000057">e-Gov 法令検索「個人情報の保護に関する法律（平成十五年法律第五十七号）」</a></li>
+<li><a href="https://www.ppc.go.jp/personalinfo/legal/guidelines_tsusoku/">個人情報保護委員会「個人情報の保護に関する法律についてのガイドライン（通則編）」</a></li>
+<li><a href="https://www.ppc.go.jp/personalinfo/legal/leakAction/">個人情報保護委員会「漏えい等の対応とお役立ち資料」</a></li>
+<li><a href="https://www.security-next.com/159300">Security NEXT「全正規生約1.4万人分の個人情報，海外協定校への送信ファイルに残存」</a></li>
+</ul>
+<p></p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-15">確認</h2></summary><div class="section-content">
+<ol>
+<li>氏名とメールアドレスは個人情報か．</li>
+<li>個人情報の目的外利用に当たる例を挙げよ．</li>
+<li>個人情報はなぜ「持っているだけ」でリスクになるのか，述べよ．</li>
+</ol>
+</div></details>
+<section class="answer-section" id="answers" aria-labelledby="answers-title"><h2 id="answers-title">確認の解答</h2><p></p><details class="answers"><summary>解答・解説を開く</summary><div><ol>
+<li><p>はい．氏名とメールアドレスの組合せは個人を識別できるため，個人情報に当たります．</p>
+</li>
+<li><p>申込受付のために集めた連絡先を，説明していない別イベントの宣伝や第三者への提供に使うことなどです．</p>
+</li>
+<li><p>漏えい，誤送信，権限設定ミス，不正アクセス，紛失などの対象になり，保有するほど管理責任と事故時の影響が増えるためです．</p>
+</li>
+</ol>
+</div></details></section>
+<nav class="chapter-navigation" aria-label="章の移動"><a href="chapter-2.html">← 前の章<span>第2章　情報リテラシ概論</span></a><a href="chapter-4.html">次の章 →<span>第4章　著作権</span></a></nav></article></div></div></main>
+<footer class="site-footer"><span>Developed and provided by KLEA ITDD（関西文芸交流会 技術開発部）</span><a href="index.html">研修トップへ</a></footer>
+</body></html>

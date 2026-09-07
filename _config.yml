@@ -1,0 +1,8 @@
+# GitHub Pages標準のJekyll配信では、原稿・保守用ファイルを公開しない。
+exclude:
+  - members/itlit/content
+  - members/itlit/build.ps1
+  - members/itlit/README.md
+  - members/README.md
+  - members/set-password.ps1
+  - members/auth.test.cjs

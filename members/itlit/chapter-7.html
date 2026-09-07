@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="ja" data-members-locked><head>
+<meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>第7章　生成AIと情報管理 | 関西文芸交流会</title>
+<link rel="icon" href="../../klea_logo_v1.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="../../styles.css" /><link rel="stylesheet" href="../styles.css" /><link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="../auth.css" />
+<script src="../auth-config.js"></script><script src="../auth.js"></script>
+<script src="lesson.js" defer></script>
+</head><body>
+<noscript><p class="members-noscript">メンバーページの表示にはJavaScriptを有効にしてください。</p></noscript>
+<a class="skip-link" href="#top">本文へ移動</a>
+<header class="site-header"><div class="header-inner"><a class="brand" href="../index.html" aria-label="関西文芸交流会 メンバーホーム"><img class="brand-mark" src="../../klea_logo_v1.svg" alt="" /><span class="brand-name">MEMBERS</span></a><nav class="nav" aria-label="主要ナビゲーション"><a href="index.html">研修トップ</a><a href="../index.html">メンバートップ</a></nav></div></header>
+<main id="top" class="lesson-page"><div class="lesson-heading"><p class="eyebrow">Information literacy / 7 of 9</p><h1>第7章　生成AIと情報管理</h1><a class="back-link" href="index.html">← 研修の章一覧</a></div>
+<div class="lesson-layout"><aside class="lesson-sidebar"><details class="lesson-toc" open><summary>この章の目次</summary><nav aria-label="章内目次"><ol><li><a href="#section-1">生成AIは「便利な道具」だが，入力と出力に事故がある</a></li><li><a href="#section-2">入れてはいけない情報の原則</a></li><li><a href="#section-3">匿名化と要約</a></li><li><a href="#section-4">生成結果は「提案」であり，責任は人が負う</a></li><li><a href="#section-6">著作権・引用・「もっともらしい文章」の危険</a></li><li><a href="#section-7">コーディングに使うときの注意（秘密情報と脆弱性）</a></li><li><a href="#section-8">参考資料</a></li><li><a href="#section-9">確認</a></li><li><a href="#answers">確認の解答</a></li></ol></nav></details></aside>
+<div class="lesson-reading"><div class="section-controls" role="group" aria-label="見出しの一括開閉" hidden><button type="button" data-sections="expand">見出しをすべて開く</button><button type="button" data-sections="collapse">見出しをすべて閉じる</button></div>
+<article class="lesson-body" aria-label="第7章　生成AIと情報管理 本文"><p>生成AIはこの数年で飛躍的な進化を遂げ，新たな社会インフラの様相さえ呈しています．しかし，生成AIの特性を理解しない使用者による不適切な利用事例が後を絶ちません．生成AIも包丁などと同じく，便利な道具ではありますが，不適切な使用をすると危険をもたらす可能性もあります．本章では，現時点における生成AIに関する基本的・一般的なな考え方について扱います．</p>
+<details class="lesson-section" open><summary><h2 id="section-1">生成AIは「便利な道具」だが，入力と出力に事故がある</h2></summary><div class="section-content">
+<p>生成AIは，もはや単に業務効率を上げるのみならず，日常の一部分となり，また多くの可能性を生み出すツールとなりました．一方で，生成AIに伴う事故も多く発生しています．事故は，入力に関する事故と出力に関する事故に大別できます．</p>
+<ul>
+<li>入力：出してはいけない情報を入力してしまう（個人情報，機密，秘密情報等）</li>
+<li>出力：それっぽい誤情報（ハルシネーション）や，権利・機密を侵害する内容が混ざる</li>
+</ul>
+</div></details><details class="lesson-section" open><summary><h2 id="section-2">入れてはいけない情報の原則</h2></summary><div class="section-content">
+<p>生成AIに入力した内容は，</p>
+<ul>
+<li>どこに保存されるか</li>
+<li>学習に使われるか</li>
+<li>誰が運用上アクセスできるか</li>
+</ul>
+<p>がサービスごとに異なります．そのため，まずサービス仕様に依存しない保守的な原則として，次を入力しません．</p>
+<ul>
+<li>個人情報（氏名，メール，住所，電話，顔写真，応募情報，名簿等）</li>
+<li>認証情報（パスワード，トークン，APIキー，秘密鍵，バックアップコード等）</li>
+<li>非公開の内部資料（未発表企画，議事録のドラフト，審査情報，内部連絡網など）</li>
+<li>契約・支払・法的トラブル等の機密情報</li>
+</ul>
+<p>判断に迷う場合は入力しません．</p>
+<p>実際にどのサービスを業務で使ってよいか，入力内容が学習に使われるか，保存期間や管理者権限がどうなっているかは，サービスや契約形態によって変わります．本資料では個別サービス名を覚えるのではなく，<strong>使う前に仕様と団体のルールを確認する</strong>という姿勢を重視します．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-3">匿名化と要約</h2></summary><div class="section-content">
+<p>個人情報を含む文章の体裁を整えたい場合など，AIを用いたいが，内容をそのまま入力することは不適切な場合があります．その場合は，</p>
+<ul>
+<li>個人を特定できる情報を削除・置換する（例：Aさん，B社，Xイベント）</li>
+<li>数字や固有名詞を丸める・一般化する</li>
+<li>目的に必要な部分だけに削る</li>
+</ul>
+<p>といった匿名化・最小化を行ってから入力するとよいでしょう．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-4">生成結果は「提案」であり，責任は人が負う</h2></summary><div class="section-content">
+<p>生成AIは，もっともらしく誤った内容を出力することがあります．</p>
+<p>重要な原則：</p>
+<ul>
+<li>最終判断・最終責任は人が持つ</li>
+<li>AI出力物を公開・提出・送信・納品した場合，その内容に対する責任は使用者や組織が負う</li>
+<li>「AIが生成した」「AIの回答を信じた」という説明は，法的責任や対外的な説明責任を免れる理由にはならない</li>
+<li>事実関係（日時，金額，URL，引用元，規約，手順）は必ず一次情報で確認する</li>
+</ul>
+<p>特に，対外発信（SNS/公式サイト/一斉メール）は，<a href="chapter-6.html">第6章　SNS・公開情報・テストデータ管理</a> と同様に確認を挟みます．</p>
+<p>たとえば，AIが作成した文章に誤情報，名誉毀損，著作権侵害，個人情報の不適切な掲載，不当な案内などが含まれていた場合でも，実際に公開・利用した人や組織が責任を問われる可能性があります．AI出力物は，自分が作成した資料と同じように確認してから使います．</p>
+<details class="lesson-section" open><summary><h3 id="section-5" class="example-heading">現実の事例：チャットボットの誤案内と事業者の責任</h3></summary><div class="section-content">
+<p>Air CanadaのWebサイト上のチャットボットが，弔事運賃の申請方法について誤った案内を行い，利用者が不利益を受けた事案があります．</p>
+<p>カナダの紛争解決機関は，チャットボットも事業者のWebサイトの一部であり，掲載情報の正確性について事業者が責任を負うと判断しました．</p>
+<p>この事例から学ぶ点：</p>
+<ul>
+<li>AIの出力を「AIが言ったこと」として責任から切り離すことはできない</li>
+<li>公開情報や利用者への案内は，人が根拠を確認する</li>
+<li>誤りを発見した際に，訂正，利用停止，影響確認ができる体制を持つ</li>
+</ul>
+</div></details></div></details><details class="lesson-section" open><summary><h2 id="section-6">著作権・引用・「もっともらしい文章」の危険</h2></summary><div class="section-content">
+<p>生成AIの出力は，</p>
+<ul>
+<li>既存文章に似た表現が混ざる</li>
+<li>出典不明のまま断定する</li>
+</ul>
+<p>ことがあります．</p>
+<p>対策：</p>
+<ul>
+<li>生成結果をそのまま貼り付ける前提にせず，草案として用い，文脈に合わせて書き直す</li>
+<li>引用が必要なら出典を必ず確認し，出典が取れないなら使わない</li>
+<li>画像やロゴ，作品の利用は <a href="chapter-4.html">第4章　著作権</a> の判断手順に従う</li>
+</ul>
+</div></details><details class="lesson-section" open><summary><h2 id="section-7">コーディングに使うときの注意（秘密情報と脆弱性）</h2></summary><div class="section-content">
+<p>現在のコーディングAIは，単にチャット欄へコードを貼って相談するだけでなく，IDEやCLI上でリポジトリを読み，ファイルを編集し，テストやコマンドを実行する「コーディングエージェント」として使われることがあります．そのため，注意点も「何を入力するか」だけでは足りません．<strong>AIがどのファイルを読めるか，どの操作を実行できるか，どの差分を採用するか</strong>を管理する必要があります．</p>
+<p>起きやすい事故：</p>
+<ul>
+<li>リポジトリ全体をAIに読ませ，秘密情報や内部資料まで文脈に含めてしまう</li>
+<li><code>.env</code>，秘密鍵，認証トークン，本番ログ，個人情報をAIに読ませてしまう</li>
+<li>AIが生成したコードに脆弱性（XSS，SQLインジェクション，認可漏れ等）が混ざる</li>
+<li>AIが不要なファイルを書き換える，設定を壊す，テストを弱める</li>
+<li>コマンド実行により，外部送信，依存関係の追加，データ削除などの副作用が起きる</li>
+</ul>
+<p>基本方針：</p>
+<ul>
+<li>AIに読ませる必要のないファイルは，AI向けの除外設定で読ませない</li>
+<li>ツールが対応している場合は，<code>.aiignore</code> などのAI向けignoreファイルを使う</li>
+<li><code>.env</code>，秘密鍵，認証トークン，本番ログ，個人情報，顧客データ，バックアップを除外対象にする</li>
+<li><code>.gitignore</code> はGit管理から外す設定であり，AIが読む範囲の制御とは別に考える</li>
+<li>コード相談は最小限の再現例にする（実コードや本番データを貼りすぎない）</li>
+<li>秘密情報や個人情報を含むログは提示しない</li>
+<li>AIが作った差分は，採用前に人がレビューする</li>
+<li>テストを追加・実行し，失敗したテストを削除してごまかしていないか確認する</li>
+<li>コマンド実行，依存関係の追加，外部通信，データ削除は承認制にする</li>
+<li>セキュリティ上の原則（<a href="chapter-9.html">第9章　サーバ・コーディング関係のセキュリティ</a>）に照らして確認する</li>
+</ul>
+<p>特に，秘密情報は「AIに貼らない」だけでは不十分です．エージェントが自動でファイルを読む環境では，秘密情報をリポジトリ内に置かないこと，置かざるを得ない場合は読み取り対象から除外すること，実行前にアクセス範囲を確認することが重要です．</p>
+<p>代表的な除外対象：</p>
+<ul>
+<li><code>.env</code>，<code>.env.local</code>，<code>.env.production</code></li>
+<li>秘密鍵，証明書，トークン，バックアップコード</li>
+<li>本番ログ，エラーログ，アクセスログ</li>
+<li>データベースダンプ，バックアップ，CSV出力</li>
+<li>個人情報，顧客情報，応募者情報，名簿</li>
+<li>契約書，請求書，未公開資料</li>
+</ul>
+<p>AI向けignoreファイルの名前や対応範囲はツールによって異なります．<code>.aiignore</code>，<code>.cursorignore</code> などを使うものもあれば，設定画面や権限設定で管理するものもあります．重要なのはファイル名を暗記することではなく，<strong>AIに読ませない情報を明示的に管理する</strong>ことです．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-8">参考資料</h2></summary><div class="section-content">
+<ul>
+<li><a href="https://decisions.civilresolutionbc.ca/crt/crtd/en/item/525448/index.do">Civil Resolution Tribunal of British Columbia, <em>Moffatt v. Air Canada, 2024 BCCRT 149</em></a></li>
+</ul>
+</div></details><details class="lesson-section" open><summary><h2 id="section-9">確認</h2></summary><div class="section-content">
+<ol>
+<li>AIに入力してはいけない情報を3つ挙げよ．</li>
+<li>生成結果をそのまま信じると危険な理由は何か．</li>
+<li>AIの出力を使用したことに伴う損害などの責任は，一般に誰に帰せられるか．</li>
+<li>コーディングAIに秘密情報を読ませないための具体策は何か．</li>
+</ol>
+</div></details>
+<section class="answer-section" id="answers" aria-labelledby="answers-title"><h2 id="answers-title">確認の解答</h2><p></p><details class="answers"><summary>解答・解説を開く</summary><div><ol>
+<li><p>個人情報，認証情報，未公開の内部資料などです．たとえば氏名・連絡先，パスワード・APIキー，審査資料・議事録の草案は入力しません．</p>
+</li>
+<li><p>生成AIはもっともらしい誤情報や存在しない出典を出すことがあるためです．公開・送信・提出する前に，人が一次情報で確認します．</p>
+</li>
+<li><p>一般に，出力を利用・公開した使用者または組織が責任を負います．「AIが作った」ことは確認や説明の責任を免れる理由にはなりません．</p>
+</li>
+<li><p><code>.env</code>，秘密鍵，トークン，本番ログ，個人情報，DBダンプ等をAIの読み取り対象から除外します．ツールが対応していればAI向けignoreや権限設定を使い，必要最小限のファイルだけを読ませます．採用する差分や実行するコマンドは人が確認します．</p>
+</li>
+</ol>
+</div></details></section>
+<nav class="chapter-navigation" aria-label="章の移動"><a href="chapter-6.html">← 前の章<span>第6章　SNS・公開情報・テストデータ管理</span></a><a href="chapter-8.html">次の章 →<span>第8章　ファイル管理・バックアップ・ログ・Git</span></a></nav></article></div></div></main>
+<footer class="site-footer"><span>Developed and provided by KLEA ITDD（関西文芸交流会 技術開発部）</span><a href="index.html">研修トップへ</a></footer>
+</body></html>

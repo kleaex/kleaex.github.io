@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="ja" data-members-locked><head>
+<meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>第9章　サーバ・コーディング関係のセキュリティ | 関西文芸交流会</title>
+<link rel="icon" href="../../klea_logo_v1.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="../../styles.css" /><link rel="stylesheet" href="../styles.css" /><link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="../auth.css" />
+<script src="../auth-config.js"></script><script src="../auth.js"></script>
+<script src="lesson.js" defer></script>
+</head><body>
+<noscript><p class="members-noscript">メンバーページの表示にはJavaScriptを有効にしてください。</p></noscript>
+<a class="skip-link" href="#top">本文へ移動</a>
+<header class="site-header"><div class="header-inner"><a class="brand" href="../index.html" aria-label="関西文芸交流会 メンバーホーム"><img class="brand-mark" src="../../klea_logo_v1.svg" alt="" /><span class="brand-name">MEMBERS</span></a><nav class="nav" aria-label="主要ナビゲーション"><a href="index.html">研修トップ</a><a href="../index.html">メンバートップ</a></nav></div></header>
+<main id="top" class="lesson-page"><div class="lesson-heading"><p class="eyebrow">Information literacy / 9 of 9</p><h1>第9章　サーバ・コーディング関係のセキュリティ</h1><a class="back-link" href="index.html">← 研修の章一覧</a></div>
+<div class="lesson-layout"><aside class="lesson-sidebar"><details class="lesson-toc" open><summary>この章の目次</summary><nav aria-label="章内目次"><ol><li><a href="#section-1">クライアントとサーバの役割分離</a></li><li><a href="#section-2">認証(Authentication)と認可(Authorization)</a></li><li><a href="#section-3">APIキー・トークン・環境変数</a></li><li><a href="#section-4"><code>.env</code>と環境変数の注意</a></li><li><a href="#section-5">Secrets漏洩時の現実的な優先順位</a></li><li><a href="#section-6">代表的な攻撃1：XSS（クロスサイトスクリプティング）</a></li><li><a href="#section-7">代表的な攻撃2：IDOR（権限不備による他人データ参照）</a></li><li><a href="#section-8">RLS(Row-Level Security)によるデータベース側の防御</a></li><li><a href="#section-10">代表的な攻撃3：CSRF（クロスサイトリクエストフォージェリ）</a></li><li><a href="#section-11">代表的な攻撃4：SQLインジェクション</a></li><li><a href="#section-12">ファイルアップロード/添付機能の注意</a></li><li><a href="#section-13">バリデーションと認可</a></li><li><a href="#section-14">ログと監査</a></li><li><a href="#section-15">環境分離（本番/検証/開発）</a></li><li><a href="#section-16">依存パッケージとサプライチェーン</a></li><li><a href="#section-18">脆弱性対応で問われる判断</a></li><li><a href="#section-19">実務で意識すべきポイント</a></li><li><a href="#section-20">参考資料</a></li><li><a href="#section-21">確認</a></li><li><a href="#answers">確認の解答</a></li></ol></nav></details></aside>
+<div class="lesson-reading"><div class="section-controls" role="group" aria-label="見出しの一括開閉" hidden><button type="button" data-sections="expand">見出しをすべて開く</button><button type="button" data-sections="collapse">見出しをすべて閉じる</button></div>
+<article class="lesson-body" aria-label="第9章　サーバ・コーディング関係のセキュリティ 本文"><p>本章では，主に技術者向けに，基本的な開発におけるセキュリティに関する知識をまとめます．バイブコーディングが普及してきた今日，古典的な脆弱性を見落としたまま公開してしまう危険性に改めて目を向けるべきでしょう．なお，本章に挙げたものは代表的なものの一部に過ぎません．OWASP Top 10などの最新の情報に注意を払うこと，また必要に応じてセキュリティレビューを行うAIなどを活用することなども現代においては重要かつ効果的といえるでしょう．</p>
+<details class="lesson-section" open><summary><h2 id="section-1">クライアントとサーバの役割分離</h2></summary><div class="section-content">
+<p>WebアプリやWebサイトでは，ブラウザで動く部分（クライアント）と，データや処理を担う部分（サーバ）に役割が分かれます．この部分を誤解すると，見た目では制限しているつもりでも，実際には誰でも突破できる設計になりがちです．</p>
+<p>重要な原則は次の通りです．</p>
+<ul>
+<li><p>クライアント側の制限は，あくまで表示上の制限にすぎない
+（利用者は開発者ツール等で挙動を変えられる）</p>
+</li>
+<li><p>権限チェックや重要な判断はサーバ側で行う</p>
+</li>
+<li><p>サーバは「届いた入力は信用しない」という前提で設計する</p>
+</li>
+</ul>
+</div></details><details class="lesson-section" open><summary><h2 id="section-2">認証(Authentication)と認可(Authorization)</h2></summary><div class="section-content">
+<p>Webの事故で多いのは「ログインはあるが権限チェックがない」状態です．</p>
+<ul>
+<li>認証：誰か（本人確認）</li>
+<li>認可：その人がその操作をしてよいか（権限）</li>
+</ul>
+<p>認証があっても，認可がないと，</p>
+<ul>
+<li>他人のデータが見える</li>
+<li>管理操作ができる</li>
+</ul>
+<p>といった重大事故になります．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-3">APIキー・トークン・環境変数</h2></summary><div class="section-content">
+<p>APIキーやトークン，パスワードなどの「秘密情報」は，漏れると即座に不正利用される可能性があります．特に多い事故は，「ソースコードや設定ファイルに埋め込む」「公開場所に置く」ことです．</p>
+<p>基本方針は次の通りです．</p>
+<ul>
+<li>Secretsはコードに書かず，環境変数や専用のSecrets管理機能で扱う</li>
+<li>権限は最小限（漏れても被害が限定されるようにする）</li>
+<li>定期的にローテーション（無効化・再発行）できる運用にする</li>
+<li>公開してよい情報と絶対に公開してはいけない情報を明確に区別する</li>
+</ul>
+</div></details><details class="lesson-section" open><summary><h2 id="section-4"><code>.env</code>と環境変数の注意</h2></summary><div class="section-content">
+<p><code>.env</code>は環境変数を読み込むための一般的な方法ですが，Secretsを安全に保管する金庫ではありません．平文ファイルなので，Gitへの混入，バックアップからの流出，共有時の誤送信などが起こります．</p>
+<p>注意点：</p>
+<ul>
+<li>開発用の<code>.env</code>はGitに入れず，<code>.env.example</code>には変数名とダミー値だけを書く</li>
+<li>本番では，ホスティングサービスやOS等のSecrets管理機能を使う</li>
+<li>環境ごとに別のSecretsを使い，権限を最小化する</li>
+<li>フロントエンド用の環境変数は，ビルド後のJavaScriptに含まれて利用者から見える場合がある</li>
+</ul>
+<p>つまり，<strong>環境変数にしただけで秘密になるわけではなく，誰が読める場所に置かれるかまで確認する</strong>必要があります．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-5">Secrets漏洩時の現実的な優先順位</h2></summary><div class="section-content">
+<p>漏れたSecretsは「漏れたかもしれない」の段階でも被害が出ます．</p>
+<p>優先順位：</p>
+<ol>
+<li>そのキー/トークンを無効化・再発行する（技術的に止血）</li>
+<li>影響範囲を把握する（ログ確認）</li>
+<li>再発防止（なぜ混入したかの仕組み改善）</li>
+</ol>
+<p>個人の注意力ではなく，仕組み（Secrets管理，確認，CI）で防ぎます．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-6">代表的な攻撃1：XSS（クロスサイトスクリプティング）</h2></summary><div class="section-content">
+<p>XSSは，攻撃者が入力欄などを通してスクリプト(JavaScript)を混入させ，それが他の利用者の画面で実行されることで被害が起きる攻撃です．</p>
+<p>起きると何が困るか：</p>
+<ul>
+<li>利用者の操作を乗っ取る</li>
+<li>セッション情報を盗む</li>
+<li>偽画面を表示して入力を誘導する</li>
+</ul>
+<p>対策の原則：</p>
+<ul>
+<li>出力時エスケープ（表示する前に危険な文字を無害化）</li>
+<li>HTMLを文字列結合で生成しない（安全なテンプレート機構等を用いる）</li>
+<li>ユーザー入力をそのままHTMLとして解釈しない</li>
+<li>必要に応じて Content Security Policy(CSP)を設定する</li>
+</ul>
+<p>「入力を禁止する」ではなく，「入力が来ても安全に表示する」設計が重要です．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-7">代表的な攻撃2：IDOR（権限不備による他人データ参照）</h2></summary><div class="section-content">
+<p>IDOR(Insecure Direct Object Reference)は，たとえばURLやAPIのIDを変えるだけで他人のデータが見えてしまう事故です．</p>
+<p>原因：</p>
+<ul>
+<li>「そのIDのデータをその人が扱ってよいか」の認可チェックがない</li>
+</ul>
+<p>対策：</p>
+<ul>
+<li>すべてのデータ参照/更新に認可を入れる</li>
+<li>“フロントでボタンを隠した”だけで満足しない</li>
+</ul>
+</div></details><details class="lesson-section" open><summary><h2 id="section-8">RLS(Row-Level Security)によるデータベース側の防御</h2></summary><div class="section-content">
+<p>RLSは，データベースの行ごとに「誰が読めるか，変更できるか」を制限する仕組みです．たとえば，利用者が自分の投稿だけを参照・更新できるようにすることで，アプリ側の認可漏れがあっても被害を抑えられる場合があります．</p>
+<p>重要な考え方：</p>
+<ul>
+<li>アプリケーション側の認可とRLSを組み合わせる（多層防御）</li>
+<li><code>SELECT</code>だけでなく，<code>INSERT</code>，<code>UPDATE</code>，<code>DELETE</code>も確認する</li>
+<li>一般利用者，管理者，未ログイン利用者など，役割ごとにテストする</li>
+<li>管理者権限，テーブル所有者，<code>BYPASSRLS</code>等はRLSを迂回する場合がある</li>
+<li>RLSを有効にしただけで満足せず，ポリシーと実際の接続権限を確認する</li>
+</ul>
+<p>RLSは強力ですが，認証，API側の認可，最小権限，監査ログの代わりにはなりません．「URLのIDを変えても他人の行は取得できないか」を自動テストに含めることが重要です．</p>
+<details class="lesson-section" open><summary><h3 id="section-9" class="example-heading">現実の事例：UTopiaのアクセス制御不備（2026年）</h3></summary><div class="section-content">
+<p>2026年4月に公開された大学生向けマッチングサービス「UTopia」は，データベースのアクセス制御設定の不備により，一部利用者のメールアドレス，表示名，性別，年齢，大学・高校名，プロフィール画像が外部から閲覧可能だったと公式に公表しました．公式発表では，本人確認で提出されたマイナンバーカード画像は漏えい対象に含まれていないとされています．</p>
+<p>外部の技術検証では，バックエンドに使われたSupabaseでRLSが適切に設定されていなかった可能性や，RLSを迂回できる強い権限を持つ<code>service_role</code>キーがフロントエンドに含まれていた可能性も指摘されています．</p>
+<p>この事例から学ぶ点：</p>
+<ul>
+<li>画面上でログインを要求するだけでは，データへのアクセス制御にならない</li>
+<li>Supabaseの公開スキーマでは，対象テーブルすべてについてRLSとポリシーを確認する</li>
+<li><code>SELECT</code>だけでなく，<code>INSERT</code>，<code>UPDATE</code>，<code>DELETE</code>を未ログイン・一般利用者・管理者の各権限でテストする</li>
+<li><code>service_role</code>キーなどRLSを迂回するSecretsを，ブラウザやアプリへ配布しない</li>
+<li>本人確認書類など，漏えい時の影響が大きい情報を安易に収集・保存しない</li>
+</ul>
+</div></details></div></details><details class="lesson-section" open><summary><h2 id="section-10">代表的な攻撃3：CSRF（クロスサイトリクエストフォージェリ）</h2></summary><div class="section-content">
+<p>CSRFは，ログイン済みの利用者に気付かれない形で，別サイト経由で意図しない操作を実行させる攻撃です．</p>
+<p>起きると何が困るか：</p>
+<ul>
+<li>本人の意思と無関係に，設定変更・投稿・送金等が実行される</li>
+</ul>
+<p>対策の原則：</p>
+<ul>
+<li>CSRFトークンの導入</li>
+<li>GETで状態変更をしない</li>
+<li>重要操作はPOST等にしたうえで，確認手順を設ける</li>
+<li>Cookie属性（SameSite等）の適切な設定</li>
+<li>重要操作は再認証を要求するなど，被害を抑える設計</li>
+</ul>
+</div></details><details class="lesson-section" open><summary><h2 id="section-11">代表的な攻撃4：SQLインジェクション</h2></summary><div class="section-content">
+<p>SQLインジェクションは，入力欄やURLパラメータなどを通して，本来の意図と異なるデータベース操作を実行させる攻撃です．</p>
+<p>起きると何が困るか：</p>
+<ul>
+<li>他人のデータが読まれる</li>
+<li>データが改ざん・削除される</li>
+<li>管理者権限の操作につながる</li>
+</ul>
+<p>対策の原則：</p>
+<ul>
+<li>SQLを文字列結合で組み立てない</li>
+<li>プレースホルダー/プリペアドステートメントを使う</li>
+<li>データベース権限を最小限にする</li>
+<li>エラー内容を外部に詳しく出しすぎない</li>
+</ul>
+<p>「入力値をチェックする」だけで防ぐのではなく，危険なSQLとして解釈されない仕組みにすることが重要です．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-12">ファイルアップロード/添付機能の注意</h2></summary><div class="section-content">
+<p>ファイル機能は事故が発生しやすい領域です．</p>
+<p>注意点：</p>
+<ul>
+<li>拡張子だけで判断しない（中身を信用しない）</li>
+<li>実行可能な場所に保存しない（Webから実行されない配置）</li>
+<li>ウイルススキャン等を挟む（可能なら）</li>
+<li>公開範囲（誰がダウンロードできるか）を必ず制御する</li>
+</ul>
+</div></details><details class="lesson-section" open><summary><h2 id="section-13">バリデーションと認可</h2></summary><div class="section-content">
+<p>Webの多くの脆弱性は，「想定外の入力」を受け取ったときに発生します．そのため入力に対して，次の二段が必要です．</p>
+<ul>
+<li>バリデーション：形式・範囲・型が正しいか（例：数字のはずが文字列）</li>
+<li>認可(Authorization)：その人がその操作をしてよいか（権限チェック）</li>
+</ul>
+<p>特に危険なのは「フロント側で弾いているから大丈夫」という思い込みです．攻撃者はフロントを経由せずに直接リクエストを送れます．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-14">ログと監査</h2></summary><div class="section-content">
+<p>セキュリティは防ぐだけでなく，気づくことも重要です．</p>
+<p>最低限ログに残したいもの：</p>
+<ul>
+<li>ログイン/ログアウト</li>
+<li>重要操作（権限変更，データ削除，公開設定変更）</li>
+<li>Secretsの発行/更新/失効</li>
+</ul>
+<p>ただしログ自体に個人情報やSecretsを出さないよう注意します．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-15">環境分離（本番/検証/開発）</h2></summary><div class="section-content">
+<p>本番データを開発環境にコピーすると，テストデータ事故（<a href="chapter-6.html">第6章　SNS・公開情報・テストデータ管理</a>）や漏洩に直結します．</p>
+<p>原則：</p>
+<ul>
+<li>本番の個人情報を開発/検証に持ち込まない</li>
+<li>必要なら匿名化/マスキングしてから使う</li>
+<li>本番と同じSecretsを使い回さない</li>
+</ul>
+</div></details><details class="lesson-section" open><summary><h2 id="section-16">依存パッケージとサプライチェーン</h2></summary><div class="section-content">
+<p>JavaScriptの開発では多数の外部ライブラリを利用します．便利な一方で，脆弱なライブラリや乗っ取られたパッケージが混入すると，自分のコードに問題がなくても被害を受けます．</p>
+<p>対策の原則：</p>
+<ul>
+<li>依存関係を最小化する（必要なものだけ）</li>
+<li>脆弱性アラートの確認と更新</li>
+<li>ロックファイルの管理（意図しない更新を防ぐ）</li>
+<li>不明な作者・不自然な人気急増など，危険信号に注意する</li>
+<li>依存追加や大きな更新は，差分・公開元・更新履歴を確認してから行う</li>
+<li>CI/CD上のSecretsは最小権限にし，漏えい時にすぐ無効化できるようにする</li>
+</ul>
+<details class="lesson-section" open><summary><h3 id="section-17" class="example-heading">現実の事例：npmパッケージ汚染とShai-Hulud系マルウェア（2025年〜2026年）</h3></summary><div class="section-content">
+<p>2025年以降，npmでは，正規のパッケージやメンテナアカウントが乗っ取られ，悪意あるコードを含むバージョンが公開されるサプライチェーン攻撃が相次いでいます．代表例として，Shai-Huludと呼ばれる自己増殖型のマルウェアや，その派生とされるMini Shai-Hulud/Miasma系の攻撃が報告されています．</p>
+<p>これらの攻撃では，利用者が「有名なパッケージだから安全」と考えて通常どおり<code>npm install</code>やCIの自動ビルドを実行しただけで，開発環境やCI/CD環境からGitHubトークン，npmトークン，クラウドAPIキー，SSHキーなどのSecretsが読み取られるおそれがありました．さらに，盗まれた認証情報を使って別のパッケージやリポジトリに悪意あるコードを広げる動きも確認されています．</p>
+<p>この事例から学ぶ点：</p>
+<ul>
+<li>有名パッケージや正規アカウントから配布されていても，汚染されることがある</li>
+<li>依存パッケージのインストールは，単なるファイル取得ではなく，コード実行になり得る</li>
+<li>開発端末やCI/CDには強い権限のSecretsを置きがちなので，被害が連鎖しやすい</li>
+<li>依存関係を自動更新している場合，悪意あるバージョンを即座に取り込む危険がある</li>
+<li>被害が疑われる場合は，パッケージを戻すだけでなく，トークンやAPIキーの無効化・再発行が必要になる</li>
+</ul>
+<p>対策として，ロックファイルを使って意図しない更新を抑える，更新差分を確認する，CIではインストールスクリプトや外部通信を必要最小限にする，Secretsを最小権限・短寿命にする，異常な依存更新やSecretsアクセスを検知できるようにする，といった多層防御が必要です．</p>
+</div></details></div></details><details class="lesson-section" open><summary><h2 id="section-18">脆弱性対応で問われる判断</h2></summary><div class="section-content">
+<p>脆弱性はゼロにできません．重要なのは，個別の製品手順を暗記することではなく，見つかったときに影響と緊急度を見誤らず，速く確実に動けることです．</p>
+<p>最低限の運用：</p>
+<ul>
+<li>依存関係の更新/アラートを定期的に確認する</li>
+<li>影響範囲（どの機能/環境）を切り分ける</li>
+<li>修正→テスト→リリース→監視，の流れを決めておく</li>
+</ul>
+<p>事故対応は <a href="chapter-1.html">第1章　フェイルセーフとインシデント対応</a> の考え方に統合します．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-19">実務で意識すべきポイント</h2></summary><div class="section-content">
+<p>この章の内容は，具体的なコードの暗記ではなく，次の原則を運用に落とすことが目的です．</p>
+<ul>
+<li>重要判断（権限チェック）はサーバで行う</li>
+<li>Secretsはコードに書かず，権限最小で管理する</li>
+<li>XSSは「出力時エスケープ」，CSRFは「トークンとCookie設定」が基本</li>
+<li>SQLインジェクションは「文字列結合しない」「プレースホルダーを使う」が基本</li>
+<li>入力は必ずバリデーションし，操作は必ず認可する</li>
+<li>依存ライブラリを点検し，更新・監視の仕組みを持つ</li>
+<li>依存パッケージの汚染を前提に，CI/CDとSecretsを最小権限で設計する</li>
+</ul>
+<p>高度な攻撃に備える前に，まず「基本原則を外さない設計」を徹底することが最も効果的です．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-20">参考資料</h2></summary><div class="section-content">
+<ul>
+<li><a href="https://www.postgresql.org/docs/current/ddl-rowsecurity.html">PostgreSQL Documentation, <em>Row Security Policies</em></a></li>
+<li><a href="https://x.com/UTopia_matching/status/2049745638821408930">UTopia公式X「発生した事象」</a></li>
+<li><a href="https://utopia.tokyo/">UTopia公式サイト</a></li>
+<li><a href="https://supabase.com/docs/guides/database/postgres/row-level-security">Supabase Documentation「Row Level Security」</a></li>
+<li><a href="https://note.com/hirotsuchida/n/na2f33030bd9f">IA Insight Lab「東大生限定マッチングアプリUTopiaの情報漏洩」</a></li>
+<li><a href="https://www.techradar.com/pro/security/mini-shai-halud-hackers-publish-over-600-compromised-npm-packages-developers-warned-to-be-on-their-guard">TechRadar「Mini Shai-Halud hackers publish over 600 compromised npm packages」</a></li>
+<li><a href="https://www.tomshardware.com/tech-industry/cyber-security/shai-hulud-malware-campaign-dubbed-the-largest-and-most-dangerous-npm-supply-chain-compromise-in-history-hundreds-of-javascript-packages-affected">Tom's Hardware「Shai-Hulud malware campaign dubbed 'the largest and most dangerous npm supply-chain compromise in history'」</a></li>
+<li><a href="https://www.itpro.com/security/cyber-attacks/shai-hulud-malware-is-back-with-a-vengeance-and-hit-more-than-19-000-github-repositories-so-far-heres-what-developers-need-to-know">ITPro「Shai-Hulud malware is back with a vengeance」</a></li>
+</ul>
+</div></details><details class="lesson-section" open><summary><h2 id="section-21">確認</h2></summary><div class="section-content">
+<ol>
+<li>クライアント側の制限だけでは不十分な理由を述べよ．</li>
+<li>認証と認可の違いは何か．</li>
+<li><code>.env</code>に書けばSecretsが安全になる，とは限らない理由は何か．</li>
+<li>RLSの役割と，RLSだけでは不十分な理由は何か．</li>
+<li>XSS対策の原則は何か．</li>
+<li>CSRF対策の原則は何か．</li>
+<li>SQLインジェクション対策の原則は何か．</li>
+<li>Secrets漏洩時の最優先対応は何か．</li>
+<li>本番データを開発環境にコピーすることが危険な理由は何か．</li>
+<li>npmパッケージ汚染のようなサプライチェーン攻撃で，パッケージを戻すだけでは不十分な理由は何か．</li>
+</ol>
+</div></details>
+<section class="answer-section" id="answers" aria-labelledby="answers-title"><h2 id="answers-title">確認の解答</h2><p></p><details class="answers"><summary>解答・解説を開く</summary><div><ol>
+<li><p>ブラウザ側の表示や制限は利用者が変更でき，開発者ツールや直接リクエストで回避できるためです．重要な判断はサーバ側で行います．</p>
+</li>
+<li><p>認証は「誰であるか」を確認すること，認可は「その人がその操作をしてよいか」を判断することです．</p>
+</li>
+<li><p><code>.env</code>は平文ファイルであり，Git混入，バックアップ流出，共有時の誤送信，配置先の権限ミスなどで読まれる可能性があるためです．</p>
+</li>
+<li><p>RLSはデータベースの行ごとに読み書き権限を制御する仕組みです．ただし，アプリ側の認可，接続権限，管理者権限，テスト，ログ監査の代わりにはなりません．</p>
+</li>
+<li><p>ユーザー入力をそのままHTMLとして解釈せず，表示時にエスケープすることです．安全なテンプレート機構やCSPも組み合わせます．</p>
+</li>
+<li><p>CSRFトークンを使う，GETで状態変更しない，CookieのSameSite等を適切に設定する，重要操作には確認や再認証を入れることです．</p>
+</li>
+<li><p>SQLを文字列結合で組み立てず，プレースホルダーやプリペアドステートメントを使うことです．DB権限の最小化も重要です．</p>
+</li>
+<li><p>当該キー・トークンを無効化し，再発行することです．その後に影響範囲確認と再発防止を行います．</p>
+</li>
+<li><p>本番の個人情報・内部情報・Secretsが開発環境や検証環境へ広がり，権限の弱い場所，ログ，外部委託先，デモ画面などから漏れる可能性があるためです．必要な場合は匿名化・マスキングします．</p>
+</li>
+<li><p>汚染されたパッケージが，インストール時やCI実行時にSecretsやトークンを外部送信している可能性があるためです．パッケージを戻すだけでなく，影響範囲を確認し，漏えいした可能性のある認証情報を無効化・再発行します．</p>
+</li>
+</ol>
+</div></details></section>
+<nav class="chapter-navigation" aria-label="章の移動"><a href="chapter-8.html">← 前の章<span>第8章　ファイル管理・バックアップ・ログ・Git</span></a><a href="index.html">研修トップ →<span>学習内容を振り返る</span></a></nav></article></div></div></main>
+<footer class="site-footer"><span>Developed and provided by KLEA ITDD（関西文芸交流会 技術開発部）</span><a href="index.html">研修トップへ</a></footer>
+</body></html>

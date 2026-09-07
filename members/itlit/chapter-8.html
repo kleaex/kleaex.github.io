@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="ja" data-members-locked><head>
+<meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>第8章　ファイル管理・バックアップ・ログ・Git | 関西文芸交流会</title>
+<link rel="icon" href="../../klea_logo_v1.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="../../styles.css" /><link rel="stylesheet" href="../styles.css" /><link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="../auth.css" />
+<script src="../auth-config.js"></script><script src="../auth.js"></script>
+<script src="lesson.js" defer></script>
+</head><body>
+<noscript><p class="members-noscript">メンバーページの表示にはJavaScriptを有効にしてください。</p></noscript>
+<a class="skip-link" href="#top">本文へ移動</a>
+<header class="site-header"><div class="header-inner"><a class="brand" href="../index.html" aria-label="関西文芸交流会 メンバーホーム"><img class="brand-mark" src="../../klea_logo_v1.svg" alt="" /><span class="brand-name">MEMBERS</span></a><nav class="nav" aria-label="主要ナビゲーション"><a href="index.html">研修トップ</a><a href="../index.html">メンバートップ</a></nav></div></header>
+<main id="top" class="lesson-page"><div class="lesson-heading"><p class="eyebrow">Information literacy / 8 of 9</p><h1>第8章　ファイル管理・バックアップ・ログ・Git</h1><a class="back-link" href="index.html">← 研修の章一覧</a></div>
+<div class="lesson-layout"><aside class="lesson-sidebar"><details class="lesson-toc" open><summary>この章の目次</summary><nav aria-label="章内目次"><ol><li><a href="#section-1">フォルダ構造と命名規則</a></li><li><a href="#section-2">共有フォルダの権限</a></li><li><a href="#section-3">バックアップとバージョン履歴</a></li><li><a href="#section-4">ログ（記録）を残す発想</a></li><li><a href="#section-5">Gitの概念</a></li><li><a href="#section-6">Gitで管理してよいもの・いけないもの</a></li><li><a href="#section-7">Gitの基本用語</a></li><li><a href="#section-13">よくある誤解</a></li><li><a href="#section-14">共同作業を安全にする見取り図</a></li><li><a href="#section-15">Gitの特長</a></li><li><a href="#section-16">共同作業で起きやすい事故と回避</a></li><li><a href="#section-17">公開/非公開の確認</a></li><li><a href="#section-18">Git運用で特に注意する点（実務）</a></li><li><a href="#section-19"><code>.env</code>ファイルもGitに入れない</a></li><li><a href="#section-20">「秘密情報(Secrets)を入れてしまった」時の考え方</a></li><li><a href="#section-21">実務で意識すべきポイント</a></li><li><a href="#section-23">参考資料</a></li><li><a href="#section-24">確認</a></li><li><a href="#answers">確認の解答</a></li></ol></nav></details></aside>
+<div class="lesson-reading"><div class="section-controls" role="group" aria-label="見出しの一括開閉" hidden><button type="button" data-sections="expand">見出しをすべて開く</button><button type="button" data-sections="collapse">見出しをすべて閉じる</button></div>
+<article class="lesson-body" aria-label="第8章　ファイル管理・バックアップ・ログ・Git 本文"><p>ファイル管理が適切に行われていない場合，重要な情報が散逸したり，錯綜したりするなどして問題やミスの温床となります．部屋を整理整頓するように，データも正しく整理しておくことが重要です．本章では，これらの基礎的な知識を概観するとともに，主に技術者向けに，ファイル管理に関する技術についても扱います．</p>
+<details class="lesson-section" open><summary><h2 id="section-1">フォルダ構造と命名規則</h2></summary><div class="section-content">
+<p>ファイル管理の事故の多くは，特別なトラブルではなく，「どこに何があるかわからない」「どれが最新版かわからない」といった状態から始まります．</p>
+<p>（例）</p>
+<ul>
+<li>「関西俳句バトル2100-投句一覧-最新版-000101」</li>
+<li>「関西俳句バトル2100-投句一覧-最終版（校正済）」</li>
+<li>「関西俳句バトル2100-投句一覧-最終確定版」</li>
+<li>「最終更新-関西俳句バトル2100-投句一覧-本当の最終版」</li>
+<li>「関西俳句バトル2100-投句一覧-確定版2」</li>
+<li>「関西俳句バトル2100-投句一覧-本当の最終版-final」</li>
+</ul>
+<p>これは個人の整理能力で解決できる問題ではなく，フォルダ構造や命名規則が決まっていないことが原因です．</p>
+<p>このような事例を減らすには，<strong>統一されたルールを設ける</strong>ことが効果的です．また，ルールには，</p>
+<ul>
+<li>日付(YYYY-MM-DD)をファイル名に入れる</li>
+<li>「最新版」ではなく「版番号/日付」で管理する</li>
+</ul>
+<p>などの対策を含めるとよいでしょう．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-2">共有フォルダの権限</h2></summary><div class="section-content">
+<p>共有ドライブや共有フォルダは便利ですが，不適切な権限設計は誤編集や誤削除の温床となります．</p>
+<p>基本方針：</p>
+<ul>
+<li>編集できる人は最小限にする</li>
+<li>閲覧専用の共有を用意する</li>
+<li>むやみに「リンクを知っている人は全員」の共有設定にしない（<a href="chapter-2.html">第2章　情報リテラシ概論</a>）</li>
+</ul>
+</div></details><details class="lesson-section" open><summary><h2 id="section-3">バックアップとバージョン履歴</h2></summary><div class="section-content">
+<p>ファイルは，削除や上書きによって簡単に失われます．これを防ぐためには，バックアップとバージョン履歴の考え方が重要です．多くのクラウドサービスには，</p>
+<ul>
+<li>過去の状態に戻す機能</li>
+<li>削除したファイルを復元する機能</li>
+</ul>
+<p>が備わっています．また，それらの機能が「あることを知っている」だけでなく，実際に使える状態にしておくことも重要です．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-4">ログ（記録）を残す発想</h2></summary><div class="section-content">
+<p>事故対応で重要なのは「誰が悪いか」より「何が起きたか」です．</p>
+<p>ログの価値：</p>
+<ul>
+<li>いつ何が変わったか分かる</li>
+<li>どこまで影響したか切り分けられる</li>
+<li>再発防止策（仕組み）に繋げられる</li>
+</ul>
+<p>ログが残る環境を選ぶことや，権限共有でログを壊さないことが重要です．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-5">Gitの概念</h2></summary><div class="section-content">
+<p>ファイルを管理する上で，変更履歴をたどったり，また必要に応じて過去のバージョンに戻したりしたくなることがあります．また，複数人で作業をする場合に，最新版のファイルを毎回やり取りしたり，同時に編集したりすることは，取り違えや意図しない上書きの可能性などを考慮したときに望ましい状態とはいえません．こうした問題を解決するシステムとして，特にコーディングの分野で多く使われているのがGitです．</p>
+<p>Gitはプログラマだけの道具ではありません．「履歴を残しながら変更を管理する」という考え方そのものが重要です．Gitの考え方には，次のような利点があります．</p>
+<ul>
+<li>いつ，どのような変更をしたか記録できる</li>
+<li>過去の状態に戻すことができる</li>
+<li>複数人で同時に作業できる</li>
+<li>変更点（差分）が明確にわかる</li>
+</ul>
+<p>これは文書や設定ファイルの管理にもそのまま応用できます．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-6">Gitで管理してよいもの・いけないもの</h2></summary><div class="section-content">
+<p>Gitは強力ですが，何でも入れてよいわけではありません．</p>
+<p>基本方針：</p>
+<ul>
+<li>入れてよい：公開しても問題ない文書，設定（Secretsを除く），手順書，テンプレ等</li>
+<li>入れてはいけない：個人情報，秘密情報(Secrets)，未公開の内部資料（公開前提でないもの）</li>
+</ul>
+<p>「非公開リポジトリだから大丈夫」という判断は危険です．誤公開・権限設定ミス・スクリーンショット共有等で流出する遠因となるからです．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-7">Gitの基本用語</h2></summary><div class="section-content">
+<p>Gitでは，「変更をどこに置き，誰が確認できる状態か」を区別して考えます．</p>
+<details class="lesson-section" open><summary><h3 id="section-8">置き場所</h3></summary><div class="section-content">
+<ul>
+<li>リポジトリ(repository / repo)：ファイルと変更履歴をまとめて保管する単位です．</li>
+<li>ローカル(local)：自分のPC上にあるリポジトリです．作業中の変更は，まずここにあります．</li>
+<li>リモート(remote)：GitHubなどにある共有用のリポジトリです．チームで共通に見る置き場です．</li>
+</ul>
+</div></details><details class="lesson-section" open><summary><h3 id="section-9">変更を履歴にする</h3></summary><div class="section-content">
+<ul>
+<li>差分(diff)：どのファイルの，どの部分を変更したかを示す表示です．</li>
+<li>コミット(commit)：関連する変更を「この目的で行った変更」として履歴に確定する単位です．</li>
+<li>コミットメッセージ：その変更の理由や内容を示す短い説明です．後から履歴を読むための手がかりになります．</li>
+</ul>
+<p>コミット前の変更は，まだ自分の作業途中です．コミットして初めて，変更を戻したり他者に説明したりしやすくなります．</p>
+</div></details><details class="lesson-section" open><summary><h3 id="section-10">本流と作業の分岐</h3></summary><div class="section-content">
+<ul>
+<li>main（メイン）：通常，正式な最新版として扱う本流のブランチ名です．</li>
+<li>ブランチ(branch)：本流を壊さずに変更を試すための作業上の分岐です．</li>
+<li>マージ(merge)：ブランチで行った変更を本流へ統合することです．</li>
+</ul>
+</div></details><details class="lesson-section" open><summary><h3 id="section-11">チームへ共有する操作</h3></summary><div class="section-content">
+<pre><code class="language-text">リモート ── clone / pull ──&gt; ローカル ── push ──&gt; リモート
+</code></pre>
+<ul>
+<li>クローン(clone)：共有リポジトリを自分のPCへ最初に複製し，作業を始めることです．</li>
+<li>プル(pull)：共有場所の最新の変更を，自分のPCへ取り込むことです．</li>
+<li>プッシュ(push)：自分のPCでコミットした変更を，共有場所へ送ることです．</li>
+<li>プルリクエスト(PR / Pull Request)：ブランチの変更を本流へ取り込む前に，差分を見てもらいレビューを依頼する仕組みです．</li>
+</ul>
+</div></details><details class="lesson-section" open><summary><h3 id="section-12">Gitに入れないもの</h3></summary><div class="section-content">
+<ul>
+<li><code>.gitignore</code>：一時ファイルや秘密情報を誤って追加しないために，Gitの管理対象から除外する設定です．</li>
+</ul>
+<p>ただし，すでにコミットしたファイルを <code>.gitignore</code> に書いても，履歴から消えるわけではありません．<code>.env</code>などの秘密情報を入れないための予防策であり，秘密情報を安全に保管する仕組みそのものではない点に注意します．</p>
+</div></details></div></details><details class="lesson-section" open><summary><h2 id="section-13">よくある誤解</h2></summary><div class="section-content">
+<ul>
+<li>誤解：プッシュしたら，自動的に本流（main等）が書き換わる
+<ul>
+<li>現実：通常は「PRでレビュー→マージ」まで進まない限り，本流は変わらない</li>
+</ul>
+</li>
+<li>誤解：コミット＝公開
+<ul>
+<li>現実：コミットはローカルでもできる．公開（共有）はプッシュしたときに起きる</li>
+</ul>
+</li>
+<li>誤解：プル(pull)とプルリクエスト(PR)は同じ
+<ul>
+<li>現実：プルは「リモート→ローカルに取り込む操作」，PRは「変更を取り込む前のレビュー依頼」</li>
+</ul>
+</li>
+</ul>
+</div></details><details class="lesson-section" open><summary><h2 id="section-14">共同作業を安全にする見取り図</h2></summary><div class="section-content">
+<p>Gitの共同作業は，個々のコマンドを暗記するよりも，変更が「誰に見えているか」「どこまで戻せるか」を意識して捉えると事故が減ります．次の流れは，その状態を保つための代表例です．</p>
+<ol>
+<li>クローンして作業を開始する（最初の1回）</li>
+<li>作業前にプルして最新にする（他人の変更を取り込む）</li>
+<li>ブランチを切って変更する（本流を直接いじらない）</li>
+<li>変更をコミットして履歴に残す</li>
+<li>プッシュしてリモートへ共有する</li>
+<li>PRでレビューし，問題なければマージして本流に取り込む</li>
+</ol>
+<p>「レビューできる」「いつでも戻せる」ことが，Gitの価値です．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-15">Gitの特長</h2></summary><div class="section-content">
+<p>クラウド文書にも履歴機能はありますが，Gitは次が強いです．</p>
+<ul>
+<li>変更理由をコミット単位で残しやすい</li>
+<li>複数人の変更が衝突したときに，差分として整理できる</li>
+<li>誤変更を「どの変更で起きたか」まで追いやすい</li>
+</ul>
+<p>文章や規約，設定，テンプレのように「少しずつ改訂されるもの」と相性が良いです．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-16">共同作業で起きやすい事故と回避</h2></summary><div class="section-content">
+<p>事故は技術ではなく，運用の曖昧さから起きやすいです．</p>
+<ul>
+<li>本流（main等）に直接反映してしまう
+<ul>
+<li>回避：ブランチ＋PR＋レビューを基本にする</li>
+</ul>
+</li>
+<li>変更が混ざって，何をしたのか分からなくなる
+<ul>
+<li>回避：コミットを小さくする（1コミット=1目的）</li>
+</ul>
+</li>
+</ul>
+</div></details><details class="lesson-section" open><summary><h2 id="section-17">公開/非公開の確認</h2></summary><div class="section-content">
+<p>Gitの事故で多いのは「うっかり公開」です．</p>
+<ul>
+<li>リポジトリが公開か非公開かを最初に確認する</li>
+<li>公開してよい情報だけを入れる（非公開でも同様）</li>
+<li>外部公開が必要な場合は，公開対象を選別した別リポジトリに分離する</li>
+</ul>
+</div></details><details class="lesson-section" open><summary><h2 id="section-18">Git運用で特に注意する点（実務）</h2></summary><div class="section-content">
+<p>Gitは強い一方で，次の事故が頻発します．</p>
+<ul>
+<li>認証情報（トークン，APIキー，パスワード）をコミットしてしまう</li>
+<li>うっかり公開リポジトリにしてしまう</li>
+<li>「一度入った履歴」は完全消去が難しいことを知らない</li>
+</ul>
+<p>基本方針：</p>
+<ul>
+<li>“公開してよい情報”しかGitに置かない</li>
+<li>秘密情報(Secrets)はGitに入れない（環境変数や専用保管へ）</li>
+<li>公開/非公開の設定を最初に確認する</li>
+</ul>
+<p>もし誤って秘密情報(Secrets)を入れてしまった場合は，削除コミットだけでは足りないことが多いので，<a href="chapter-1.html">第1章　フェイルセーフとインシデント対応</a> の手順で速やかに共有し，無効化/再発行を優先します．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-19"><code>.env</code>ファイルもGitに入れない</h2></summary><div class="section-content">
+<p><code>.env</code>は，APIキー，データベース接続情報，パスワードなどを環境変数として読み込むためによく使われるファイルです．</p>
+<p>しかし，<strong>ファイル名が<code>.env</code>であるだけで暗号化やアクセス制御が行われるわけではありません</strong>．</p>
+<p>基本方針：</p>
+<ul>
+<li><code>.env</code>は原則として<code>.gitignore</code>に指定する</li>
+<li>共有するときは，チャットやメールに貼らず，専用のSecrets管理機能を使う</li>
+<li>リポジトリには値を空欄やダミーにした<code>.env.example</code>だけを置く</li>
+<li>誤ってコミットした場合は，削除だけでなくSecretsを無効化・再発行する</li>
+</ul>
+</div></details><details class="lesson-section" open><summary><h2 id="section-20">「秘密情報(Secrets)を入れてしまった」時の考え方</h2></summary><div class="section-content">
+<p>Secretsの事故では，次の誤解が多いです．</p>
+<ul>
+<li>誤解：「消せば大丈夫」</li>
+</ul>
+<p>現実：</p>
+<ul>
+<li>Gitは履歴が残るため，単にファイルを消しても“過去の履歴”に残り得る</li>
+</ul>
+<p>そのため優先順位は，まず止血です．</p>
+<ol>
+<li>当該Secretsを無効化・再発行する</li>
+<li>影響範囲（どこで使っていたか）を確認する</li>
+<li>必要なら履歴の除去を検討する（技術者が対応）</li>
+</ol>
+<p>ここでも <a href="chapter-1.html">第1章　フェイルセーフとインシデント対応</a> の原則（止血→共有→記録）が基本になります．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-21">実務で意識すべきポイント</h2></summary><div class="section-content">
+<p>ファイル管理において重要なのは，高度な技術ではなく，次の点です．</p>
+<ul>
+<li>保存場所と命名規則を決める</li>
+<li>クラウドの履歴・復元機能を活用する</li>
+<li>ログが残る環境を利用する</li>
+<li>「履歴を残す」というGitの思想を取り入れる</li>
+</ul>
+<p>これらを実践することで，誤削除や誤編集による事故の影響を大きく減らすことができます．</p>
+<details class="lesson-section" open><summary><h3 id="section-22" class="example-heading">現実の事例：マネーフォワードのGitHub不正アクセス（2026年）</h3></summary><div class="section-content">
+<p>2026年，マネーフォワードグループが開発・システム管理に利用するGitHubへ第三者が不正アクセスし，ソースコードが閲覧・コピーされました．同社の調査では，サービス更新作業中に個人情報を含むファイルが本来の管理手順から外れ，誤ってGitHub上に保管されていたことも公表されています．</p>
+<p>本番データベースや金融機関との連携に必要な認証情報への侵害は確認されませんでしたが，安全確認のため銀行口座連携機能が一時停止され，GitHub上の個人情報について対象者への連絡が行われました．</p>
+<p>この事例から学ぶ点：</p>
+<ul>
+<li>非公開リポジトリでも，不正アクセスや権限侵害は起こり得る</li>
+<li>ソースコード以外の作業用ファイルを，リポジトリへ混入させない</li>
+<li>個人情報やSecretsを検出する仕組みを，コミット前とGitHub側の両方に設ける</li>
+<li>事故時には，直接侵害された範囲だけでなく，関連機能を一時停止して安全確認する場合がある</li>
+<li>本番データベースの漏えいと，リポジトリ内ファイルの漏えいを区別して説明する</li>
+</ul>
+</div></details></div></details><details class="lesson-section" open><summary><h2 id="section-23">参考資料</h2></summary><div class="section-content">
+<ul>
+<li><a href="https://support.me.moneyforward.com/hc/ja/articles/57504390625305">マネーフォワード「GitHubへの不正アクセス発生および銀行口座連携機能の一時停止」</a></li>
+<li><a href="https://corp.moneyforward.com/news/info/20260623-mf-press-1/">マネーフォワード「GitHubへの不正アクセスに関する調査結果のご報告（第四報）」</a></li>
+</ul>
+</div></details><details class="lesson-section" open><summary><h2 id="section-24">確認</h2></summary><div class="section-content">
+<ol>
+<li>中～大規模プロジェクトにおける，適切なファイル命名規則の例を示せ．</li>
+<li>秘密情報を誤ってGitにコミットした場合，なぜ削除コミットだけでは不十分になり得るか．</li>
+</ol>
+</div></details>
+<section class="answer-section" id="answers" aria-labelledby="answers-title"><h2 id="answers-title">確認の解答</h2><p></p><details class="answers"><summary>解答・解説を開く</summary><div><ol>
+<li><p>たとえば<code>20260718_事業名_文書種別_v01.docx</code>のように，日付・案件名・文書種別・版を一定の順序で付けます．団体内で規則を統一し，<code>最終版</code>のような曖昧な名前を避けます．</p>
+</li>
+<li><p>削除コミットをしても，過去のコミット，クローン，フォーク等にSecretsが残り，取得・悪用され得るためです．まず無効化・再発行を行い，必要に応じて履歴の除去を検討します．</p>
+</li>
+</ol>
+</div></details></section>
+<nav class="chapter-navigation" aria-label="章の移動"><a href="chapter-7.html">← 前の章<span>第7章　生成AIと情報管理</span></a><a href="chapter-9.html">次の章 →<span>第9章　サーバ・コーディング関係のセキュリティ</span></a></nav></article></div></div></main>
+<footer class="site-footer"><span>Developed and provided by KLEA ITDD（関西文芸交流会 技術開発部）</span><a href="index.html">研修トップへ</a></footer>
+</body></html>

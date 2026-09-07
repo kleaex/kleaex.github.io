@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="ja" data-members-locked><head>
+<meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>第1章　フェイルセーフとインシデント対応 | 関西文芸交流会</title>
+<link rel="icon" href="../../klea_logo_v1.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="../../styles.css" /><link rel="stylesheet" href="../styles.css" /><link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="../auth.css" />
+<script src="../auth-config.js"></script><script src="../auth.js"></script>
+<script src="lesson.js" defer></script>
+</head><body>
+<noscript><p class="members-noscript">メンバーページの表示にはJavaScriptを有効にしてください。</p></noscript>
+<a class="skip-link" href="#top">本文へ移動</a>
+<header class="site-header"><div class="header-inner"><a class="brand" href="../index.html" aria-label="関西文芸交流会 メンバーホーム"><img class="brand-mark" src="../../klea_logo_v1.svg" alt="" /><span class="brand-name">MEMBERS</span></a><nav class="nav" aria-label="主要ナビゲーション"><a href="index.html">研修トップ</a><a href="../index.html">メンバートップ</a></nav></div></header>
+<main id="top" class="lesson-page"><div class="lesson-heading"><p class="eyebrow">Information literacy / 1 of 9</p><h1>第1章　フェイルセーフとインシデント対応</h1><a class="back-link" href="index.html">← 研修の章一覧</a></div>
+<div class="lesson-layout"><aside class="lesson-sidebar"><details class="lesson-toc" open><summary>この章の目次</summary><nav aria-label="章内目次"><ol><li><a href="#section-1">ヒューマンエラーはなくならない</a></li><li><a href="#section-3">ミスに対する正しい対策</a></li><li><a href="#section-5">冗長性</a></li><li><a href="#section-6">ミス対策の実例</a></li><li><a href="#section-7">ミス対策とトレード・オフ</a></li><li><a href="#section-9">簡易リスク評価</a></li><li><a href="#section-10">インシデント対応の基本</a></li><li><a href="#section-11">初期対応の優先順位</a></li><li><a href="#section-12">初動で考える順序</a></li><li><a href="#section-13">報告に必要な項目</a></li><li><a href="#section-14">参考資料</a></li><li><a href="#section-15">確認</a></li><li><a href="#answers">確認の解答</a></li></ol></nav></details></aside>
+<div class="lesson-reading"><div class="section-controls" role="group" aria-label="見出しの一括開閉" hidden><button type="button" data-sections="expand">見出しをすべて開く</button><button type="button" data-sections="collapse">見出しをすべて閉じる</button></div>
+<article class="lesson-body" aria-label="第1章　フェイルセーフとインシデント対応 本文"><p>情報セキュリティに関する有名なジョークとして，「最大の脆弱性はキーボードとイスの間にある」というものがあります．人間こそが最大の脆弱性だというのです．しかし，これは決して笑い話ではありません．半数以上の情報漏洩やセキュリティインシデントは実際にヒューマンエラーによって引き起こされているという統計すらあるからです．</p>
+<p>そのため，人間という，最大かつ完全にはなくすことのできない脆弱性になるだけ対処すべく，情報セキュリティの世界で広く共有されているコンセプトがあります．それはヒューマンエラーに対する考え方とフェイルセーフの概念です．本章では，各トピックに通底する，非常に基礎的かつ重要なこのアイデアを扱います．</p>
+<details class="lesson-section" open><summary><h2 id="section-1">ヒューマンエラーはなくならない</h2></summary><div class="section-content">
+<p>どれだけ注意深い人であっても，人間は必ずミスをします．しかも，そのミスの中には「なぜそんなことが起きたのか理解できない」「常識的に考えてあり得ない」と思われるものが，一定の確率で含まれます．これは能力や性格の問題ではなく，人間の認知や判断の仕組みに由来するものです．</p>
+<p>ヒューマンエラーの例：</p>
+<ul>
+<li>共通テスト本番で，数学Ⅰ＋Ａと間違えて数学Ⅰを解答してしまう</li>
+<li>メールの宛先を確認したつもりで，誤った相手に送信する</li>
+<li>重要なファイルを誤って削除する</li>
+<li>公開してはいけない設定を誤って有効にしてしまう</li>
+</ul>
+<p>これらは「あり得ないミス」ではなく，「人間であれば起こり得るミス」です．情報管理やセキュリティ対策を考えるうえで最初に必要なのは，<strong>人間は必ずミスをする存在であることを前提にすること</strong>です．</p>
+<details class="lesson-section" open><summary><h3 id="section-2" class="example-heading">現実の事例：羽田空港航空機衝突事故（2024年）</h3></summary><div class="section-content">
+<p>2024年1月2日，羽田空港の滑走路上で海上保安庁機と日本航空機が衝突し，海上保安庁機の乗員5人が死亡しました．日本航空機では乗客・乗員379人全員が脱出しました．</p>
+<p>事故後に国土交通省がまとめた再発防止策では，滑走路への誤進入を「防ぐ」，誤進入に「気づく」，航空機へ「知らせる」という多段階の対策，注意喚起システムや管制体制の強化などが示されました．</p>
+<p>単一の聞き間違いや確認漏れがそのまま衝突まで進まない設計になっていたか，という<strong>フェイルセーフと多重防護</strong>の代表的な資料です．事故調査では，個人の責任だけに原因を求めず，管制，表示，通信，機器，判断など複数の要素を検証する必要があります．</p>
+</div></details></div></details><details class="lesson-section" open><summary><h2 id="section-3">ミスに対する正しい対策</h2></summary><div class="section-content">
+<p>ミスに対してよく取られる対策の多くは，上記の前提を無視しています．</p>
+<p>誤った対策の例：</p>
+<ul>
+<li>「気をつける」</li>
+<li>「注意を徹底する」</li>
+<li>「ミスをした人にペナルティを設ける」</li>
+<li>「とりあえず多人数で確認する」</li>
+</ul>
+<p>なぜなら，<strong>どれだけ気をつけても人間はミスをする</strong>からです．不要なペナルティは報告を遅らせ，隠蔽を生み，結果として被害を拡大させます．</p>
+<p>正しい対策：</p>
+<ul>
+<li>そもそもミスが起こりにくい環境を作る</li>
+<li>ミスをしても被害が小さくて済む仕組みを作る</li>
+</ul>
+<p>これが <strong>フェイルセーフ</strong> の考え方です．個人の注意力ではなく，<strong>構造や仕組みでミスを吸収する</strong>ことが重要です．</p>
+<details class="lesson-section" open><summary><h3 id="section-4" class="example-heading">現実の事例：JR西日本福知山線列車脱線事故と日勤教育（2005年）</h3></summary><div class="section-content">
+<p>JR西日本では，事故や規程違反を起こした乗務員に対する再教育として，過酷な「日勤教育」が行われていました．事故調査報告書では，当時の再教育について，精神論的な教育に偏らず，事故防止にふさわしい内容へ見直す必要があるとされています．</p>
+<p>この事例は，「ミスをした人を強く責めれば安全になる」という考え方の危うさを示します．過度に懲罰的な環境では，ミスや遅れを早く報告するよりも，隠したり一人で取り返そうとしたりする行動が起きやすくなります．その結果，周囲が支援・判断できる機会を失い，別の危険を増やしかねません．</p>
+<p>日勤教育だけを事故の原因とみなすことはできません．しかし，安全対策は個人への反省を求めるだけで終わらせず，ミスを報告して支援を受けられる環境，無理な挽回を必要としない運用，誤りが重大事故へ進まない設備・手順を組み合わせる必要があります．</p>
+</div></details></div></details><details class="lesson-section" open><summary><h2 id="section-5">冗長性</h2></summary><div class="section-content">
+<p>フェイルセーフを実現する基本的な考え方のひとつが，<strong>冗長性</strong>です．冗長性とは，必要な機能や情報をひとつだけに依存させず，予備・代替・複数経路を持たせることです．</p>
+<p>たとえば，次のような状態は冗長性がありません．</p>
+<ul>
+<li>重要なファイルが，担当者1人のPCにしかない</li>
+<li>連絡先や手順書が，特定のチャット履歴の中にしかない</li>
+<li>本番環境に詳しい人が1人しかいない</li>
+</ul>
+<p>このような状態では，その1人が不在になったり，PCが壊れたり，アカウントに入れなくなったりしただけで業務が止まります．これを<strong>単一障害点</strong>と呼びます．単一障害点を減らすことは，情報管理における基本的な安全設計です．</p>
+<p>冗長性の例：</p>
+<ul>
+<li>重要ファイルは共有ストレージに置き，権限を管理する</li>
+<li>バックアップを複数世代で保存する</li>
+<li>団体アカウントには複数の管理者を置く</li>
+<li>2FAのバックアップコードや復旧手順を安全な場所に保管する</li>
+<li>連絡先，手順，権限移譲の方法を文書化する</li>
+<li>重要な運用は，少なくとも2人以上が実行・確認できる状態にする</li>
+</ul>
+<p>ただし，冗長性の確保はセキュリティリスクの増加につながることもあります．例えば，機密情報や個人情報を不用意に複製すると，漏洩経路が増えます．冗長性を持たせるときは，<strong>必要な範囲で，管理された形で，復旧できる状態にする</strong>ことが重要です．</p>
+<p>実務では，次の順で考えます．</p>
+<ol>
+<li>失われると止まるものは何か</li>
+<li>それは1人・1台・1か所・1つのサービスに依存していないか</li>
+<li>代替手段や復旧手順はあるか</li>
+<li>その代替手段は，定期的に確認されているか</li>
+</ol>
+<p>冗長性があるかどうかは，平常時には見えにくいものです．しかし，端末故障，アカウントロック，サービス停止，災害，誤削除などが起きたときに，その差が明確に現れます．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-6">ミス対策の実例</h2></summary><div class="section-content">
+<p>たとえば鉄道では，運転士が停止信号を見落としたり誤認したりする可能性を前提に，自動列車停止装置(ATS)が使われています．停止信号を越えて進もうとした場合や，制限速度を超えようとした場合に，自動的にブレーキを作動させます．</p>
+<p>実際の仕組み：</p>
+<ul>
+<li>運転士が停止信号を誤認しても，装置がブレーキを作動させて停止信号の手前で止める</li>
+<li>曲線や分岐器などの速度制限を超えそうな場合にも，装置が減速・停止を支援する</li>
+<li>運転士の注意力だけではなく，信号・速度・ブレーキを連動させて危険な状態への移行を防ぐ</li>
+</ul>
+<p>これは，運転士が信号を誤認しないよう教育するだけではなく，<strong>誤認が起きても列車を危険な状態へ進ませない</strong>仕組みです．完全に事故をなくすものではありませんが，人のミスの結果を安全側に閉じ込めるという点で，フェイルセーフの考え方を具体化しています．この考え方は，分野が違っても共通するものです．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-7">ミス対策とトレード・オフ</h2></summary><div class="section-content">
+<p>ミス対策は無制限に行えばよいものではありません．対策にはコストや手間がかかり，それ自体が別の問題を生むことがあります．</p>
+<p>不適切ななミス対策の例：</p>
+<ul>
+<li>数学の試験で，計算ミスを防ぐためにすべての計算について2通り以上の方法で検算を行った結果，時間が足りずに30点しか取れなかった．</li>
+<li>お金を正確に管理するために，1年あたり1億円するサービスを導入した結果，コストのかかり過ぎによって経営が傾いた．</li>
+<li>判断ミスを防ぐために稟議制を導入した結果，意思決定のプロセスに時間がかかり，時代に取り残された．</li>
+</ul>
+<p>そのため，ミス対策では次の判断が重要です．</p>
+<ul>
+<li>コストがほとんどかからない対策は必ず行う</li>
+<li>想定される被害の大きさと，対策コストが釣り合うかを考える</li>
+</ul>
+<p>適切なミス対策の例：</p>
+<ul>
+<li>計算ミスを防ぐために，紙のあちこちに計算過程を書くのではなく，同じ問題の計算は一か所にまとめて書くことにした．（コスト0の対策）</li>
+<li>SNSでの炎上を避けるため，事前に登録した禁止語が含まれる内容の投稿は自動的に中止されるようなシステムを構築した．（初期投資が必要だが，運用コストが0の対策）</li>
+<li>機密情報の漏洩を避けるため，重要なファイルには会社に設置されているマシンからしかアクセスできないようにした．（不便さというコストはあるが，甚大な被害を防ぐ対策）</li>
+</ul>
+<details class="lesson-section" open><summary><h3 id="section-8" class="example-heading">現実の事例：パロマ湯沸器一酸化炭素中毒事故</h3></summary><div class="section-content">
+<p>対策コストに関する示唆的な事故です．パロマ工業製の半密閉式ガス瞬間湯沸器では，安全装置が作動して機器が停止するのを避けるため，修理業者らが安全装置を迂回する不正改造を行い，一酸化炭素中毒による死亡事故が続きました．</p>
+<p>「安全装置が邪魔だから無効化する」という運用が，フェイルセーフを機能不全に陥らせた典型例です．安全装置を設けるだけでなく，容易に無効化できない設計，修理作業の管理，同種事故を組織全体で集約して利用停止や点検につなげる仕組みまで必要です．また，こうした迂回を防ぐため，安全装置そのものについても，安全性を担保しながら，なるべく不便さを増大させない設計にすることも重要といえるでしょう．</p>
+</div></details></div></details><details class="lesson-section" open><summary><h2 id="section-9">簡易リスク評価</h2></summary><div class="section-content">
+<p>トレード・オフを判断するためには，「何がどれくらい危ないか」を見積もる視点が必要です．簡易な方法として，次の考え方が使われます．</p>
+<ul>
+<li>リスク ＝ 起きる確率 × 被害の重大度</li>
+</ul>
+<p>ここでいう「確率」や「重大度」は，厳密な数値である必要はありません．</p>
+<p>例1：</p>
+<ul>
+<li>ほかのサービスと連携していない，どうでもよいゲームのアカウントで，よくある弱いパスワード（例：123456等）を使っている</li>
+<li>確率：10 × 被害の重大度：1 ＝ リスク：10（小）</li>
+</ul>
+<p>例2：</p>
+<ul>
+<li>クレジットカードで同じ暗証番号を使いまわしている</li>
+<li>確率：10 × 被害の重大度：1000 ＝ リスク：10000（大）</li>
+</ul>
+<p>例3：</p>
+<ul>
+<li>わずかな確率で死亡する治験アルバイト</li>
+<li>確率：0.0001 × 被害の重大度：∞ ＝ リスク：∞ （甚大）</li>
+</ul>
+</div></details><details class="lesson-section" open><summary><h2 id="section-10">インシデント対応の基本</h2></summary><div class="section-content">
+<p>インシデントとは，情報事故・セキュリティ事故・その疑いを指します．（注：インシデントは分野により用法が揺れます．本資料では，実害の有無にかかわらず「対応が必要な事故・疑い」をインシデントと呼びます．単なる観測された出来事は（セキュリティ）イベントと呼ぶことがあります．また「アクシデント」は日常語としての事故を指すことはありますが，情報セキュリティの実務ではインシデントの語が一般的なため，本資料では原則用いません．）</p>
+<p>インシデントの例：</p>
+<ul>
+<li>個人情報を誤送信した</li>
+<li>共有リンクを誤って公開した</li>
+<li>団体アカウントの乗っ取りが疑われる</li>
+<li>機密情報を誤って公開した</li>
+<li>不審な添付ファイルを開いてしまった</li>
+</ul>
+<p>重要なのは，原因究明よりも，まず <strong>被害拡大を止め，関係者が同じ状況認識を持つこと</strong>です．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-11">初期対応の優先順位</h2></summary><div class="section-content">
+<p>インシデント対応は，原則として次の順序で行います．</p>
+<ol>
+<li>止血：被害拡大を止める（技術的に止める）</li>
+<li>共有：関係者に速やかに共有する（隠さない）</li>
+<li>記録：何が起きたかを時系列で残す（後で必ず必要になる）</li>
+<li>切り分け：影響範囲を把握する（誰に・何が・どこまで）</li>
+<li>再発防止：仕組みを変える（注意喚起だけで終わらせない）</li>
+</ol>
+<p>一方，以下のような対応を行うと，被害が拡大しやすくなります．</p>
+<p>誤った対応の例：</p>
+<ul>
+<li>自分だけで抱え込む（報告を先延ばしにする）</li>
+<li>原因が確定するまで共有しない</li>
+<li>証跡（ログや通知，画面）を消す</li>
+<li>憶測の対外発信をする</li>
+</ul>
+<p>特に，「原因が分かってから報告する」「整理できてから共有する」という考え方は，一見正しそうに見えても，実際にはその間に被害が拡大しやすくなるため，適切とはいえません．</p>
+<p>実際の報告先や連絡経路は，組織や業務ごとに異なりますが，<strong>迷ったときほど，定められた報告先や責任者に早く共有する</strong>という原則を理解することが重要です．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-12">初動で考える順序</h2></summary><div class="section-content">
+<p>事故の種類によって細部は異なりますが，混乱した場面でも「被害を広げない」「一人で抱えない」「後から確かめられるようにする」ことを原則とすることが重要です．次の項目は，その判断を具体化した例です．</p>
+<ul>
+<li>影響範囲が広がる操作を止める（投稿停止，共有停止，権限付与の停止など）</li>
+<li>共有リンクの無効化，アクセス権の剥奪</li>
+<li>アカウント侵害が疑われる場合は，ログイン停止・パスワード変更・2FA確認</li>
+<li>Secretsが漏れた場合は，当該キー/トークンを無効化・再発行（<a href="chapter-9.html">第9章　サーバ・コーディング関係のセキュリティ</a>）</li>
+<li>いつ・何が・どこで起きたかをメモする（時刻，対象，操作，相手）</li>
+<li>関係者へ速やかに共有する</li>
+</ul>
+</div></details><details class="lesson-section" open><summary><h2 id="section-13">報告に必要な項目</h2></summary><div class="section-content">
+<p>報告に含めるべき項目の例として，以下のようなものがあげられます．</p>
+<ul>
+<li>発生日時・発覚日時</li>
+<li>対象となる範囲</li>
+<li>事実関係</li>
+<li>現時点の影響</li>
+</ul>
+<p>可能であれば，いわゆる5W1Hを含めれば十分といえるでしょう．ここで，これらの項目の一部が不明であっても，その項目の解明を行うよりは，不明のまま共有するほうが適切な対応といえます．確定させる前に，被害拡大を止めることが優先だからです．</p>
+</div></details><details class="lesson-section" open><summary><h2 id="section-14">参考資料</h2></summary><div class="section-content">
+<ul>
+<li><a href="https://jtsb.mlit.go.jp/aircraft/rep-acci/keika20241225-JA722A_JA13XJ.pdf">運輸安全委員会「航空事故調査について（経過報告）」</a></li>
+<li><a href="https://jtsb.mlit.go.jp/fukuchiyama/kensyou/fu04-finalreport-annex-2-1.pdf">運輸安全委員会「福知山線列車脱線事故に係る鉄道事故調査報告書の概要」</a></li>
+<li><a href="https://www.mlit.go.jp/yougo/j-s1.html">国土交通省「用語解説ページ：自動列車停止装置(ATS)」</a></li>
+<li><a href="https://www.meti.go.jp/policy/consumer/seian/gasji/Paloma/index.html">経済産業省「パロマ工業株式会社製半密閉式ガス瞬間湯沸器による一酸化炭素中毒事故」</a></li>
+</ul>
+</div></details><details class="lesson-section" open><summary><h2 id="section-15">確認</h2></summary><div class="section-content">
+<ol>
+<li>フェイルセーフとはどのような考え方か．適切な実例を用いて説明せよ．</li>
+<li>インシデントの初期対応で行うべきことは何か．また，原因が分かってから報告する対応が危険な理由は何か．</li>
+<li>ミスをした人を強く責めるだけの対策が，かえって安全を損なうのはなぜか．適切な実例を用いて説明せよ．</li>
+</ol>
+</div></details>
+<section class="answer-section" id="answers" aria-labelledby="answers-title"><h2 id="answers-title">確認の解答</h2><p></p><details class="answers"><summary>解答・解説を開く</summary><div><ol>
+<li><p>人のミスや機器の故障が起きても，危険や被害が小さい側へ動くように，あらかじめ仕組みを設計する考え方です．たとえばエレベーターには，ロープの異常などで過度に落下した場合にガイドレールをつかんで停止させる安全装置があるため，一部の部品が故障しても落下被害を防ぐ方向に働きます．</p>
+</li>
+<li><p>まず被害拡大を止め，関係者へ共有し，分かっている事実を記録します．原因が判明するまで報告を待つと，不正利用や誤公開が続き，対応の機会を失うため危険です．不明な点は不明なまま共有します．</p>
+</li>
+<li><p>強い叱責だけでは，ミスや異常を隠し，早期報告を妨げるおそれがあります．たとえば飲食店でアレルギー表示の誤りを見つけた従業員が，強く責められることを恐れて報告しなければ，訂正や提供停止の機会を失い，利用者の健康被害につながり得ます．再発防止では，個人を責めるだけでなく，確認手順や表示の仕組みを整えます．</p>
+</li>
+</ol>
+</div></details></section>
+<nav class="chapter-navigation" aria-label="章の移動"><a href="index.html">← 研修トップ<span>章一覧へ戻る</span></a><a href="chapter-2.html">次の章 →<span>第2章　情報リテラシ概論</span></a></nav></article></div></div></main>
+<footer class="site-footer"><span>Developed and provided by KLEA ITDD（関西文芸交流会 技術開発部）</span><a href="index.html">研修トップへ</a></footer>
+</body></html>

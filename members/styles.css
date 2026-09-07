@@ -1,0 +1,51 @@
+:root {
+  --bg: #e9dfcd;
+  --text: #302c26;
+  --muted: #665847;
+  --accent: #715334;
+  --line: rgba(82, 64, 41, 0.2);
+  --paper: #f5f0e7;
+  --paper-strong: #fcfaf6;
+  --ink: #302c26;
+  --ink-muted: #695e50;
+  --line-soft: #dfd5c6;
+  --air-accent: #795b39;
+  --air-shadow: rgba(82, 64, 41, 0.06);
+}
+
+.site-header { background: rgba(252, 250, 246, 0.9); }
+.hero { grid-template-columns: minmax(0, 1.5fr) minmax(240px, 0.8fr); }
+.hero h1 { font-size: clamp(2.3rem, 5.7vw, 4.3rem); }
+.hero h1 .small { font-size: clamp(0.95rem, 1.6vw, 1.2rem); letter-spacing: 0.1em; }
+.lead { color: var(--muted); }
+.button:hover { background: #533d27; }
+.portal-guide { padding: 28px; border: 1px solid var(--line); background: rgba(252, 250, 246, 0.6); }
+.portal-guide .eyebrow { margin-bottom: 12px; }
+.portal-guide > a { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: baseline; padding: 20px 0; border-top: 1px solid var(--line); }
+.portal-guide > a:last-child { padding-bottom: 0; }
+.guide-number { font-size: 0.8rem; color: var(--accent); }
+.guide-description { display: block; color: var(--muted); font-size: 0.8rem; margin-top: 4px; }
+.content-area { background: radial-gradient(circle at 90% 0%, rgba(220, 196, 157, 0.18), transparent 30rem), linear-gradient(180deg, var(--paper-strong), var(--paper)); }
+.content-area .section-title h2 { background: linear-gradient(90deg, var(--air-accent), #927959 70%, #c5b49b); }
+.section { scroll-margin-top: 90px; }
+.section + .section { padding-top: 24px; }
+.training-panel { min-height: auto; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.status { flex-shrink: 0; padding: 4px 14px; border: 1px solid var(--line-soft); background: var(--paper); color: var(--muted); font-size: 0.84rem; }
+.link-card { display: flex; flex-direction: column; transition: border-color 0.2s ease, transform 0.2s ease; }
+.link-card h3 { display: flex; justify-content: space-between; gap: 16px; }
+.link-label { display: flex; justify-content: space-between; gap: 16px; margin-top: auto; padding-top: 24px; color: var(--accent); font-size: 0.88rem; }
+.content-area .link-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; }
+.skip-link { position: fixed; top: 8px; left: 12px; z-index: 30; padding: 8px 16px; background: var(--paper-strong); transform: translateY(-150%); }
+.skip-link:focus { transform: translateY(0); }
+
+@media (max-width: 820px) {
+  .hero { grid-template-columns: 1fr; }
+  .portal-guide { padding: 22px; }
+  .training-panel { align-items: flex-start; flex-direction: column; gap: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .link-card, .button { transition: none; }
+}

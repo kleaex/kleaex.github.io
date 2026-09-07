@@ -1,0 +1,99 @@
+.training-hero, .course-page, .lesson-page { color: var(--text); }
+/* 背景・文字・操作色を独立させ、研修ページ全体で読みやすさを揃える。 */
+:root {
+  --text: #252b33;
+  --ink: #252b33;
+  --muted: #515b67;
+  --ink-muted: #515b67;
+  --accent: #245c7a;
+  --air-accent: #245c7a;
+  --training-heading: #263b4a;
+  --training-surface: var(--paper-strong);
+}
+.course-page .content-area { background: var(--training-surface); }
+.course-page .content-area .section-title h2 {
+  background: var(--training-surface);
+  color: var(--training-heading);
+  border-bottom: 2px solid var(--line-soft);
+}
+.course-page .button:hover { background: #193f55; }
+.course-page .button.ghost:hover { background: var(--training-surface); color: var(--accent); }
+.training-hero { grid-template-columns: minmax(0, 1fr); }
+/* 共通CSSのoverflow:hiddenによるスクロール領域を解除し、目次を画面に追従させる。 */
+main.lesson-page { overflow: visible; }
+.training-hero h1 { white-space: normal; overflow-wrap: anywhere; font-size: clamp(2rem, 5.7vw, 4.3rem); }
+.intro-copy, .study-guide, .chapter-card p, .lesson-body, .lesson-toc { font-family: "Yu Gothic", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif; letter-spacing: 0.025em; }
+.intro-copy { max-width: 50rem; line-height: 2; }
+.intro-copy p { margin: 0 0 1.4em; }
+.study-guide { margin-top: 32px; padding: 24px 28px; background: #eee5d6; border-left: 3px solid var(--accent); }
+.study-guide h3 { margin-top: 0; }
+.study-guide ol { padding-left: 1.5em; margin-bottom: 0; }
+.chapter-card h3 { letter-spacing: 0.04em; }
+.lesson-heading { width: min(var(--max), calc(100% - 40px)); margin: 0 auto; padding: 48px 0 32px; }
+.lesson-heading h1 { font-size: clamp(1.7rem, 3.5vw, 2.8rem); line-height: 1.5; margin: 0 0 20px; overflow-wrap: anywhere; }
+.back-link { color: var(--accent); text-decoration: underline; text-underline-offset: 4px; }
+.lesson-layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 40px; width: min(var(--max), calc(100% - 40px)); margin: 0 auto 64px; align-items: start; }
+.lesson-sidebar { position: sticky; top: 82px; min-height: 0; }
+.lesson-toc { font-size: 0.85rem; background: var(--paper-strong); border: 1px solid var(--line); padding: 18px; }
+summary { cursor: pointer; }
+.lesson-toc summary { font-weight: 700; color: var(--accent); }
+.lesson-toc nav { max-height: calc(100dvh - 180px); overflow-y: auto; scrollbar-gutter: stable; overscroll-behavior: contain; }
+.lesson-toc ol { list-style: none; padding: 0; margin: 14px 0 0; }
+.lesson-toc a { display: block; padding: 7px 0; line-height: 1.6; }
+.lesson-toc a:hover { text-decoration: underline; }
+.lesson-body { min-width: 0; background: var(--paper-strong); padding: clamp(22px, 4vw, 48px); border: 1px solid var(--line-soft); font-size: 1rem; line-height: 2; overflow-wrap: anywhere; }
+.lesson-body p { margin: 0 0 1.5em; }
+.lesson-body h2, .lesson-body h3, .answer-section { scroll-margin-top: 90px; }
+.lesson-body h2 { font-size: 1.5rem; line-height: 1.6; margin: 2.5em 0 1em; padding-bottom: 12px; border-bottom: 2px solid var(--line-soft); color: var(--accent); }
+.lesson-body h3 { font-size: 1.15rem; line-height: 1.7; margin: 2em 0 1em; }
+.lesson-body .example-heading { background: var(--training-surface); color: var(--training-heading); border-left: 3px solid var(--accent); padding: 12px 16px; }
+.lesson-section { margin: 24px 0; border-bottom: 1px solid var(--line-soft); }
+.lesson-section:has(> summary > .example-heading) { border-bottom: 0; }
+.lesson-section > summary { display: flex; align-items: baseline; gap: 12px; list-style: none; padding: 14px 0; }
+.lesson-section > summary::-webkit-details-marker { display: none; }
+.lesson-section > summary::before { content: "+"; flex: 0 0 1em; color: var(--accent); font-weight: 700; }
+.lesson-section[open] > summary::before { content: "−"; }
+.lesson-section > summary > :is(h2, h3, h4, h5, h6) { margin: 0; padding: 0; border: 0; }
+.lesson-section > summary > .example-heading { padding: 8px 12px; border-left: 3px solid var(--accent); }
+/* 開閉記号・間隔・見出しの左罫線と内側余白の分だけ本文も下げる。 */
+.lesson-section:has(> summary > .example-heading) > .section-content { padding-left: calc(1em + 27px); }
+.lesson-section > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.section-content { padding-top: 12px; }
+.lesson-reading { position: relative; min-width: 0; }
+.section-controls { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px 12px; margin-bottom: 12px; }
+.section-controls[hidden] { display: none; }
+.section-controls button { font: inherit; font-size: 0.85rem; color: var(--accent); border: 1px solid var(--line); background: var(--paper); padding: 8px 14px; cursor: pointer; }
+.section-controls button:hover { background: #eee5d6; }
+.section-controls button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.lesson-body ul, .lesson-body ol { padding-left: 1.6em; margin: 0 0 1.5em; }
+.lesson-body li { padding-left: 0.2em; margin: 0.45em 0; }
+.lesson-body li > p { margin-bottom: 0.6em; }
+.lesson-body strong { color: var(--text); font-weight: 700; }
+.lesson-body a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.lesson-body code { font-family: Consolas, monospace; font-size: 0.92em; background: #eee9e0; padding: 0.1em 0.3em; border-radius: 3px; }
+.lesson-body pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #eee9e0; padding: 18px; line-height: 1.7; }
+.lesson-body pre code { padding: 0; }
+.answers { border: 1px solid var(--line-soft); background: #f5f0e7; }
+.answers summary { padding: 16px 20px; font-weight: 700; color: var(--accent); }
+.answers > div { padding: 16px 24px; border-top: 1px solid var(--line-soft); }
+.chapter-navigation { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 48px; border-top: 1px solid var(--line-soft); padding-top: 24px; }
+.chapter-navigation a { text-decoration: none; font-weight: 700; color: var(--accent); }
+.chapter-navigation a:last-child { text-align: right; }
+.chapter-navigation span { display: block; font-size: 0.8rem; font-weight: 400; margin-top: 6px; }
+@media (min-width: 901px) {
+  .section-controls { position: absolute; right: 0; bottom: 100%; max-width: 100%; }
+}
+@media (max-width: 900px) {
+  .lesson-layout { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .lesson-sidebar { position: static; max-height: none; }
+  .lesson-toc nav { max-height: 240px; overflow-y: auto; }
+}
+@media print {
+  .site-header, .site-footer, .lesson-sidebar, .chapter-navigation, .skip-link, .back-link, .section-controls { display: none; }
+  .lesson-section > summary::before { display: none; }
+  .lesson-section:has(> summary > .example-heading) > .section-content { padding-left: 15px; }
+  body { background: white; }
+  .lesson-layout { display: block; width: 100%; margin: 0; }
+  .lesson-body { padding: 0; border: 0; }
+  .lesson-heading { width: 100%; padding-top: 0; }
+}
