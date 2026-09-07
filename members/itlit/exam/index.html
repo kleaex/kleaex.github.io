@@ -14,6 +14,7 @@
   <script src="access-data.js" defer></script>
   <script src="identity.js" defer></script>
   <script src="exam-data.js" defer></script>
+  <script src="answer-hash.js" defer></script>
   <script src="grading.js" defer></script>
   <script src="app.js" defer></script>
 </head>
@@ -50,7 +51,7 @@
         <section class="card answers"><h2>解答用紙</h2><p>複数選択可。再度押すと解除、「クリア」でその問の選択をすべて解除します。</p><div id="answer-list"></div><p id="save-status" role="status"></p><button id="submit" type="button">回答を提出する</button></section>
       </div>
     </section>
-    <section id="result" class="card narrow" hidden tabindex="-1"><p class="eyebrow">RESULT</p><h1>結果</h1><p id="result-title"></p><p id="score" class="score"></p><p id="verdict" class="verdict"></p><p id="submitted"></p><button id="show-certificate" hidden>合格証明書を表示</button><button id="restart" class="secondary">新しく受験する</button></section>
+    <section id="result" class="card narrow" hidden tabindex="-1"><p class="eyebrow">RESULT</p><h1>結果</h1><p id="result-title"></p><p id="score" class="score"></p><p id="verdict" class="verdict"></p><p id="submitted"></p><button id="retry-grade" hidden>採点を再試行</button><button id="show-certificate" hidden>合格証明書を表示</button><button id="restart" class="secondary">新しく受験する</button></section>
     <section id="certificate" class="card certificate" hidden tabindex="-1"><p class="eyebrow">CERTIFICATE OF COMPLETION</p><h1>合格証明書</h1><p id="cert-id" class="recipient"></p><p id="cert-text"></p><h2 id="cert-title"></h2><p id="cert-score"></p><p id="cert-date"></p><p id="cert-issuer"></p><p class="notes">研修用・ブラウザ内で発行された証明書です。</p><div class="print-actions"><button id="print">印刷・PDF保存</button><button id="back" class="secondary">結果に戻る</button></div></section>
   </main>
 </body>

@@ -1,71 +1,72 @@
-﻿# 情報リテラシー研修の試験
+# 情報リテラシー研修の試験
 
 研修トップの「確認試験を受ける」から開きます。URLは `/members/itlit/exam/`。ビルド不要でGitHub Pagesに配置できます。メンバー共通パスワードに加え、試験開始・再開時に氏名とメールで照合します。
 
 ## 問題・正答・合否条件
 
-1. 問題PDFをこのフォルダーの `assets/exams/` に配置。
-2. `exam-data.js` の `pdf` に `'assets/exams/ファイル名.pdf'` を指定。
-3. `questions` に問題順で正答データを並べる（項目数が問題数）。
-4. `durationMinutes`（分）、`passScore`（合格点）、`forbiddenLimit`（禁忌肢による不合格の設問数）を設定し、`version` を更新。
+正答と禁忌肢はsalt付きSHA-256で照合します。公開する `exam-data.js` に正答番号を書かず、以下の手順で `questions` を生成してください。
 
-```js
-questions: [
-  { answer: [2], points: 10, forbidden: [8, 9] },
-  { answer: [3, 5], points: 20, forbidden: [] }
-],
-passScore: 20,
-forbiddenLimit: 1
+1. 問題PDFを `assets/exams/` に配置し、`pdf` に相対パスを設定します。
+2. このリポジトリ・GitHub Pagesの公開フォルダーの外に、非公開の `questions.json` を作成します。次は書式例です。
+
+```json
+[
+  { "answer": [6], "points": 30, "forbidden": [9] },
+  { "answer": [4, 7], "points": 70, "forbidden": [] }
+]
 ```
 
-全問で卵形の1～9を表示し、問題の指定にかかわらず複数選択できます。選択の集合が正答と完全一致した場合に配点を加算します。順序不問、余分・不足・未回答は0点で部分点なしです。正答が1つでも配列で記載します。
+3. Node.js 18以降で生成します。Windows PowerShellではUTF-8で標準入力へ渡してください。
 
-禁忌肢は選択された設問数で数えます。同じ問で禁忌肢2つを選んでも1問です。`forbiddenLimit: 1` なら1問以上、`2` なら2問以上で不合格、`null` なら無効。得点と禁忌肢の両条件を満たすと合格です。
+```powershell
+$OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+Get-Content -Raw -Encoding utf8 C:\private\questions.json | node members/itlit/exam/create-question-hashes.cjs
+```
 
-結果は得点と合否のみで、各問の正誤や不合格理由は表示しません。`title`、`certificateIssuer`、`certificateText` で試験名と証明書を変更します。PDF未設定時は `sampleText` を表示します。
+4. 出力された配列を `exam-data.js` の `questions` に貼り付けます。原文の `answer`・`forbidden` は貼り付けません。
+5. `durationMinutes`（分）、`passScore`（合格点）、`forbiddenLimit`（禁忌肢で不合格となる設問数）を設定し、`version` を更新します。
+
+生成結果は `salt`・`answerHash`・`points`・`forbiddenHashes` です。設問ごとにランダムな16バイトのsaltを生成します。原本のJSONは非公開で保管してください。再生成するとsaltが変わり、保存済み受験との設定一致が失われるため、受験中の再生成は避けます。
+
+全問で1～9を複数選択でき、正答の集合と完全一致した場合のみ得点します。順序不問、余分・不足・未回答は0点、部分点なしです。禁忌肢は選んだ設問数で数え、同じ問で2つ選んでも1問です。`forbiddenLimit: 1` なら1問以上、`2` なら2問以上で不合格、`null` なら無効です。
+
+結果は得点と合否だけです。`title`・`certificateIssuer`・`certificateText` で試験名と証明書を変更できます。PDF未設定時は `sampleText` を表示しますが、正答・禁忌肢の説明は書かないでください。
+
+### ハッシュと注意表示の仕様
+
+次の配列をJSON文字列・UTF-8でSHA-256化します。正答は昇順に並べ、禁忌肢は1個ずつ種類を分けてハッシュ化します。
+
+```js
+['klea-answer-v1', salt, 'answer', 回答番号の昇順配列]
+['klea-answer-v1', salt, 'forbidden', [選択番号]]
+```
+
+公開設定を開いただけでは番号が読めなくなりますが、saltと採点処理は公開されます。選択は512通りなので、総当たりを防ぐ機能ではありません。以前公開した正答はGit履歴などに残る可能性もあります。
+
+`app.js` の冒頭でコンソールに色付き注意文を表示します。公正な受験と、知らないコードを貼り付けないことを呼びかけます。開発者ツールの検知・妨害はしません。ログ消去やフィルターで非表示にできます。
 
 ## 試験種別を増やす
 
-同じ研修内の試験種別は、`exam-data.js` の `window.EXAMS` 配列に試験設定を追加すると、受験画面の選択欄に自動で増えます。HTMLや採点処理の変更は不要です。
+同じ研修内では `window.EXAMS` 配列に既存の設定オブジェクトをコピーし、カンマで区切って追加します。
 
-1. 既存の試験設定オブジェクトをコピーし、配列の最後の `]` の前に追加します。設定オブジェクトの間はカンマで区切ります。
-2. `id` を他の試験と重複しない値にし、`title`、制限時間、正答、配点、合否条件、証明書文言を変更します。
-3. 追加する問題PDFを `members/itlit/exam/assets/exams/` に配置し、`pdf` にこの試験フォルダーからの相対パスを指定します。
+1. `id` を重複しない値に変更し、`title`・`version` を設定。
+2. PDFを追加し、`pdf` の相対パスを変更。
+3. 上記ツールでその試験の `questions` を生成して貼り付け。
+4. 制限時間・合否条件・証明書文言を変更。
 
-追加する設定オブジェクトの例です。既存の `window.EXAMS` 配列の要素として挿入してください。
+選択欄へ自動で追加され、問題数は `questions` の件数で決まります。受験者ハッシュは同じ研修内で共通、保存記録は研修URLごとに1件です。別研修ではその研修内に `exam/` をコピーし、試験設定・登録ハッシュ・リンクを変更します。
 
-```js
-{
-  id: 'it-literacy-advanced',
-  version: '1',
-  title: '情報リテラシー応用試験',
-  durationMinutes: 30,
-  pdf: 'assets/exams/advanced.pdf',
-  passScore: 20,
-  forbiddenLimit: 1,
-  certificateIssuer: '関西文芸交流会 技術開発部',
-  certificateText: '以下の研修用試験に合格したことを証します。',
-  questions: [
-    { answer: [2], points: 10, forbidden: [9] },
-    { answer: [3, 5], points: 10, forbidden: [] },
-    { answer: [1], points: 10, forbidden: [8] }
-  ]
-}
+### 設定エラーの場合
+
+設定エラーの試験も一覧に残り、選択すると原因を表示します。正常な試験は利用できます。
+
+- `passScore` は割合ではなく点数です。30点満点で8割合格なら24です。80点にするなら配点合計も80点以上にしてください。
+- `questions` は生成されたハッシュ形式を使用します。古い `answer`・`forbidden` 形式は受け付けません。
+- `id` の重複、カンマ・括弧・引用符を確認します。構文は以下で検査できます。
+
+```sh
+node --check members/itlit/exam/exam-data.js
 ```
-
-この例では3問・30点満点の試験になります。問題数は `questions` の件数から自動で決まります。追加後は試験選択欄とPDFへのリンクを確認してください。既存試験の内容・条件を変更する際は、その試験の `version` も更新します。
-
-受験者の登録ハッシュ（`access-data.js`）は、同じ研修内の全試験種別で共通です。保存記録も研修URLごとに1件のため、試験種別ごとに履歴を蓄積する仕様ではありません。
-
-別の研修に試験を作る場合は、その研修フォルダー内に `exam/` をコピーし、試験設定・登録ハッシュ・研修へのリンクを変更します。配置する階層が異なる場合は、共通CSS・認証スクリプトの相対パスも調整してください。
-
-### 追加後に設定エラーが表示される場合
-
-試験名は一覧に残り、選択すると具体的なエラーを表示します。設定エラーのある試験は開始できませんが、正常な試験は利用できます。
-
-- `passScore` は割合ではなく点数です。10点×3問なら満点は30点なので、`passScore: 80` は設定エラーです。8割を合格基準にするなら `passScore: 24` にします。80点を合格点にする場合は、各問の `points` の合計を80点以上に設定してください。
-- `id` は試験ごとに異なる値にしてください。
-- 一覧全体が表示されない場合は、`exam-data.js` のカンマ・括弧・引用符を確認してください。`node --check members/itlit/exam/exam-data.js` で構文を確認できます。
 
 ## 受験者の登録
 

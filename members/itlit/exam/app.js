@@ -1,9 +1,19 @@
 (() => {
   'use strict';
+  console.log('%c ストップ！', 'color: #d93025; font-size: 48px; font-weight: bold;');
+  console.log('もしあなたがチートを試みたなら、あなたの道徳は120%誤っています。');
+  console.log('公正な受験のため、ガバガバなセキュリティであっても、問題の解析や解答・結果の改竄はしないでください。知らないコードをこのコンソールに貼り付けないでください。');
+    console.log('%c ストップ！', 'color: #d93025; font-size: 48px; font-weight: bold;');
+  console.log('もしあなたがチートを試みたなら、あなたの道徳は120%誤っています。');
+  console.log('公正な受験のため、ガバガバなセキュリティであっても、問題の解析や解答・結果の改竄はしないでください。知らないコードをこのコンソールに貼り付けないでください。');
+    console.log('%c ストップ！', 'color: #d93025; font-size: 48px; font-weight: bold;');
+  console.log('もしあなたがチートを試みたなら、あなたの道徳は120%誤っています。');
+  console.log('公正な受験のため、ガバガバなセキュリティであっても、問題の解析や解答・結果の改竄はしないでください。知らないコードをこのコンソールに貼り付けないでください。');
   const $ = id => document.getElementById(id);
   const key = `klea-training-exam-v2:${location.pathname.replace(/index\.html$/, '')}`;
   let state = null, exam = null, pending = null;
   let verified = null;
+  let resultGrade = null, gradeRequest = 0;
   let catalog = [];
   const notice = text => { $('notice').textContent = text; $('notice').hidden = !text; };
   function show(id) {
@@ -79,15 +89,30 @@
     });
     progress(); tick();
   }
-  function result() {
-    const grade = ExamGrading.grade(exam, state.answers);
+  async function result() {
+    const request = ++gradeRequest;
+    const submittedState = state;
+    resultGrade = null;
     show('result');
     $('result-title').textContent = exam.title;
+    $('score').textContent = '採点中…'; $('verdict').textContent = '';
+    $('show-certificate').hidden = $('retry-grade').hidden = true;
+    $('result').focus();
+    try {
+    const grade = await ExamGrading.grade(exam, state.answers);
+    if (request !== gradeRequest || state !== submittedState) return;
+    resultGrade = grade;
     $('score').textContent = `${grade.score} / ${grade.total}点`;
     $('verdict').textContent = grade.passed ? '合格' : '不合格';
     $('submitted').textContent = `${state.reason === 'timeout' ? '制限時間終了により提出' : '提出完了'}：${new Date(state.submittedAt).toLocaleString('ja-JP')}`;
     $('show-certificate').hidden = !grade.passed;
     $('result').focus();
+    } catch {
+      if (request !== gradeRequest || state !== submittedState) return;
+      $('score').textContent = '採点できませんでした';
+      $('verdict').textContent = 'HTTPSまたはlocalhostで開き、再試行してください。';
+      $('retry-grade').hidden = false;
+    }
   }
   function submit(reason) {
     if (!state || state.submittedAt) return;
@@ -165,8 +190,8 @@
     }
   });
   $('show-certificate').addEventListener('click', () => {
-    const grade = ExamGrading.grade(exam, state.answers);
-    if (!grade.passed) return;
+    const grade = resultGrade;
+    if (!grade?.passed) return;
     $('cert-id').textContent = `${state.candidate} 様`;
     $('cert-text').textContent = exam.certificateText;
     $('cert-title').textContent = exam.title;
@@ -177,6 +202,7 @@
   });
   $('print').addEventListener('click', () => window.print());
   $('back').addEventListener('click', result);
+  $('retry-grade').addEventListener('click', result);
   $('restart').addEventListener('click', () => {
     if (!confirm('保存されている結果を消して、新しく受験しますか？')) return;
     try { localStorage.removeItem(key); }
