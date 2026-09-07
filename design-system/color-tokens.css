@@ -1,0 +1,97 @@
+﻿/* KLEA Color System v0.1 窶・proposal, light theme, not loaded by the site. */
+:root {
+  --klea-teal-50: #f0f8f8;
+  --klea-teal-100: #e0f1f2;
+  --klea-teal-200: #c2e7e9;
+  --klea-teal-300: #9acdd0;
+  --klea-teal-400: #70b0b5;
+  --klea-teal-500: #478e94;
+  --klea-teal-600: #30777d;
+  --klea-teal-700: #256467;
+  --klea-teal-800: #244e52;
+  --klea-teal-900: #1d3a3d;
+  --klea-teal-950: #142b2d;
+  --klea-neutral-0: #ffffff;
+  --klea-neutral-100: #edf2f2;
+  --klea-neutral-200: #d8e4ea;
+  --klea-neutral-500: #6d898b;
+  --klea-neutral-700: #38565a;
+  --klea-neutral-950: #172324;
+  --klea-paper-50: #f8f6ee;
+  --klea-paper-100: #efe9dc;
+  --klea-green-50: #edf6ef;
+  --klea-green-700: #246347;
+  --klea-amber-50: #fff6dc;
+  --klea-amber-700: #785500;
+  --klea-red-50: #fceff0;
+  --klea-red-700: #a3333d;
+  --klea-blue-50: #edf4f8;
+  --klea-blue-700: #315f78;
+
+  --klea-brand-primary: var(--klea-teal-900);
+  --klea-brand-secondary: var(--klea-teal-200);
+  --klea-brand-subtle: var(--klea-teal-50);
+
+  /* Classified Color: reusable color families, independent of UI meaning. */
+  --klea-classified-teal-primary: var(--klea-teal-700);
+  --klea-classified-teal-secondary: var(--klea-teal-900);
+  --klea-classified-teal-tertiary: var(--klea-teal-200);
+  --klea-classified-teal-quaternary: var(--klea-teal-50);
+  --klea-classified-teal-quinary: var(--klea-teal-100);
+  --klea-classified-teal-senary: var(--klea-teal-950);
+  --klea-classified-paper-primary: var(--klea-paper-50);
+  --klea-classified-paper-secondary: var(--klea-paper-100);
+  --klea-classified-neutral-primary: var(--klea-neutral-950);
+  --klea-classified-neutral-secondary: var(--klea-neutral-700);
+  --klea-classified-neutral-tertiary: var(--klea-neutral-500);
+  --klea-classified-neutral-quaternary: var(--klea-neutral-200);
+  --klea-classified-neutral-subtle: var(--klea-neutral-100);
+  --klea-classified-neutral-white: var(--klea-neutral-0);
+  --klea-classified-green-primary: var(--klea-green-700);
+  --klea-classified-green-secondary: var(--klea-green-50);
+  --klea-classified-amber-primary: var(--klea-amber-700);
+  --klea-classified-amber-secondary: var(--klea-amber-50);
+  --klea-classified-red-primary: var(--klea-red-700);
+  --klea-classified-red-secondary: var(--klea-red-50);
+  --klea-classified-blue-primary: var(--klea-blue-700);
+  --klea-classified-blue-secondary: var(--klea-blue-50);
+
+  /* UI roles */
+  --klea-text-primary: var(--klea-classified-neutral-primary);
+  --klea-text-secondary: var(--klea-classified-neutral-secondary);
+  --klea-text-brand: var(--klea-brand-primary);
+  --klea-text-inverse: var(--klea-classified-neutral-white);
+  --klea-link-default: var(--klea-classified-teal-primary);
+  --klea-link-hover: var(--klea-classified-teal-secondary);
+  --klea-link-visited: var(--klea-classified-teal-primary);
+  --klea-background-page: var(--klea-classified-neutral-white);
+  --klea-background-brand: var(--klea-brand-secondary);
+  --klea-surface-default: var(--klea-classified-neutral-white);
+  --klea-surface-paper: var(--klea-classified-paper-primary);
+  --klea-surface-subtle: var(--klea-classified-teal-quaternary);
+  --klea-border-subtle: var(--klea-classified-neutral-quaternary);
+  --klea-border-control: var(--klea-classified-neutral-tertiary);
+  --klea-action-primary: var(--klea-brand-primary);
+  --klea-action-primary-hover: var(--klea-classified-teal-senary);
+  --klea-action-primary-active: var(--klea-classified-neutral-primary);
+  --klea-action-on-primary: var(--klea-classified-neutral-white);
+  --klea-action-secondary: var(--klea-classified-neutral-white);
+  --klea-action-secondary-hover: var(--klea-classified-teal-quinary);
+  --klea-action-on-secondary: var(--klea-classified-teal-secondary);
+  --klea-selection-background: var(--klea-classified-teal-tertiary);
+  --klea-selection-text: var(--klea-classified-teal-secondary);
+  --klea-disabled-background: var(--klea-classified-neutral-subtle);
+  --klea-disabled-text: var(--klea-classified-neutral-secondary);
+  --klea-focus-ring: var(--klea-classified-teal-secondary);
+  --klea-focus-gap: var(--klea-classified-neutral-white);
+  --klea-status-success-text: var(--klea-classified-green-primary);
+  --klea-status-success-background: var(--klea-classified-green-secondary);
+  --klea-status-warning-text: var(--klea-classified-amber-primary);
+  --klea-status-warning-background: var(--klea-classified-amber-secondary);
+  --klea-status-error-text: var(--klea-classified-red-primary);
+  --klea-status-error-background: var(--klea-classified-red-secondary);
+  --klea-status-info-text: var(--klea-classified-blue-primary);
+  --klea-status-info-background: var(--klea-classified-blue-secondary);
+}
+
+
