@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ja" data-members-locked>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ASSESSMENT | KLEA</title>
+  <link rel="icon" href="../../../klea_logo_v1.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../../styles.css">
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="../../auth.css">
+  <script src="../../auth-config.js"></script><script src="../../auth.js"></script>
+  <script src="access-data.js" defer></script>
+  <script src="identity.js" defer></script>
+  <script src="exam-data.js" defer></script>
+  <script src="grading.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="site-header"><div class="header-inner"><a class="brand" href="../../index.html"><img class="brand-mark" src="../../../klea_logo_v1.svg" alt=""><span class="brand-name">MEMBERS</span></a><nav class="nav" aria-label="主要ナビゲーション"><a href="../index.html">研修トップ</a><a href="../../index.html">メンバートップ</a></nav></div></header>
+  <main>
+    <noscript>受験するにはJavaScriptを有効にしてください。</noscript>
+    <p id="notice" role="alert" hidden></p>
+    <section id="start" class="card narrow">
+      <p class="eyebrow">TRAINING ASSESSMENT</p><h1>技　術 〔『技術（筆記）』『技術（筆記・実務）』〕</h1>
+      <p>100点・60分</p>
+      <form id="start-form">
+        <label for="exam-select">種別</label><select id="exam-select" required></select>
+        <p id="exam-details"></p>
+        <label for="candidate">氏名（登録した表記・空白で入力）</label><input id="candidate" maxlength="80" required autocomplete="name" placeholder="例：山田 太郎">
+        <label for="email">メールアドレス</label><input id="email" type="email" maxlength="254" required autocomplete="email" placeholder="例：taro@example.com">
+        <p class="notes">登録情報との照合後に開始・再開します。氏名は証明書とこのブラウザの受験記録に使用し、メールアドレスは保存しません。</p>
+        <button type="submit">登録情報を照合して進む</button>
+      </form>
+      <div class="notes"><p>回答はこの端末・ブラウザに自動保存されます。再読み込み後も再開できますが、閉じている間も制限時間は進みます。</p><p>研修用の簡易試験です。問題・正答・採点処理は公開され、証明書は公式の本人確認・証明には使用できません。</p></div>
+    </section>
+    <section id="taking" hidden>
+      <div class="exam-bar"><div><h1 id="exam-title"></h1><p id="progress" aria-live="polite"></p></div><div class="timer">残り時間 <strong id="time" role="timer"></strong></div></div>
+      <div class="exam-layout">
+        <section class="card paper"><div class="section-heading"><h2>問題</h2><a id="pdf-link" target="_blank" rel="noopener" hidden>PDFを別タブで開く</a></div><iframe id="paper" title="試験問題PDF" hidden></iframe><p id="sample"></p></section>
+        <section class="card answers"><h2>解答用紙</h2><p>複数選択可。再度押すと解除、「クリア」でその問の選択をすべて解除します。</p><div id="answer-list"></div><p id="save-status" role="status"></p><button id="submit" type="button">回答を提出する</button></section>
+      </div>
+    </section>
+    <section id="result" class="card narrow" hidden tabindex="-1"><p class="eyebrow">RESULT</p><h1>結果</h1><p id="result-title"></p><p id="score" class="score"></p><p id="verdict" class="verdict"></p><p id="submitted"></p><button id="show-certificate" hidden>合格証明書を表示</button><button id="restart" class="secondary">新しく受験する</button></section>
+    <section id="certificate" class="card certificate" hidden tabindex="-1"><p class="eyebrow">CERTIFICATE OF COMPLETION</p><h1>合格証明書</h1><p id="cert-id" class="recipient"></p><p id="cert-text"></p><h2 id="cert-title"></h2><p id="cert-score"></p><p id="cert-date"></p><p id="cert-issuer"></p><p class="notes">研修用・ブラウザ内で発行された証明書です。</p><div class="print-actions"><button id="print">印刷・PDF保存</button><button id="back" class="secondary">結果に戻る</button></div></section>
+  </main>
+</body>
+</html>
