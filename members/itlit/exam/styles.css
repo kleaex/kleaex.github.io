@@ -18,6 +18,36 @@ a, .eyebrow { color: var(--accent); }
 .mark span { color: #263b4a; border-color: #8395a1; }
 .certificate { border: double 6px #8395a1; }
 #sample { background: #fff; border: 1px solid var(--line); }
+/* 受験中だけ画面高を固定。見出し・タイマー・提出操作はスクロールしない。 */
+body.exam-active { height: 100dvh; overflow: hidden; }
+body.exam-active main { height: 100%; width: 100%; max-width: none; padding: 16px 20px; display: flex; flex-direction: column; overflow: hidden; }
+body.exam-active #notice { flex: 0 0 auto; max-height: 20vh; overflow: auto; margin: 0 0 8px; }
+#taking { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+#taking .exam-bar { flex: 0 0 auto; flex-direction: row; align-items: center; gap: 16px; padding-bottom: 12px; }
+#taking .exam-bar h1, #taking #progress { margin: 0; }
+#taking .timer { margin: 0; padding: 8px 14px; }
+#taking .exam-layout { flex: 1; min-height: 0; grid-template-columns: minmax(320px, 1.15fr) minmax(440px, 1fr); gap: 16px; overflow-x: auto; overflow-y: hidden; }
+#taking .card { min-height: 0; min-width: 0; padding: 18px; display: flex; flex-direction: column; overflow: hidden; }
+#taking .section-heading, #taking .answers > h2, #taking .answers > p, #taking #submit { flex: 0 0 auto; }
+#taking .answers > h2, #taking .answers > p { margin: 0 0 10px; }
+#taking iframe { display: block; flex: 1; min-height: 0; height: 100%; }
+#taking #sample { flex: 1; min-height: 0; margin: 0; overflow: auto; overscroll-behavior: contain; }
+#taking #answer-list { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding: 0 6px 6px; }
+#taking .marks { gap: 5px; }
+#taking .mark { flex: 0 0 auto; }
+#taking .mark span { width: 30px; height: 44px; }
+#taking .clear { margin: 0 0 0 auto; padding: 8px 2px; flex: 0 0 auto; white-space: nowrap; }
+#taking #save-status { margin: 8px 0; }
+#ready button { margin: 8px 8px 0 0; }
+@media (max-width: 800px) {
+  body.exam-active main { padding: 10px; }
+  #taking .exam-bar h1 { font-size: 1rem; }
+  #taking .timer { font-size: .75rem; }
+  #taking .timer strong { font-size: 1.1rem; }
+}
+@media print {
+  body.exam-active, body.exam-active main { height: auto; overflow: visible; }
+}
 @media (max-width: 360px) {
   .marks { gap: 3px; }
   .mark span { width: 24px; }

@@ -3,10 +3,12 @@
   const $ = id => document.getElementById(id);
   const key = `klea-training-exam-v2:${location.pathname.replace(/index\.html$/, '')}`;
   let state = null, exam = null, pending = null;
+  let verified = null;
   let catalog = [];
   const notice = text => { $('notice').textContent = text; $('notice').hidden = !text; };
   function show(id) {
-    for (const name of ['start', 'taking', 'result', 'certificate']) $(name).hidden = name !== id;
+    for (const name of ['start', 'ready', 'taking', 'result', 'certificate']) $(name).hidden = name !== id;
+    document.body.classList.toggle('exam-active', id === 'taking');
   }
   function save() {
     try {
@@ -73,7 +75,7 @@
         marks.querySelectorAll('input').forEach(input => { input.checked = false; });
         save(); progress();
       });
-      row.append(marks, clear); $('answer-list').append(row);
+      marks.append(clear); row.append(marks); $('answer-list').append(row);
     });
     progress(); tick();
   }
@@ -123,21 +125,36 @@
       const selectedExam = entry.exam;
       const identity = await ExamIdentity.authorize($('candidate').value, $('email').value, window.EXAM_ACCESS);
       notice('');
-      if (pending && pending.candidateId === identity.id && pending.examId === selectedExam.id) {
-        state = pending; exam = selectedExam; pending = null;
-        $('email').value = '';
-        if (state.submittedAt) result(); else renderExam();
-        return;
-      }
-      if (pending && !confirm('保存されている別の受験記録を置き換えて、新しく受験しますか？')) return;
-      exam = selectedExam;
+      const resume = pending && pending.candidateId === identity.id && pending.examId === selectedExam.id;
+      verified = { identity, exam: selectedExam, resume: !!resume };
+      $('email').value = '';
+      $('ready-title').textContent = selectedExam.title;
+      $('ready-details').textContent = `${identity.name} 様 ／ ${selectedExam.questions.length}問 ／ 制限時間 ${selectedExam.durationMinutes}分`;
+      $('begin').textContent = resume ? (pending.submittedAt ? '結果を表示' : '試験を再開') : '試験開始';
+      $('ready-message').textContent = resume
+        ? (pending.submittedAt ? '提出済みの結果を表示します。' : '開始済みの試験です。この画面でも制限時間は進んでいます。期限を過ぎている場合は再開時に自動提出します。')
+        : '準備ができたら「試験開始」を押してください。その時点から制限時間が始まります。開始後はページを閉じても時間は進みます。';
+      show('ready'); $('ready').focus();
+    } catch (error) { notice(error.message || '照合できませんでした。HTTPSで開いて再度お試しください。'); }
+    finally { details(); }
+  });
+  $('ready-back').addEventListener('click', () => {
+    verified = null; notice(''); show('start'); $('candidate').focus();
+  });
+  $('begin').addEventListener('click', () => {
+    if (!verified) return;
+    const { identity, resume } = verified;
+    if (!resume && pending && !confirm('保存されている別の受験記録を置き換えて、新しく受験しますか？')) return;
+    exam = verified.exam;
+    if (resume) {
+      state = pending;
+    } else {
       const now = Date.now();
       state = { examId: exam.id, config: JSON.stringify(exam), candidate: identity.name, candidateId: identity.id, startedAt: now, endsAt: now + exam.durationMinutes * 60000, answers: exam.questions.map(() => []), submittedAt: null };
       if (!save()) { state = null; return; }
-      pending = null; $('email').value = '';
-      renderExam();
-    } catch (error) { notice(error.message || '照合できませんでした。HTTPSで開いて再度お試しください。'); }
-    finally { details(); }
+    }
+    pending = null; verified = null;
+    if (state.submittedAt) result(); else renderExam();
   });
   $('candidate').addEventListener('input', () => $('candidate').setCustomValidity(''));
   $('submit').addEventListener('click', () => {
