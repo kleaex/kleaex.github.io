@@ -40,7 +40,9 @@
       return;
     }
     const e = entry.exam;
-    $('exam-details').textContent = `${e.questions.length}問 ／ 制限時間 ${e.durationMinutes}分 ／ ${e.questions.reduce((s, q) => s + q.points, 0)}点満点`;
+    const forbiddenRule = e.forbiddenLimit === null ? '' : ` ／ 禁忌肢を含む回答が${e.forbiddenLimit}問以上で不合格（提出時判定）`;
+    const paperInfo = e.paperPages ? ` ／ 問題PDF ${e.paperPages}ページ（注意事項は1ページ）` : '';
+    $('exam-details').textContent = `${e.questions.length}問 ／ 制限時間 ${e.durationMinutes}分 ／ ${e.questions.reduce((s, q) => s + q.points, 0)}点満点 ／ 合格点 ${e.passScore}点${forbiddenRule}${paperInfo}`;
   }
   function progress() {
     $('progress').textContent = `回答済み ${state.answers.filter(a => a.length).length} / ${exam.questions.length}問`;
@@ -53,12 +55,13 @@
     if (exam.pdf) {
       $('paper').src = exam.pdf;
       $('pdf-link').href = exam.pdf;
+      $('pdf-link').textContent = exam.paperPages ? `別タブで開く（${exam.paperPages}ページ）` : '別タブで開く';
     } else $('sample').textContent = exam.sampleText || '問題PDFは準備中です。';
     $('answer-list').replaceChildren();
-    exam.questions.forEach((_, i) => {
+    exam.questions.forEach((question, i) => {
       const row = document.createElement('fieldset');
       const legend = document.createElement('legend');
-      legend.textContent = `問${i + 1}`;
+      legend.textContent = `問${i + 1}（${question.points}点）`;
       row.append(legend);
       const marks = document.createElement('div');
       marks.className = 'marks';
