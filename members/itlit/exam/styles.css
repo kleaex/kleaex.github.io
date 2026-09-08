@@ -13,7 +13,7 @@ a, .eyebrow { color: var(--accent); }
 .timer { border-radius: 0; background: #f1f5f8; }
 .answers { background: white; }
 .answers > #answer-list { padding: 0; border: 0; }
-.answers, form, .notes, #sample { font-family: "Yu Gothic", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif; }
+.paper, .answers, form, .notes, #sample { font-family: "Yu Gothic", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif; }
 .mark input:checked + span { background: #245c7a; border-color: #245c7a; }
 .mark span { color: #263b4a; border-color: #8395a1; }
 .certificate { border: double 6px #8395a1; }
@@ -28,12 +28,14 @@ body.exam-active #notice { flex: 0 0 auto; max-height: 20vh; overflow: auto; mar
 #taking .timer { margin: 0; padding: 8px 14px; }
 #taking .exam-layout { flex: 1; min-height: 0; grid-template-columns: minmax(320px, 1.15fr) minmax(440px, 1fr); gap: 16px; overflow-x: auto; overflow-y: hidden; }
 #taking .card { min-height: 0; min-width: 0; padding: 18px; display: flex; flex-direction: column; overflow: hidden; }
-#taking .section-heading, #taking .answers > h2, #taking .answers > p, #taking #submit { flex: 0 0 auto; }
-#taking .answers > h2, #taking .answers > p { margin: 0 0 10px; }
+#taking .card > h2, #taking .paper-guide, #taking .answers > p, #taking #submit { flex: 0 0 auto; }
+#taking .card > h2, #taking .paper-guide, #taking .answers > p { margin: 0 0 10px; }
+#taking .paper-guide { font-size: .85rem; line-height: 1.8; }
 #taking iframe { display: block; flex: 1; min-height: 0; height: 100%; }
 #taking #sample { flex: 1; min-height: 0; margin: 0; overflow: auto; overscroll-behavior: contain; }
 #taking #answer-list { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding: 0 6px 6px; }
 #taking .marks { gap: 5px; }
+#taking .answer-number { display: inline-block; min-width: 3.5em; padding: 2px 12px; border: 1px solid currentColor; border-radius: 0; text-align: center; line-height: 1.25; font-variant-numeric: tabular-nums; }
 #taking .mark { flex: 0 0 auto; }
 #taking .mark span { width: 30px; height: 44px; }
 #taking .clear { margin: 0 0 0 auto; padding: 8px 2px; flex: 0 0 auto; white-space: nowrap; }

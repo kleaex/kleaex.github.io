@@ -2,10 +2,10 @@
 window.EXAMS = [
   {
     "id": "tech-1",
-    "version": "2026-tech-pdf-1",
+    "version": "2026-tech-pdf-2",
     "title": "技術（筆記）",
     "durationMinutes": 60,
-    "pdf": "2026_技術_assessment_1.pdf#page=4",
+    "pdf": "2026_技術_assessment_1.pdf#page=1",
     "passScore": 80,
     "forbiddenLimit": 1,
     "certificateIssuer": "関西文芸交流会 技術開発部",
@@ -237,10 +237,10 @@ window.EXAMS = [
   },
   {
     "id": "tech-2",
-    "version": "2026-tech-pdf-1",
+    "version": "2026-tech-pdf-2",
     "title": "技術（筆記・実務）",
     "durationMinutes": 60,
-    "pdf": "2026_技術_assessment_1.pdf#page=24",
+    "pdf": "2026_技術_assessment_1.pdf#page=1",
     "passScore": 80,
     "forbiddenLimit": 1,
     "certificateIssuer": "関西文芸交流会 技術開発部",

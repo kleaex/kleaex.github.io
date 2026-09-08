@@ -58,10 +58,14 @@
       $('pdf-link').textContent = exam.paperPages ? `別タブで開く（${exam.paperPages}ページ）` : '別タブで開く';
     } else $('sample').textContent = exam.sampleText || '問題PDFは準備中です。';
     $('answer-list').replaceChildren();
-    exam.questions.forEach((question, i) => {
+    exam.questions.forEach((_, i) => {
       const row = document.createElement('fieldset');
       const legend = document.createElement('legend');
-      legend.textContent = `問${i + 1}（${question.points}点）`;
+      legend.setAttribute('aria-label', `解答番号${i + 1}`);
+      const answerNumber = document.createElement('span');
+      answerNumber.className = 'answer-number';
+      answerNumber.textContent = String(i + 1);
+      legend.append(answerNumber);
       row.append(legend);
       const marks = document.createElement('div');
       marks.className = 'marks';
@@ -71,7 +75,7 @@
         const input = document.createElement('input');
         input.type = 'checkbox'; input.name = `q${i}`; input.value = n;
         input.checked = state.answers[i].includes(n);
-        input.setAttribute('aria-label', `問${i + 1}：${n}`);
+        input.setAttribute('aria-label', `解答番号${i + 1}：選択肢${n}`);
         input.addEventListener('change', () => {
           if (tick()) return;
           state.answers[i] = Array.from(marks.querySelectorAll('input:checked'), item => Number(item.value)); save(); progress();
@@ -81,7 +85,7 @@
       }
       const clear = document.createElement('button');
       clear.type = 'button'; clear.className = 'clear'; clear.textContent = 'クリア';
-      clear.setAttribute('aria-label', `問${i + 1}の回答をクリア`);
+      clear.setAttribute('aria-label', `解答番号${i + 1}の回答をクリア`);
       clear.addEventListener('click', () => {
         if (tick()) return;
         state.answers[i] = [];
