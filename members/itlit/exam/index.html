@@ -31,7 +31,7 @@
         <p id="exam-details"></p>
         <label for="candidate">氏名（姓名間に空白は入れないでください）</label><input id="candidate" maxlength="80" required autocomplete="name" placeholder="例：山田太郎">
         <label for="email">メールアドレス</label><input id="email" type="email" maxlength="254" required autocomplete="email" placeholder="例：taro@example.com">
-        <p class="notes">交流会に登録した氏名およびメールアドレスを使用してください。照合後に確認画面へ進みます。「試験開始」を押すまで、新しい試験の制限時間は始まりません。氏名は証明書とこのブラウザの受験記録に使用し、メールアドレスは保存しません。</p>
+        <p class="notes">交流会に登録した氏名およびメールアドレスを使用してください。照合後に確認画面へ進みます。「受験開始」を押すまで、新しい受験の制限時間は始まりません。氏名は証明書とこのブラウザの受験記録に使用し、メールアドレスは保存しません。</p>
         <button type="submit">登録情報を照合して進む</button>
       </form>
       <div class="notes"><p>回答はこの端末・ブラウザに自動保存されます。再読み込み後も再開できますが、閉じている間も制限時間は進みます。</p></div>
@@ -41,13 +41,13 @@
       <p class="eyebrow">READY</p><h1>登録情報の照合が完了しました</h1>
       <h2 id="ready-title"></h2><p id="ready-details"></p>
       <p id="ready-message"></p>
-      <button id="begin" type="button">試験開始</button>
+      <button id="begin" type="button">受験開始</button>
       <button id="ready-back" type="button" class="secondary">入力画面に戻る</button>
     </section>
     <section id="taking" hidden>
       <div class="exam-bar"><h1 id="exam-title"></h1><div class="exam-status"><p id="progress" aria-live="polite"></p><div class="timer">残り時間 <strong id="time" role="timer"></strong></div></div></div>
       <div class="exam-layout">
-        <section class="card paper"><div class="paper-heading"><h2>問題</h2><a id="pdf-link" target="_blank" rel="noopener" hidden>PDFを別タブで開く</a></div><iframe id="paper" title="試験問題PDF" hidden></iframe><p id="sample"></p></section>
+        <section class="card paper"><div class="paper-heading"><h2>問題</h2><a id="pdf-link" target="_blank" rel="noopener" hidden>PDFを別タブで開く</a></div><iframe id="paper" title="問題PDF" hidden></iframe><p id="sample"></p></section>
         <section class="card answers"><h2>解答用紙</h2><p>複数選択可。再度押すと解除、「クリア」でその問の選択をすべて解除します。</p><div id="answer-list"></div><p id="save-status" role="status"></p><button id="submit" type="button">回答を提出する</button></section>
       </div>
     </section>

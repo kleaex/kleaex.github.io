@@ -75,7 +75,7 @@ test('再照合後も期限は延長せず、期限後の再開では自動提�
   first.nodes.get('begin').fire('click');
   const h = harness(JSON.stringify(first.stored));
   await h.nodes.get('start-form').fire('submit');
-  assert.equal(h.nodes.get('begin').textContent, '試験を再開');
+  assert.equal(h.nodes.get('begin').textContent, '受験を再開');
   assert.equal(h.writes, 0);
   h.setTime(170000);
   h.nodes.get('begin').fire('click');

@@ -1,10 +1,10 @@
 (function (root) {
   'use strict';
   function validate(exams) {
-    if (!Array.isArray(exams) || !exams.length) throw new Error('試験データがありません。');
+    if (!Array.isArray(exams) || !exams.length) throw new Error('受験データがありません。');
     const ids = new Set();
     for (const e of exams) {
-      if (!e || !e.id || ids.has(e.id) || !e.version || !e.title) throw new Error('試験ID・版・名称を確認してください。');
+      if (!e || !e.id || ids.has(e.id) || !e.version || !e.title) throw new Error('受験ID・版・名称を確認してください。');
       ids.add(e.id);
       if (!Number.isFinite(e.durationMinutes) || e.durationMinutes <= 0) throw new Error('制限時間を確認してください。');
       if (!Array.isArray(e.questions) || !e.questions.length) throw new Error('問題がありません。');
@@ -33,11 +33,11 @@
     return { score, total, passed: score >= exam.passScore && (exam.forbiddenLimit === null || forbiddenCount < exam.forbiddenLimit) };
   }
   function catalog(exams) {
-    if (!Array.isArray(exams) || !exams.length) throw new Error('試験データがありません。exam-data.jsの構文とwindow.EXAMSを確認してください。');
+    if (!Array.isArray(exams) || !exams.length) throw new Error('受験データがありません。exam-data.jsの構文とwindow.EXAMSを確認してください。');
     return exams.map(exam => {
       try {
         validate([exam]);
-        if (exams.filter(other => other?.id === exam.id).length > 1) throw new Error(`試験ID「${exam.id}」が重複しています。別のidを指定してください。`);
+        if (exams.filter(other => other?.id === exam.id).length > 1) throw new Error(`受験ID「${exam.id}」が重複しています。別のidを指定してください。`);
         return { exam, error: '' };
       } catch (error) { return { exam, error: error.message }; }
     });

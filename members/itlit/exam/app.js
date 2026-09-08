@@ -137,12 +137,12 @@
   }
   try { catalog = ExamGrading.catalog(window.EXAMS); }
   catch (error) {
-    notice(`試験設定に問題があります：${error.message}`);
+    notice(`受験設定に問題があります：${error.message}`);
     $('start-form').querySelector('button').disabled = true;
     return;
   }
   for (const [index, entry] of catalog.entries()) {
-    const option = document.createElement('option'); option.value = String(index); option.textContent = `${entry.exam?.title || `試験${index + 1}`} ${entry.error ? '（設定エラー）' : ''}`.trim();
+    const option = document.createElement('option'); option.value = String(index); option.textContent = `${entry.exam?.title || `受験${index + 1}`} ${entry.error ? '（設定エラー）' : ''}`.trim();
     $('exam-select').append(option);
   }
   details();
@@ -162,10 +162,10 @@
       $('email').value = '';
       $('ready-title').textContent = selectedExam.title;
       $('ready-details').textContent = `${identity.name} 様 ／ ${selectedExam.questions.length}問 ／ 制限時間 ${selectedExam.durationMinutes}分`;
-      $('begin').textContent = resume ? (pending.submittedAt ? '結果を表示' : '試験を再開') : '試験開始';
+      $('begin').textContent = resume ? (pending.submittedAt ? '結果を表示' : '受験を再開') : '受験開始';
       $('ready-message').textContent = resume
-        ? (pending.submittedAt ? '提出済みの結果を表示します。' : '開始済みの試験です。この画面でも制限時間は進んでいます。期限を過ぎている場合は再開時に自動提出します。')
-        : '準備ができたら「試験開始」を押してください。その時点から制限時間が始まります。開始後はページを閉じても時間は進みます。';
+        ? (pending.submittedAt ? '提出済みの結果を表示します。' : '開始済みの受験です。この画面でも制限時間は進んでいます。期限を過ぎている場合は再開時に自動提出します。')
+        : '準備ができたら「受験開始」を押してください。その時点から制限時間が始まります。開始後はページを閉じても時間は進みます。';
       show('ready'); $('ready').focus();
     } catch (error) { notice(error.message || '照合できませんでした。HTTPSで開いて再度お試しください。'); }
     finally { details(); }
@@ -222,7 +222,7 @@
       const s = JSON.parse(saved);
       const index = catalog.findIndex(entry => !entry.error && entry.exam.id === s.examId);
       const e = catalog[index]?.exam;
-      if (!e || s.config !== JSON.stringify(e)) throw new Error('試験内容が更新されています。新しく受験してください。');
+      if (!e || s.config !== JSON.stringify(e)) throw new Error('受験内容が更新されています。新しく受験してください。');
       if (typeof s.candidate !== 'string' || !s.candidate.trim() || !/^[a-f0-9]{64}$/.test(s.candidateId) || !Number.isFinite(s.startedAt) || !Number.isFinite(s.endsAt) || s.endsAt <= s.startedAt || !Array.isArray(s.answers) || s.answers.length !== e.questions.length || s.answers.some(a => !Array.isArray(a) || new Set(a).size !== a.length || a.some(n => !Number.isInteger(n) || n < 1 || n > 9)) || (s.submittedAt !== null && (!Number.isFinite(s.submittedAt) || !['manual', 'timeout'].includes(s.reason)))) throw new Error('保存データを読み込めません。新しく受験してください。');
       pending = s;
       $('exam-select').value = String(index); details();
@@ -232,6 +232,6 @@
   setInterval(tick, 500);
   document.addEventListener('visibilitychange', tick);
   window.addEventListener('focus', tick);
-  // 他タブの保存を反映し、同じ試験を複数タブで操作した際の上書きを減らします。
+  // 他タブの保存を反映し、同じ受験を複数タブで操作した際の上書きを減らします。
   window.addEventListener('storage', event => { if (event.key === key || event.key === null) location.reload(); });
 })();
