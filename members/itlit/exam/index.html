@@ -45,9 +45,9 @@
       <button id="ready-back" type="button" class="secondary">入力画面に戻る</button>
     </section>
     <section id="taking" hidden>
-      <div class="exam-bar"><div><h1 id="exam-title"></h1><p id="progress" aria-live="polite"></p></div><div class="timer">残り時間 <strong id="time" role="timer"></strong></div></div>
+      <div class="exam-bar"><h1 id="exam-title"></h1><div class="exam-status"><p id="progress" aria-live="polite"></p><div class="timer">残り時間 <strong id="time" role="timer"></strong></div></div></div>
       <div class="exam-layout">
-        <section class="card paper"><h2>問題</h2><p class="paper-guide"><a id="pdf-link" target="_blank" rel="noopener" hidden>PDFを別タブで開く</a></p><iframe id="paper" title="試験問題PDF" hidden></iframe><p id="sample"></p></section>
+        <section class="card paper"><div class="paper-heading"><h2>問題</h2><a id="pdf-link" target="_blank" rel="noopener" hidden>PDFを別タブで開く</a></div><iframe id="paper" title="試験問題PDF" hidden></iframe><p id="sample"></p></section>
         <section class="card answers"><h2>解答用紙</h2><p>複数選択可。再度押すと解除、「クリア」でその問の選択をすべて解除します。</p><div id="answer-list"></div><p id="save-status" role="status"></p><button id="submit" type="button">回答を提出する</button></section>
       </div>
     </section>

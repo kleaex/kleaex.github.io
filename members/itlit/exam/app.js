@@ -59,14 +59,14 @@
     } else $('sample').textContent = exam.sampleText || '問題PDFは準備中です。';
     $('answer-list').replaceChildren();
     exam.questions.forEach((_, i) => {
-      const row = document.createElement('fieldset');
-      const legend = document.createElement('legend');
-      legend.setAttribute('aria-label', `解答番号${i + 1}`);
+      const row = document.createElement('div');
+      row.className = 'answer-row';
+      row.setAttribute('role', 'group');
+      row.setAttribute('aria-label', `解答番号${i + 1}`);
       const answerNumber = document.createElement('span');
       answerNumber.className = 'answer-number';
       answerNumber.textContent = String(i + 1);
-      legend.append(answerNumber);
-      row.append(legend);
+      row.append(answerNumber);
       const marks = document.createElement('div');
       marks.className = 'marks';
       for (let n = 1; n <= 9; n++) {
