@@ -664,3 +664,16 @@ main {
 }
 
 
+/* 外部サイトへ移動するリンクは、一般的な外部リンク記号で示す。 */
+a[href^="http"] {
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 3px;
+    }
+
+    a[href^="http"]::after {
+      content: " ↗";
+      display: inline-block;
+      font-size: 0.82em;
+      text-decoration: none;
+    }
