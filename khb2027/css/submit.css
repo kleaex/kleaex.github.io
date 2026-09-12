@@ -1,0 +1,123 @@
+@charset "UTF-8";
+@import url(https://fonts.googleapis.com/earlyaccess/notosansjp.css);
+@import url(./color.css);
+
+/*GENERAL STYLING================================================ */
+*{
+    font-family: 'Noto Sans JP', sans-serif;
+    }
+body {
+    color: var(--grey);
+ }
+
+/*COMMON================================================ */
+p {
+    line-height: 1.7;
+}
+
+header,
+h2 {
+    font-size: 2em;
+}
+
+.wrapper {
+    display: flex;
+}
+/*HEADER================================================ */
+.header {
+        background-image: linear-gradient(var(--pastelaccent), var(--white));
+        padding: 0.2rem 0;
+}
+
+
+.loading {
+    display: none;
+}
+
+.haiku {
+    background: rgba(255,255,255,.6);
+    padding: 0.5rem;
+    width: 50%;
+    font-size: 1em;
+    margin-bottom: 0.5rem;
+}
+.name {
+    background: rgba(255,255,255,.6);
+    padding: 0.5rem;
+    width: 25%;
+    font-size: 1em;
+    margin-bottom: 0.5rem;
+}
+.submit {
+    appearance: none;
+    -webkit-appearance: none;
+    border-radius: 0;
+    padding: 0.7rem 1.1rem;
+    min-height: 44px;
+    font-size: 1em;
+    font-weight: 700;
+    line-height: 1;
+    box-sizing: border-box;
+    width: 14rem; /* 横幅を統一（拡大） */
+    white-space: nowrap; /* 折り返し防止 */
+    border: 2px solid var(--black);
+    background: var(--black);
+    color: var(--white);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+    transition: background-color 120ms ease, box-shadow 120ms ease, transform 60ms ease, color 120ms ease, border-color 120ms ease;
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+
+.submit:hover {
+    background: #222;
+}
+
+.submit:active {
+    transform: translateY(1px);
+}
+
+.submit:focus-visible {
+    outline: 3px solid rgba(255, 255, 255, 0.6);
+    outline-offset: 2px;
+}
+
+.submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.haiku:focus-visible {
+    background-color: var(--pastelaccent);
+}
+.name:focus-visible {
+    background-color: var(--pastelaccent);
+}
+
+@media (max-width: 700px) {
+    /* Common */
+        h2 {
+            font-size: 1.8em;
+        }
+        p{
+            font-size: 1rem;
+        }  
+        .haiku {
+            background: rgba(255,255,255,.6);
+            padding: 0.5rem;
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+        .name {
+            background: rgba(255,255,255,.6);
+            padding: 0.5rem;
+            width: 60%;
+            margin-bottom: 0.5rem;
+        }
+        .submit {
+            display: block;
+            width: 100%;
+            padding: 0.7rem 1rem;
+            margin-top: 0.5rem;
+        }
+}

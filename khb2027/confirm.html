@@ -1,0 +1,92 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>関西俳句バトル2027　投句内容確認</title>
+  <link rel="icon" href="../img/favicon.ico">
+  <link rel="stylesheet" href="css/confirm.css">
+</head>
+<body>
+  <header>
+    <h2>関西俳句バトル2027　投句内容確認</h2>
+    <form id="finalForm" class="top-buttons" method="POST" target="hidden_iframe" onsubmit="submitted=true;">
+      <button type="button" id="backButton" class="submit">修正に戻る</button>
+      <input id="finalSubmit" class="submit" type="submit" value="送信">
+    </form>
+  </header>
+  <section id="top">
+    <div id="wrapper">
+      <div class="right2">
+        <h3>大将</h3>
+        <div class="right"><div id="k4_5" class="kunakami"></div></div>
+      </div>
+      <div class="left2">
+        <h3>副将</h3>
+        <div class="left"><div id="k4_4" class="kunakami"></div></div>
+      </div>
+      <div class="right2">
+        <h3>中堅</h3>
+        <div class="right"><div id="k4_3" class="kunakami"></div></div>
+      </div>
+      <div class="left2">
+        <h3>次鋒</h3>
+        <div class="left"><div id="k4_2" class="kunakami"></div></div>
+      </div>
+      <div class="right2">
+        <h3>先鋒</h3>
+        <div class="left"><div id="k4_1" class="kunakami"></div></div>
+      </div>
+      <div class="space"><div id="kendai4"></div></div>
+      <div class="left2">
+        <h3>大将</h3>
+        <div class="left"><div id="k3_5" class="kunakami"></div></div>
+      </div>
+      <div class="right2">
+        <h3>中堅</h3>
+        <div class="right"><div id="k3_3" class="kunakami"></div></div>
+      </div>
+      <div class="left2">
+        <h3>先鋒</h3>
+        <div class="left"><div id="k3_1" class="kunakami"></div></div>
+      </div>
+      <div class="space"><div id="kendai3"></div></div>
+      <div class="right2">
+        <h3>大将</h3>
+        <div class="right"><div id="k2_5" class="kunakami"></div></div>
+      </div>
+      <div class="left2">
+        <h3>中堅</h3>
+        <div class="left"><div id="k2_3" class="kunakami"></div></div>
+      </div>
+      <div class="right2">
+        <h3>先鋒</h3>
+        <div class="right"><div id="k2_1" class="kunakami"></div></div>
+      </div>
+      <div class="space"><div id="kendai2"></div></div>
+      <div class="left2">
+        <h3>大将</h3>
+        <div class="left"><div id="k1_5" class="kunakami"></div></div>
+      </div>
+      <div class="right2">
+        <h3>中堅</h3>
+        <div class="right"><div id="k1_3" class="kunakami"></div></div>
+      </div>
+      <div class="left2">
+        <h3>先鋒</h3>
+        <div class="left"><div id="k1_1" class="kunakami"></div></div>
+      </div>
+      <div class="space"><div id="kendai1"></div></div>
+      <div class="right2">
+        <h3></h3>
+        <div class="right"><div id="teamName" class="kunakami"></div></div>
+      </div>
+    </div>
+  </section>
+  <iframe name="hidden_iframe" id="hidden_iframe" style="display:none" onload="if(submitted){window.location='finish.html';}"></iframe>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+  <script src="js/kintou.js"></script>
+  <script type="module" src="js/confirm.js"></script>
+  <script src="js/submit_viewkendai.js"></script>
+</body>
+</html>

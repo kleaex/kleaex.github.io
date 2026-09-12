@@ -1,0 +1,166 @@
+@import url(https://fonts.googleapis.com/earlyaccess/notosansjp.css);
+@import url(./color.css);
+
+body{
+    margin: 0rem;
+    color: black;
+    height: 100%;
+    font-family: 'Noto Sans JP', sans-serif;
+    background-color: white;
+}
+html{
+    height: 100%;
+    overflow-y: hidden;
+}
+
+/* 固定ヘッダ高さのCSS変数 */
+:root {
+    --header-height: 4.5rem;
+}
+
+header {
+    background-image: linear-gradient(var(--accent), var(--pastelaccent));
+    position: fixed;
+    width: 100%;
+    z-index: 1;
+    height: 4rem;
+}
+.top-buttons {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.5rem;
+}
+#top{
+    padding-top: var(--header-height);
+}
+/* ビューポートからヘッダ分を引いた高さを親で定義し、子が継承 */
+#wrapper {
+    height: calc(100vh - var(--header-height));
+    height: calc(100dvh - var(--header-height)); /* 新しいビューポート単位に対応 */
+    display: flex;
+    flex-wrap: nowrap; /* 折り返し防止 */
+    align-items: stretch;
+}
+h2 {
+    font-weight:600;
+    padding: 0.5rem;
+    font-size: 2em;
+    color: black;
+    margin: 0;
+}
+h3 {
+    font-weight:500;
+    font-size: 1.5em;
+    margin: 0;
+    padding-top: 0.5rem;
+    padding-bottom: 1.5rem;
+}
+
+.left2 {
+    list-style-position: inside;
+    text-align: center;
+    width: 6%;
+    flex: 0 0 6%;
+    height: 100%;
+    box-sizing: border-box;
+    background: #ffccff;
+    border: 2px solid #000000;
+}
+.right2 {
+    list-style-position: inside;
+    text-align: center;
+    width: 5.5%;
+    flex: 0 0 5.5%;
+    height: 100%;
+    box-sizing: border-box;
+    background: #ffffff;
+    border: 2px solid #000000;
+}
+.space {
+    list-style-position: inside;
+    width: 3.5%;
+    flex: 0 0 3.5%;
+    height: 100%;
+    box-sizing: border-box;
+    writing-mode: vertical-lr; /*視覚的な左上揃え*/
+    font-size: 1.3em;
+    font-weight: 600;
+    text-align: left;
+}
+
+/* float列を内包するためのclearfix */
+#wrapper::after {
+    content: "";
+    display: block;
+    clear: both;
+}
+        
+.kunakami {
+    font-weight:700;
+    font-size: 2.8em;
+    color: black;
+    -ms-writing-mode: tb-rl;
+    writing-mode: vertical-rl;
+    text-align: left;
+    display: inline-block;
+}
+
+/* 自動調整が適用された俳句欄のスタイル */
+.kunakami.auto-vertical {
+  font-size: 2.8em; /* 基本サイズを維持 */
+}
+
+
+/* 縦書き自動調整機能用スタイル */
+.auto-vertical {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    white-space: nowrap;
+    line-height: 1;
+    display: inline-block;
+    transform-origin: top right;
+    /* letter-spacing と transform はJSで動的に設定 */
+}
+
+/* ボタン設定 */
+#finalForm .submit {
+    appearance: none;
+    -webkit-appearance: none;
+    border-radius: 0.3rem;
+    padding: 0.7rem 1.1rem;
+    min-height: 44px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1;
+    box-sizing: border-box;
+    width: 10rem; /* 横幅を統一 */
+    white-space: nowrap; /* 折り返し防止 */
+    border: 2px solid var(--black);
+    background: var(--white);
+    color: var(--black);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+    transition: background-color 120ms ease, box-shadow 120ms ease, transform 60ms ease, color 120ms ease, border-color 120ms ease;
+    cursor: pointer; /* ホバー時の手アイコン */
+}
+
+/* ボタン共通のhover/active */
+#finalForm .submit:hover {
+    background: #f3f3f3;
+}
+
+#finalForm .submit:active {
+    transform: translateY(1px);
+}
+
+#finalForm .submit:focus-visible {
+    outline: 3px solid rgba(17, 17, 17, 0.35);
+    outline-offset: 2px;
+}
+
+#finalForm .submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

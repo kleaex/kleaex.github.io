@@ -1,0 +1,496 @@
+@charset "UTF-8";
+@import url(https://fonts.googleapis.com/earlyaccess/notosansjp.css);
+@import url(https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap);
+@import url(https://fonts.googleapis.com/css2?family=Zen+Antique&display=swap);
+@import url(./color.css);
+
+/*GENERAL STYLING================================================ */
+html {
+    font-size: 100%;
+    /* スムーズスクロール */
+    scroll-behavior: smooth;
+}
+body {
+	color: var(--grey);
+	font-family: "ヒラギノ明朝 ProN";
+}
+
+/*COMMON================================================ */
+p {
+    line-height: 1.7;
+}
+img {
+    max-width: 100%;
+}
+header,
+h2 {
+    font-size: 3rem;
+    margin-bottom: 2rem;
+    font-family: 'Zen Antique', serif;
+}
+h1,
+h2 {
+    text-align: center;
+}
+h1,
+.date,
+.result{
+    font-family: 'Dela Gothic One', sans-serif;
+}
+
+/* Layout */
+.wrapper {
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+h3 {
+    font-family: "ヒラギノ角ゴ ProN";
+}
+
+/*HEADER================================================ */
+header {
+    background: var(--grey);
+    padding: 1rem 0;
+    position: fixed;
+    width: 100%;
+    z-index: 1;
+}
+header .wrapper {
+    display: flex;
+    justify-content: space-between;
+}
+header a {
+    color: var(--white);
+    font-size: 1.2rem;
+}
+header .logo{
+    font-size: 1.5rem;
+}
+.btn-menu {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    border: 1px solid rgba(255,255,255,.5);
+    color: var(--white);
+    padding: .5rem 1rem;
+    font-size: 1.2rem;
+}
+.main-nav {
+    background: var(--grey);
+    width: 0;
+    position: absolute;
+    z-index: 2;
+    top: 60px;
+    right: 0;
+    overflow: hidden;
+    transition: .5s;
+    font-family: "ヒラギノ明朝 ProN";
+}
+.main-nav li {
+    text-align: center;
+    margin: 2rem 0;
+}
+.main-nav a {
+    display: block;
+}
+.main-nav.open-menu {
+    width: 100%;
+}
+
+/*top================================================ */
+#top {
+    /* ↓ 省略形だとブラウザーによってうまく表示されない
+    background: var(--light-blue) url('../images/hero.jpg') no-repeat center / cover; */
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    background-blend-mode: screen;
+    animation: bg-color 8s 1;
+    animation-fill-mode: forwards;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    -webkit-clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+    clip-path: polygon(0 0, 100% 0, 100% 90%, 0 100%);
+}
+@keyframes bg-color {
+     0% { background-color: var(--grey); }
+    40% { background-color: var(--pastelaccent); }
+    80% { background-color: var(--deepaccent); }
+   100% { background-color: var(--pastelaccent); }
+}
+#top h1 {
+    padding-top: 6rem;
+    font-size: 3rem;
+}
+.date {
+    text-align: center;
+    border-top: 3px solid var(--grey);
+    border-bottom: 3px solid var(--grey);
+    padding: .5rem 0;
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
+}
+.result {
+    text-align: center;
+    color: #0000ff;
+    text-decoration: underline;
+    padding: .5rem 0;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+.sponsore {
+    text-align: left;
+    font-size: 2rem;
+    font-family: 'Zen Antique', serif;
+}
+
+/*Meaning================================================ */
+#meaning {
+    padding: 5rem 1rem;
+}
+#meaning h2 {
+    background: black;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    /* text-fill-color: transparent; */
+}
+.meaning-list {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+}
+.meaning-text {
+    margin-left: 1rem;
+}
+
+#meaning h3 {
+    font-size: 1.5rem;
+    margin-bottom: .5rem;
+}
+#meaning p {
+    margin: 1rem;
+}
+#meaning a {
+    text-decoration: underline;
+}
+
+/*ABOUT================================================ */
+#about {
+    background-image: linear-gradient(var(--accent), var(--pastelaccent));
+    padding: 7rem 3rem;
+    -webkit-clip-path: polygon(0 0, 100% 10%, 100% 90%, 0 100%);
+    clip-path: polygon(0 0, 100% 10%, 100% 90%, 0 100%);
+    /*text-align: center;*/
+}
+
+#about h2 {
+    margin-bottom: 1rem;
+}
+#about p {
+    margin-bottom: 2rem;
+    margin-left: 1rem;
+}
+#about a {
+    text-decoration: underline;
+    color: #0000ff;
+}
+#about h3 {
+    font-size: 1.5rem;
+    margin-bottom: .5rem;
+}
+.link{
+    text-align: center;
+}
+/*Detail================================================ */
+#detail {
+    padding: 5rem 1rem;
+}
+#detail h2 {
+    background: black;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    /* text-fill-color: transparent; */
+}
+.entry-list {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+}
+.detail-text {
+    margin-left: 1rem;
+}
+
+#detail h3 {
+    font-size: 1.5rem;
+    margin-bottom: .5rem;
+}
+#detail p {
+    margin: 1rem;
+}
+#detail a {
+    text-decoration: underline;
+    color: #0000ff;
+}
+.team-table {
+    color: black;
+    width: 100%;
+    text-align: center;
+}
+.team-table td {
+    display: block;
+    line-height: 1.5;
+}
+.team {
+    font-size: 1rem;
+    padding-top: 1rem;
+}
+
+
+/*NEWS================================================ */
+#news {
+    background-image: linear-gradient(var(--pastelaccent), var(--accent));
+    padding: 7rem 0;
+    -webkit-clip-path: polygon(0 0, 100% 10%, 100% 90%, 0 100%);
+    clip-path: polygon(0 0, 100% 10%, 100% 90%, 0 100%);
+}
+#news h2 {
+    text-align: center;
+}
+.news-table {
+    width: 100%;
+    text-align: center;
+}
+.news-table tr {
+    border-bottom: 1px solid #999999;
+}
+.news-table td {
+    display: block;
+    line-height: 1.5;
+}
+.news-date {
+    font-size: 1rem;
+}
+.news-content {
+    font-size: 1rem;
+}
+.news-haiku {
+    font-size: 1.2rem;
+}
+.news p{
+    padding-bottom: 1rem;
+    text-align: left;
+}
+
+/*entry================================================ */
+#entry {
+    padding: 5rem 1rem;
+}
+.entry-list {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+}
+.entry-text {
+    margin-left: 1rem;
+}
+#entry h2 {
+  background: black;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  /*text-fill-color: transparent;*/
+}
+#entry h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+#entry p {
+    margin: 1rem;
+}
+#entry a {
+    text-decoration: underline;
+    color: #0000ff;
+}
+
+.judge-table {
+    width: 100%;
+    text-align: center;
+}
+.judge-table tr {
+    border-radius: 10px; 
+    border-bottom: 5px solid var(--white);
+    background-image: linear-gradient( to right, var(--pastelaccent), var(--white));
+}
+.judge-table td {
+    display: block;
+    line-height: 1.5;
+}
+.judge-name {
+    font-size: 1rem;
+    padding-top: 1rem;
+    font-size: 1.2rem;
+}
+.judge-content {
+    padding: 1rem;
+    text-align: left;
+}
+
+/*expl================================================ */
+#expl {
+    background: linear-gradient(var(--pastelaccent), var(--accent));
+    padding: 6rem 1rem 2rem;
+    -webkit-clip-path: polygon(0 0, 100% 10%, 100% 100%, 0 100%);
+    clip-path: polygon(0 0, 100% 10%, 100% 100%, 0 100%);
+    text-align: center;
+}
+.expl-form {
+    max-width: 480px;
+    margin: 0 auto 5rem;
+}
+.expl-form label {
+    display: block;
+    margin-bottom: .5rem;
+}
+.expl-field {
+    background: rgba(255,255,255,.6);
+    padding: 1rem;
+    width: 100%;
+    margin-bottom: 1.5rem;
+}
+.expl-btn {
+    background: var(--grey);
+    display: block;
+    width: 100%;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+#expl h3 {
+    font-size: 1.5rem;
+    margin-bottom: .5rem;
+    text-align: left;
+}
+#expl p {
+    margin: 1rem;
+    text-align: left;
+}
+.contact-table {
+    width: 100%;
+    margin: 1rem;
+}
+.contact-table td {
+    display: block;
+    line-height: 1.5;
+}
+.contact-class {
+    font-size: 1rem;
+    padding-top: 1rem;
+}
+.contact-content {
+    padding-bottom: 1rem;
+}
+#expl a {
+    text-decoration: underline;
+}
+/*
+FOOTER
+================================================ */
+.footer {
+    border-top: 1px solid #999999;
+    padding-top: 2rem;
+    text-align: center;
+    font-size: 1rem;
+}
+.footer a {
+    text-decoration: underline;
+    color: #0000ff;
+}
+
+/*
+DESKTOP SIZE
+================================================ */
+@media (min-width: 750px) {
+/* Common */
+    h2 {
+        font-size: 3rem;
+    }
+    a:hover,
+    .expl-btn:hover {
+        transition: .3s;
+    }
+    a:hover {
+        color: var(--blue);
+    }
+    .expl-btn:hover {
+        background: var(--blue);
+    }
+
+/* Header */
+    .btn-menu {
+        display: none;
+    }
+    .main-nav {
+        padding: 0.15rem 0;
+        width: 100%;
+        position: static;
+        display: flex;
+    }
+    .main-nav li {
+        margin: 0 0 0 1.5rem;
+    }
+/* top */
+    #top h1 {
+        font-size: 4rem;
+    }
+    .date {
+        font-size: 3rem;
+    }
+
+/* News */
+    .news-table td {
+        display: table-cell;
+    }
+    .news-date {
+        padding: 1rem 1rem 0 1rem;
+    }
+    .news-content {
+        padding: 1rem 1rem 0 0;
+    }
+    .news-haiku {
+        padding: 1rem 1rem 0 0;
+    }
+    
+/* entry */
+
+    .entry-list {
+        margin-bottom: 3rem;
+    }
+    .entry-text {
+        margin-left: 2rem;
+    }
+
+    .contact-table td {
+        display: table-cell;
+    }
+    .contact-class {
+        padding: 1.125rem 0 1rem 1rem;
+    }
+    .contact-content {
+        padding: 1rem 1rem 1rem 0;
+    }
+    .judge-table td {
+        display: table-cell;
+    }
+    .judge-name {
+        padding: 1rem 0 1rem 1rem;
+	    font-size: 1rem;
+    }
+    .judge-content {
+        padding: 1rem 1rem 1rem 0;
+        width: 75%;
+    }
+}
