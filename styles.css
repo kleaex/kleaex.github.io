@@ -6,12 +6,12 @@ main {
 
     .hero {
       position: relative;
-      width: min(var(--max), calc(100% - 40px));
+      width: min(calc(var(--max) + 120px), calc(100% - 40px));
       margin: 0 auto;
       padding: clamp(48px, 8vw, 96px) 0 clamp(56px, 9vw, 104px);
       display: grid;
-      grid-template-columns: minmax(0, 1.04fr) minmax(260px, 0.96fr);
-      gap: clamp(28px, 6vw, 72px);
+      grid-template-columns: minmax(0, 0.96fr) minmax(300px, 1.04fr);
+      gap: clamp(28px, 4vw, 52px);
       align-items: center;
     }
 
@@ -83,18 +83,16 @@ main {
       text-align-last: auto;
     }
 
-    .news-area {
-      background: var(--paper-strong);
-    }
-
     .news {
-      width: min(var(--max), calc(100% - 40px));
-      margin: 0 auto;
-      padding: 1.8em 0;
-      display: grid;
-      grid-template-columns: minmax(160px, 0.34fr) minmax(0, 1fr);
-      gap: clamp(24px, 6vw, 72px);
-      align-items: center;
+      position: relative;
+      z-index: 1;
+      min-width: 0;
+      min-height: clamp(380px, 43vw, 470px);
+      padding: clamp(30px, 4vw, 48px) clamp(26px, 3.5vw, 42px);
+      border-left: 1px solid rgba(29, 58, 61, 0.22);
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.42), rgba(248, 246, 238, 0.08) 72%),
+        linear-gradient(90deg, rgba(29, 58, 61, 0.035), transparent 38%);
     }
 
     .news-heading .eyebrow {
@@ -105,14 +103,15 @@ main {
       margin: 0;
       font-size: clamp(1.55rem, 3vw, 2.4rem);
       letter-spacing: 0.14em;
+      color: var(--text);
     }
 
     .news-list {
-      margin: 0;
-      padding: 0 12px 0 0;
+      margin: clamp(24px, 3vw, 34px) 0 0;
+      padding: 0 8px 0 0;
       list-style: none;
       border-top: 1px solid var(--line);
-      max-height: 12rem;
+      max-height: 17rem;
       overflow-y: auto;
       overscroll-behavior: contain;
       scrollbar-gutter: stable;
@@ -122,15 +121,16 @@ main {
 
     .news-list li {
       display: grid;
-      grid-template-columns: 42px 9.5rem minmax(0, 1fr);
-      gap: 20px;
+      grid-template-columns: 42px minmax(0, 1fr);
+      gap: 5px 12px;
       align-items: baseline;
-      padding: 17px 0;
+      padding: 15px 0;
       border-bottom: 1px solid var(--line);
     }
 
     .news-new {
-      transform: translateX(1em);
+      grid-column: 1;
+      grid-row: 1;
       color: #b42c2c;
       font-size: 0.72rem;
       font-weight: 700;
@@ -140,14 +140,15 @@ main {
 
     .news-list time {
       grid-column: 2;
-      transform: translateX(1em);
+      grid-row: 1;
       color: var(--accent);
       font-size: 0.9rem;
       letter-spacing: 0.12em;
     }
 
     .news-list p {
-      grid-column: 3;
+      grid-column: 2;
+      grid-row: 2;
       margin: 0;
       color: #30494b;
     }
@@ -585,8 +586,8 @@ main {
       }
 
       .news {
-        grid-template-columns: 1fr;
-        gap: 18px;
+        min-height: auto;
+        padding: 30px 24px;
       }
 
       .news-list li {
