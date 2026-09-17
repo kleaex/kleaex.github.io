@@ -6,7 +6,7 @@ main {
 
     .hero {
       position: relative;
-      width: min(calc(var(--max) + 120px), calc(100% - 40px));
+      width: var(--page-width);
       margin: 0 auto;
       padding: clamp(48px, 8vw, 96px) 0 clamp(56px, 9vw, 104px);
       display: grid;
@@ -263,7 +263,7 @@ main {
     }
 
     .section {
-      width: min(var(--max), calc(100% - 40px));
+      width: var(--page-width);
       margin: 0 auto;
       padding: 72px 0;
     }

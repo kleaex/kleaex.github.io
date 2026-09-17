@@ -36,6 +36,7 @@
   --air-shadow: rgba(40, 88, 106, 0.1);
   --max: 1080px;
   --top-max: 980px;
+  --page-width: min(calc(var(--max) + 120px), calc(100% - 40px));
 }
 
 * { box-sizing: border-box; }
@@ -69,7 +70,7 @@ a { color: inherit; text-decoration: none; }
 }
 
 .header-inner {
-  width: min(var(--max), calc(100% - 40px));
+  width: var(--page-width);
   margin: 0 auto;
   min-height: 58px;
   display: flex;
@@ -110,7 +111,7 @@ a { color: inherit; text-decoration: none; }
 .nav a:focus-visible { color: var(--text); border-color: var(--accent); }
 
 .site-footer {
-  width: min(var(--max), calc(100% - 40px));
+  width: var(--page-width);
   margin: 0 auto;
   padding: 36px 0 44px;
   display: flex;
