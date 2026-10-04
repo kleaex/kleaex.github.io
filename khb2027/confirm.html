@@ -3,6 +3,7 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>関西俳句バトル2027　投句内容確認</title>
   <link rel="icon" href="../img/favicon.ico">
   <link rel="stylesheet" href="css/confirm.css">
@@ -10,10 +11,13 @@
 <body>
   <header>
     <h2>関西俳句バトル2027　投句内容確認</h2>
-    <form id="finalForm" class="top-buttons" method="POST" target="hidden_iframe" onsubmit="submitted=true;">
-      <button type="button" id="backButton" class="submit">修正に戻る</button>
-      <input id="finalSubmit" class="submit" type="submit" value="送信">
-    </form>
+    <div class="header-actions">
+      <p id="submission-status" role="status" aria-live="polite" hidden></p>
+      <form id="finalForm" class="top-buttons" method="POST" target="hidden_iframe">
+        <button type="button" id="backButton" class="submit">修正に戻る</button>
+        <input id="finalSubmit" class="submit" type="submit" value="送信">
+      </form>
+    </div>
   </header>
   <section id="top">
     <div id="wrapper">
@@ -83,10 +87,17 @@
       </div>
     </div>
   </section>
-  <iframe name="hidden_iframe" id="hidden_iframe" style="display:none" onload="if(submitted){window.location='finish.html';}"></iframe>
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+  <dialog id="overwrite-dialog" aria-labelledby="overwrite-title">
+    <h3 id="overwrite-title">すでに投句を受け付けています</h3>
+    <p>今回の内容で上書きしますか？</p>
+    <div class="dialog-actions">
+      <button type="button" id="cancelOverwrite" class="submit">キャンセル</button>
+      <button type="button" id="confirmOverwrite" class="submit">上書きする</button>
+    </div>
+  </dialog>
+  <iframe name="hidden_iframe" id="hidden_iframe" title="投句送信処理" hidden></iframe>
   <script src="js/kintou.js"></script>
-  <script type="module" src="js/confirm.js"></script>
+  <script type="module" src="js/confirmGas.js"></script>
   <script src="js/submit_viewkendai.js"></script>
 </body>
 </html>

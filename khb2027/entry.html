@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>関西俳句バトル2027　エントリーフォーム</title>
+  <link rel="icon" href="../img/favicon.ico">
+  <link rel="stylesheet" href="css/submit.css" type="text/css">
+</head>
+<body>
+  <div class="header">
+    <h2>関西俳句バトル2027　エントリーフォーム</h2>
+  </div>
+  <main id="form">
+    <form class="submitform entryform" id="entry-form" method="post" target="entry-submit-frame">
+      <input name="action" type="hidden" value="entry">
+      <div class="honeypot" aria-hidden="true">
+        <label for="website">Webサイト</label>
+        <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
+      </div>
+
+      <h3>学校・チーム情報</h3>
+      <p class="checkbox-field"><input id="isJointTeam" name="isJointTeam" type="checkbox" value="true"><label for="isJointTeam">合同チームである</label></p>
+      <p class="form-note">学校名は正式名称で記載してください。例：関西学生文芸高等学校</p>
+      <p><label class="field-label" for="schoolName">学校名</label><input id="schoolName" class="haiku" name="schoolName" placeholder="学校名" maxlength="200" required></p>
+      <div id="additional-schools" hidden>
+        <p><label class="field-label" for="schoolName2">学校名 2</label><input id="schoolName2" class="haiku school-name" name="schoolName2" placeholder="学校名 2" maxlength="200"></p>
+      </div>
+      <p id="add-school-wrap" hidden><button id="add-school" class="secondary-button" type="button">学校名を追加</button></p>
+      <p id="school-name-error" class="form-status" role="status" aria-live="polite" hidden></p>
+      <h3>出場予定チーム数</h3>
+      <p>
+        <label class="field-label" for="plannedTeamCount">出場予定チーム数</label>
+        <select id="plannedTeamCount" name="plannedTeamCount" required>
+          <option value="">選択してください</option>
+          <option value="1">1チーム</option>
+          <option value="2">2チーム</option>
+          <option value="3">3チーム</option>
+        </select>
+      </p>
+      <p class="form-note">エントリーフォームは1回につき1チームのみ登録できます。複数チームで出場する場合は、チームごとに送信してください。</p>
+      <h3>チーム名</h3>
+      <p><label class="field-label" for="teamName">チーム名</label><input id="teamName" class="haiku" name="teamName" placeholder="チーム名" maxlength="200" required></p>
+      <p class="form-note">チーム名には学校名を含め、同一校から複数チーム出場する場合は互いに区別できる名称にしてください。アルファベット・数字は全角で記載してください。</p>
+
+      <h3>責任者情報</h3>
+      <p class="form-note">顧問の先生やコーチ、部長など、本大会に関する責任者の氏名を記載してください。</p>
+      <p><label class="field-label" for="responsibleName">責任者氏名</label><input id="responsibleName" class="haiku" name="responsibleName" placeholder="責任者氏名" maxlength="100" required></p>
+      <p>
+        <label class="field-label" for="responsibleRole">責任者の役割</label>
+        <select id="responsibleRole" name="responsibleRole" required>
+          <option value="">責任者の役割を選択してください</option>
+          <option value="顧問">顧問</option>
+          <option value="コーチ">コーチ</option>
+          <option value="選手">選手</option>
+          <option value="その他">その他</option>
+        </select>
+      </p>
+      <p id="responsibleRoleOther-field" hidden><label class="field-label" for="responsibleRoleOther">役割（具体的に）</label><input id="responsibleRoleOther" class="haiku" name="responsibleRoleOther" placeholder="役割（具体的に）" maxlength="100"></p>
+      <p><label class="field-label" for="email">責任者連絡先（メールアドレス）</label><input id="email" class="haiku" name="email" placeholder="責任者連絡先（メールアドレス）" type="email" pattern="[^\s@]+@[^\s@]+\.[^\s@]+" title="example@example.com のように、@の後にドットを含むメールアドレスを入力してください。" maxlength="254" autocomplete="email" required></p>
+      <h3>チーム人数</h3>
+      <p><label class="field-label" for="memberCount">チーム人数</label><select id="memberCount" name="memberCount" required><option value="">選択してください</option><option value="3">3人</option><option value="4">4人</option><option value="5">5人</option></select></p>
+      <h3>チームメンバー</h3>
+      <input id="members" name="members" type="hidden">
+      <p class="form-note">チーム人数を選択すると、人数分の入力欄が表示されます。氏名は姓名間に全角スペースを入れてください。記載順で当日配布パンフレットに掲載します。投句時の作者名は、ここで登録した氏名と合わせてください。</p>
+      <div id="member-fields"></div>
+      <p id="member-name-warning" class="form-status" role="status" aria-live="polite" hidden></p>
+      <h3>紹介文（250〜280字）</h3>
+      <p><label class="field-label" for="introduction">紹介文（250〜280字）</label><textarea id="introduction" class="haiku" name="introduction" placeholder="チームの紹介文（250〜280字）" minlength="250" maxlength="280" rows="8" required></textarea></p>
+      <h3>コメント・特記事項</h3>
+      <p><label class="field-label" for="specialNote">コメント・特記事項</label><textarea id="specialNote" class="haiku" name="specialNote" placeholder="コメント・特記事項（任意）" maxlength="2000" rows="5"></textarea></p>
+
+      <h3>確認</h3>
+      <p class="checkbox-field"><input id="termsConsent" name="termsConsent" type="checkbox" value="true" required><label for="termsConsent">実施要項、詳細を確認し、参加費、著作権、および肖像権などの内容を理解し同意したうえで、「関西俳句バトル2027」にエントリーします。</label></p>
+      <p class="checkbox-field"><input id="inputConfirmation" name="inputConfirmation" type="checkbox" value="true" required><label for="inputConfirmation">入力内容を確認しました。</label></p>
+      <p class="checkbox-field"><input id="contactConfirmation" name="contactConfirmation" type="checkbox" value="true" required><label for="contactConfirmation">エントリー内容に関する質問や変更がある場合は、すみやかに関西文芸交流会 関西俳句バトル実行委員会（klea.ex+khb@gmail.com）へ連絡することを確認しました。</label></p>
+      <button class="submit" type="submit" disabled>エントリーする</button>
+      <p id="entry-status" class="form-status" aria-live="polite">このページからエントリーできます。</p>
+    </form>
+    <iframe name="entry-submit-frame" title="エントリー送信処理" hidden></iframe>
+  </main>
+  <script type="module" src="js/entry.js"></script>
+</body>
+</html>
+
