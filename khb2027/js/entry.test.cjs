@@ -67,7 +67,7 @@ function setup() {
   const addWrap = add('add-school-wrap', 'p'); add('add-school', 'button', addWrap).type = 'button';
   const roleWrap = add('responsibleRoleOther-field', 'p'); add('responsibleRoleOther', 'input', roleWrap);
   add('member-fields', 'div'); add('members').type = 'hidden';
-  for (const id of ['member-name-warning', 'school-name-error', 'entry-status']) add(id, 'p');
+  for (const id of ['member-name-warning', 'school-name-error', 'entry-status', 'responsible-name-status', 'introduction-count']) add(id, 'p');
   add('introduction', 'textarea').required = true; add('specialNote', 'textarea');
   for (const id of ['termsConsent', 'inputConfirmation', 'contactConfirmation']) { const el = add(id); el.type = 'checkbox'; el.required = true; }
   const button = add('submit', 'button'); button.type = 'submit'; button.disabled = true;
@@ -75,13 +75,13 @@ function setup() {
     getElementById: id => form.querySelector(`#${id}`), createElement: tag => new Element(tag) };
   const context = vm.createContext({ document, window: { location: { origin: 'http://127.0.0.1:8766' }, addEventListener: (type, fn) => { listeners[type] = fn; } },
     GAS_MESSAGE_SOURCE: 'khb2027', GAS_WEB_APP_URL: 'https://script.google.com/macros/s/test/exec' });
-  vm.runInContext(read('authorRules.js') + '\n' + read('memberFields.js') + '\n' + read('entry.js'), context);
+  vm.runInContext(read('entryRules.js') + '\n' + read('authorRules.js') + '\n' + read('memberFields.js') + '\n' + read('entry.js'), context);
   const get = id => document.getElementById(id);
   function set(id, value, type = 'input') { const el = get(id); if (el.type === 'checkbox') el.checked = value; else el.value = value; el.dispatch(type); }
   function fill() {
-    for (const [id, value] of Object.entries({ schoolName: 'A高校', teamName: 'A高校チーム', responsibleName: '責任者', email: 'team@example.com', introduction: 'あ'.repeat(250) })) set(id, value);
+    for (const [id, value] of Object.entries({ schoolName: 'A高校', teamName: 'A高校チーム', responsibleName: '責任　者', email: 'team@example.com', introduction: 'あ'.repeat(250) })) set(id, value);
     set('plannedTeamCount', '1', 'change'); set('responsibleRole', '顧問', 'change'); set('memberCount', '3', 'change');
-    for (let i = 1; i <= 3; i++) { set(`member-${i}-name`, `氏名${i}`); set(`member-${i}-grade`, '高2'); }
+    for (let i = 1; i <= 3; i++) { set(`member-${i}-name`, `氏名　${i}`); set(`member-${i}-grade`, '高2', 'change'); }
     for (const id of ['termsConsent', 'inputConfirmation', 'contactConfirmation']) set(id, true, 'change');
   }
   function reply(ok) { listeners.message({ origin: 'https://script.google.com', data: { source: 'khb2027', action: 'entry', ok, message: ok ? '受付済み' : '送信失敗' } }); }
@@ -107,18 +107,60 @@ test('責任者のその他欄と合同チームの学校・所属校も入力�
   s.set('isJointTeam', true, 'change'); assert.equal(s.button.disabled, true);
   s.set('schoolName2', 'B高校');
   for (let i = 1; i <= 3; i++) s.set(`member-${i}-school`, 'A高校', 'change');
+  assert.equal(s.button.disabled, true); assert.match(s.get('school-name-error').textContent, /「B高校」/);
+  s.set('member-2-school', 'B高校', 'change');
   assert.equal(s.button.disabled, false);
   s.set('schoolName2', 'A高校'); assert.equal(s.button.disabled, true);
-  s.set('schoolName2', 'B高校'); assert.equal(s.button.disabled, false);
+  s.set('schoolName2', 'B高校'); s.set('member-2-school', 'B高校', 'change'); assert.equal(s.button.disabled, false);
   s.get('add-school').dispatch('click'); assert.equal(s.button.disabled, true, '学校追加直後の空欄も必須');
   s.get('schoolName3').closest('p').querySelector('button').dispatch('click'); assert.equal(s.button.disabled, false);
   s.set('schoolName2', '', 'input'); s.set('isJointTeam', false, 'change'); assert.equal(s.button.disabled, false);
 });
 
+test('学校を追加したらその学校の選手が必要になり、学校数が人数を超えた場合も送信できない', () => {
+  const s = setup(); s.fill(); s.set('isJointTeam', true, 'change'); s.set('schoolName2', 'B高校');
+  for (const [index, school] of ['A高校', 'B高校', 'A高校'].entries()) s.set(`member-${index + 1}-school`, school, 'change');
+  assert.equal(s.button.disabled, false);
+  s.get('add-school').dispatch('click'); s.set('schoolName3', 'C高校');
+  assert.equal(s.button.disabled, true); assert.match(s.get('school-name-error').textContent, /「C高校」/);
+  s.set('member-3-school', 'C高校', 'change'); assert.equal(s.button.disabled, false);
+  s.get('add-school').dispatch('click'); s.set('schoolName4', 'D高校');
+  assert.equal(s.button.disabled, true); assert.match(s.get('school-name-error').textContent, /「D高校」/);
+  s.get('schoolName4').closest('p').querySelector('button').dispatch('click'); assert.equal(s.button.disabled, false);
+});
+
+test('紹介文の表示文字数・送信可否は改行形式と補助漢字・絵文字でずれず、長すぎる入力を切り捨てない', () => {
+  const html = fs.readFileSync(path.join(__dirname, '../entry.html'), 'utf8');
+  const textarea = html.match(/<textarea\b[^>]*id="introduction"[^>]*>/)[0];
+  assert.doesNotMatch(textarea, /\b(?:minlength|maxlength)=/, 'UTF-16単位の制限と独自の文字数判定を重ねない');
+  const s = setup(); s.fill();
+  for (const length of [249, 250, 280, 281]) for (const newline of ['\n', '\r\n', '\r']) {
+    const value = 'あ'.repeat(length - 6) + '𠮷😀 ' + newline + 'い' + newline;
+    s.set('introduction', value);
+    assert.equal(s.get('introduction-count').textContent, `${length}字 / 250〜280字`);
+    assert.equal(s.button.disabled, length < 250 || length > 280);
+    assert.equal(s.get('introduction').value, value, '入力内容を自動修正・切り捨てしない');
+  }
+  s.set('introduction', ''); assert.equal(s.get('introduction-count').textContent, '0字 / 250〜280字');
+});
+
 test('同姓同名・同学年・同校では無効にし、学年が違えば警告を残して有効にする', () => {
-  const s = setup(); s.fill(); s.set('member-2-name', '氏名1'); assert.equal(s.button.disabled, true);
+  const s = setup(); s.fill(); s.set('member-2-name', '氏名　1'); assert.equal(s.button.disabled, true);
   s.set('member-2-grade', '高1'); assert.equal(s.button.disabled, false);
   assert.equal(s.get('member-name-warning').hidden, false);
+});
+
+test('メンバーと責任者の姓名にスペースがなければ送信を無効にし、修正時に案内を消す', () => {
+  const s = setup(); s.fill(); s.set('member-1-name', '山田太郎'); assert.equal(s.button.disabled, true);
+  assert.match(s.get('member-name-warning').textContent, /姓と名の間/);
+  s.set('member-1-name', '山田 太郎'); assert.equal(s.button.disabled, false);
+  s.set('responsibleName', '佐藤花子'); assert.equal(s.button.disabled, true);
+  assert.equal(s.get('responsible-name-status').hidden, false);
+  s.set('responsibleName', '佐藤 花子'); assert.equal(s.button.disabled, false);
+  assert.equal(s.get('responsible-name-status').hidden, true);
+  assert.equal(s.form.dispatch('submit').prevented, false);
+  assert.equal(s.get('responsibleName').value, '佐藤 花子');
+  assert.equal(JSON.parse(s.get('members').value)[0].name, '山田 太郎');
 });
 
 test('送信中は入力しても無効のままで二重送信を防ぎ、失敗後は入力条件を再判定する', () => {

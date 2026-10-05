@@ -1,5 +1,6 @@
 import { GAS_MESSAGE_SOURCE, GAS_WEB_APP_URL } from './gasConfig.js';
 import { setupMemberFields } from './memberFields.js';
+import { entryNameIssue, introductionLength } from './entryRules.js';
 
 const form = document.querySelector('#entry-form');
 const submitButton = form.querySelector('button[type="submit"]');
@@ -12,6 +13,9 @@ const role = document.querySelector('#responsibleRole');
 const roleOtherField = document.querySelector('#responsibleRoleOther-field');
 const roleOther = document.querySelector('#responsibleRoleOther');
 const introduction = document.querySelector('#introduction');
+const introductionCount = document.querySelector('#introduction-count');
+const responsibleName = document.querySelector('#responsibleName');
+const responsibleNameStatus = document.querySelector('#responsible-name-status');
 let sending = false;
 
 const MAX_SCHOOLS = 5;
@@ -27,7 +31,12 @@ function schoolInputs() {
 }
 
 function updateSubmitButton() {
-  const length = Array.from(introduction.value).length;
+  const nameIssue = entryNameIssue(responsibleName.value);
+  responsibleName.setCustomValidity(nameIssue);
+  responsibleNameStatus.textContent = responsibleName.value ? nameIssue : '';
+  responsibleNameStatus.hidden = !responsibleNameStatus.textContent;
+  const length = introductionLength(introduction.value);
+  introductionCount.textContent = `${length}字 / 250〜280字`;
   introduction.setCustomValidity(length >= 250 && length <= 280 ? '' : '紹介文は250〜280字で入力してください。');
   submitButton.disabled = sending || !form.checkValidity();
 }

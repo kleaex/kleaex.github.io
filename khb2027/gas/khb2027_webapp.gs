@@ -398,6 +398,18 @@ function submitSubmission(data) {
   }
 }
 
+const ENTRY_GRADES = ['中1', '中2', '中3', '高1', '高2', '高3'];
+
+function entryNameIssue(value) {
+  if (typeof value !== 'string' || !value.trim()) return '氏名を入力してください。空白だけの入力はできません。';
+  return /^\S+(?:[ \u3000]+\S+)+$/u.test(value.trim()) ? '' : '姓と名の間に全角スペースを入れてください。';
+}
+
+function introductionLength(value) {
+  // 計数時だけ改行形式を揃え、保存する入力値は変えない。
+  return Array.from(String(value || '').replace(/\r\n?/g, '\n')).length;
+}
+
 function validateEntry(data) {
   const required = ['schoolName', 'plannedTeamCount', 'teamName', 'responsibleName', 'responsibleRole', 'email', 'memberCount', 'members', 'introduction'];
   for (const key of required) if (!hasText(data[key])) return '必須項目を入力してください。';
@@ -409,9 +421,12 @@ function validateEntry(data) {
   if (!checked(data.isJointTeam) && ['schoolName2', 'schoolName3', 'schoolName4', 'schoolName5'].some((key) => hasText(data[key]))) return '単独チームに追加の学校名は登録できません。';
   if (!['3', '4', '5'].includes(data.memberCount)) return 'チーム人数は3人から5人で選択してください。';
   if (!isEmail(data.email)) return 'メールアドレスの形式を確認してください。';
-  if (codePointLength(data.introduction) < 250 || codePointLength(data.introduction) > 280) return '紹介文は250〜280字で入力してください。';
+  const length = introductionLength(data.introduction);
+  if (length < 250 || length > 280) return '紹介文は250〜280字で入力してください。';
   if (!allWithin(data, { schoolName: 200, schoolName2: 200, schoolName3: 200, schoolName4: 200, schoolName5: 200, teamName: 200, responsibleName: 100, responsibleRoleOther: 100, members: 4000, specialNote: 2000, email: 254 })) return '入力できる文字数を超えています。';
   if (hasPadding(data, ['schoolName', 'schoolName2', 'schoolName3', 'schoolName4', 'schoolName5', 'teamName', 'responsibleName', 'email'])) return '入力の前後に空白を入れないでください。';
+  const responsibleNameError = entryNameIssue(data.responsibleName);
+  if (responsibleNameError) return `責任者氏名：${responsibleNameError}`;
   const schools = ['schoolName', 'schoolName2', 'schoolName3', 'schoolName4', 'schoolName5'].map((key) => data[key]).filter(Boolean);
   if (checked(data.isJointTeam) && new Set(schools).size !== schools.length) return '合同チームに同じ学校名を複数登録することはできません。';
   const membersError = validateEntryMembers(data);
@@ -458,11 +473,17 @@ function validateEntryMembers(data) {
   const members = parseMembers(data.members);
   const schools = ['schoolName', 'schoolName2', 'schoolName3', 'schoolName4', 'schoolName5'].map((key) => data[key]).filter(Boolean);
   for (const member of members) {
-    if (!hasText(member.grade) || member.grade !== member.grade.trim()) return '各メンバーの学年を入力してください。';
+    const nameError = entryNameIssue(member.name);
+    if (nameError) return `メンバー氏名：${nameError}`;
+    if (!ENTRY_GRADES.includes(member.grade)) return '各メンバーの学年は中1〜中3・高1〜高3のリストから選択してください。';
     if (!allWithin(member, { name: 100, grade: 20, school: 200 })) return 'メンバー情報の文字数を確認してください。';
     if (checked(data.isJointTeam)) {
       if (!schools.includes(member.school)) return '合同チームの各メンバーについて、登録する学校から所属校を選択してください。';
     } else if (hasText(member.school)) return '単独チームのメンバーに個別の学校名は登録できません。';
+  }
+  if (checked(data.isJointTeam)) {
+    const missing = schools.filter((school) => !members.some((member) => member.school === school));
+    if (missing.length) return `${missing.map((school) => `「${school}」`).join('・')}の選手が登録されていません。合同チームは、登録したすべての学校から1人以上の選手を登録してください。`;
   }
   if (indistinguishableMembers(members).length) return '氏名・学年・所属校がすべて同じメンバーがいます。別人として区別する必要があるため、実行委員会へ連絡してください。';
   return '';

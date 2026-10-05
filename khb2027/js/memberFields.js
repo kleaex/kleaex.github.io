@@ -1,4 +1,5 @@
 import { authorNameKey, indistinguishableMembers } from './authorRules.js';
+import { ENTRY_GRADES, entryNameIssue } from './entryRules.js';
 
 export function setupMemberFields(form, jointTeam) {
   const count = document.getElementById('memberCount');
@@ -29,16 +30,6 @@ export function setupMemberFields(form, jointTeam) {
 
   function syncSchools() {
     const schoolInputs = [...form.querySelectorAll('#schoolName, .school-name')];
-    const values = schoolInputs.filter((input) => !input.disabled).map((input) => input.value.trim()).filter(Boolean);
-    let hasDuplicates = false;
-    for (const input of schoolInputs) {
-      const duplicate = jointTeam.checked && !input.disabled && input.value.trim()
-        && values.filter((value) => value === input.value.trim()).length > 1;
-      input.setCustomValidity(duplicate ? '合同チームに同じ学校名を複数登録することはできません。' : '');
-      if (duplicate) hasDuplicates = true;
-    }
-    schoolError.hidden = !hasDuplicates;
-    schoolError.textContent = hasDuplicates ? '合同チームに同じ学校名を複数登録することはできません。学校名を確認してください。' : '';
     const schools = [...new Set(schoolInputs.filter((input) => !input.disabled).map((input) => input.value).filter(Boolean))];
     for (const row of rows) {
       const previous = row.school.input.value;
@@ -60,20 +51,41 @@ export function setupMemberFields(form, jointTeam) {
     }
   }
 
-  function validateNames() {
+  function validateSchools() {
+    const schoolInputs = [...form.querySelectorAll('#schoolName, .school-name')];
+    const values = schoolInputs.filter((input) => !input.disabled).map((input) => input.value.trim()).filter(Boolean);
+    const missing = jointTeam.checked && rows.length ? schoolInputs.filter((input) => !input.disabled && input.value
+      && !rows.some((row) => row.school.input.value === input.value)) : [];
+    const participationMessage = '合同チームは、登録したすべての学校から1人以上の選手を登録してください。';
+    let hasDuplicates = false;
+    for (const input of schoolInputs) {
+      const duplicate = jointTeam.checked && !input.disabled && input.value.trim()
+        && values.filter((value) => value === input.value.trim()).length > 1;
+      input.setCustomValidity(duplicate ? '合同チームに同じ学校名を複数登録することはできません。'
+        : missing.includes(input) ? `「${input.value}」の選手が登録されていません。${participationMessage}` : '');
+      if (duplicate) hasDuplicates = true;
+    }
+    schoolError.textContent = hasDuplicates ? '合同チームに同じ学校名を複数登録することはできません。学校名を確認してください。'
+      : missing.length ? `${[...new Set(missing.map((input) => `「${input.value}」`))].join('・')}の選手が登録されていません。${participationMessage}` : '';
+    schoolError.hidden = !schoolError.textContent;
+  }
+
+  function validateMembers() {
     const names = rows.map((row) => authorNameKey(row.name.input.value));
     const members = rows.map((row) => ({ name: row.name.input.value, grade: row.grade.input.value, school: jointTeam.checked ? row.school.input.value : '' }));
     const unresolved = indistinguishableMembers(members).filter((index) => !jointTeam.checked || members[index].school);
     const contactMessage = '氏名・学年・所属校がすべて同じメンバーがいます。別人として区別する必要があるため、実行委員会へ連絡してください。';
     for (const [index, row] of rows.entries()) {
-      const name = authorNameKey(row.name.input.value);
-      row.name.input.setCustomValidity(row.name.input.value && !name ? '氏名を入力してください。空白だけの入力はできません。'
-        : unresolved.includes(index) ? contactMessage : '');
+      row.name.input.setCustomValidity(entryNameIssue(row.name.input.value) || (unresolved.includes(index) ? contactMessage : ''));
     }
     const groups = [...new Set(names.filter(Boolean))].map((name) => names.flatMap((value, index) => value === name ? [index + 1] : []))
       .filter((indexes) => indexes.length > 1);
-    nameWarning.hidden = !groups.length;
-    nameWarning.textContent = unresolved.length ? contactMessage : groups.length ? `${groups.map((indexes) => indexes.map((index) => `メンバー${index}`).join('・')).join('、')}の氏名が同じです。学年・所属校が異なる同姓同名の場合は登録できます。入力の重複でないか確認してください。` : '';
+    const nameIssues = rows.flatMap((row, index) => row.name.input.value && entryNameIssue(row.name.input.value)
+      ? [`メンバー${index + 1}：${entryNameIssue(row.name.input.value)}`] : []);
+    const duplicateWarning = unresolved.length ? contactMessage : groups.length ? `${groups.map((indexes) => indexes.map((index) => `メンバー${index}`).join('・')).join('、')}の氏名が同じです。学年・所属校が異なる同姓同名の場合は登録できます。入力の重複でないか確認してください。` : '';
+    nameWarning.textContent = [...nameIssues, duplicateWarning].filter(Boolean).join(' ');
+    nameWarning.hidden = !nameWarning.textContent;
+    validateSchools();
   }
 
   function render() {
@@ -81,7 +93,7 @@ export function setupMemberFields(form, jointTeam) {
     rows = [];
     container.replaceChildren();
     const size = Number(count.value);
-    if (![3, 4, 5].includes(size)) { payload.value = ''; validateNames(); return; }
+    if (![3, 4, 5].includes(size)) { payload.value = ''; validateMembers(); return; }
     for (let index = 0; index < size; index += 1) {
       const section = document.createElement('fieldset');
       section.className = 'member-section';
@@ -93,11 +105,15 @@ export function setupMemberFields(form, jointTeam) {
       section.appendChild(group);
       const row = {
         name: field(group, `member-${index + 1}-name`, '氏名（姓　名）'),
-        grade: field(group, `member-${index + 1}-grade`, '学年（例：高2）'),
+        grade: field(group, `member-${index + 1}-grade`, '学年', 'select'),
         school: field(group, `member-${index + 1}-school`, '所属校', 'select'),
       };
       row.name.input.maxLength = 100;
-      row.grade.input.maxLength = 20;
+      for (const value of ['', ...ENTRY_GRADES]) {
+        const option = document.createElement('option');
+        option.value = value; option.textContent = value || '学年を選択してください';
+        row.grade.input.appendChild(option);
+      }
       row.name.input.value = drafts[index]?.name || '';
       row.grade.input.value = drafts[index]?.grade || '';
       rows.push(row);
@@ -105,20 +121,20 @@ export function setupMemberFields(form, jointTeam) {
     }
     syncSchools();
     rows.forEach((row, index) => { row.school.input.value = jointTeam.checked ? drafts[index]?.school || '' : ''; });
-    validateNames();
+    validateMembers();
   }
 
   count.addEventListener('change', render);
-  container.addEventListener('input', validateNames);
-  container.addEventListener('change', validateNames);
-  form.addEventListener('input', (event) => { if (event.target.id.startsWith('schoolName')) { syncSchools(); validateNames(); } });
+  container.addEventListener('input', validateMembers);
+  container.addEventListener('change', validateMembers);
+  form.addEventListener('input', (event) => { if (event.target.id.startsWith('schoolName')) { syncSchools(); validateMembers(); } });
   render();
   return {
-    syncSchools() { syncSchools(); validateNames(); },
+    syncSchools() { syncSchools(); validateMembers(); },
     reset() { rows = []; drafts.length = 0; render(); },
     serialize() {
       syncSchools();
-      validateNames();
+      validateMembers();
       payload.value = JSON.stringify(rows.map((row) => ({ name: row.name.input.value, grade: row.grade.input.value,
         school: jointTeam.checked ? row.school.input.value : '' })));
     },

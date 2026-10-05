@@ -45,7 +45,9 @@
 
       <h3>責任者情報</h3>
       <p class="form-note">顧問の先生やコーチ、部長など、本大会に関する責任者の氏名を記載してください。</p>
-      <p><label class="field-label" for="responsibleName">責任者氏名</label><input id="responsibleName" class="haiku" name="responsibleName" placeholder="責任者氏名" maxlength="100" required></p>
+      <p><label class="field-label" for="responsibleName">責任者氏名</label><input id="responsibleName" class="haiku" name="responsibleName" placeholder="責任者氏名（姓　名）" aria-describedby="responsible-name-note responsible-name-status" maxlength="100" required></p>
+      <p id="responsible-name-note" class="form-note">氏名は姓名間に全角スペースを入れてください。</p>
+      <p id="responsible-name-status" class="form-status" role="status" aria-live="polite" hidden></p>
       <p>
         <label class="field-label" for="responsibleRole">責任者の役割</label>
         <select id="responsibleRole" name="responsibleRole" required>
@@ -62,11 +64,13 @@
       <p><label class="field-label" for="memberCount">チーム人数</label><select id="memberCount" name="memberCount" required><option value="">選択してください</option><option value="3">3人</option><option value="4">4人</option><option value="5">5人</option></select></p>
       <h3>チームメンバー</h3>
       <input id="members" name="members" type="hidden">
-      <p class="form-note">チーム人数を選択すると、人数分の入力欄が表示されます。氏名は姓名間に全角スペースを入れてください。記載順で当日配布パンフレットに掲載します。投句時の作者名は、ここで登録した氏名と合わせてください。</p>
+      <p class="form-note">チーム人数を選択すると、人数分の入力欄が表示されます。氏名は姓名間に全角スペースを入れてください。学年はリストから選択してください。合同チームは、登録したすべての学校から1人以上の選手を登録してください。記載順で当日配布パンフレットに掲載します。投句時の作者名は、ここで登録した氏名と合わせてください。</p>
       <div id="member-fields"></div>
       <p id="member-name-warning" class="form-status" role="status" aria-live="polite" hidden></p>
       <h3>紹介文（250〜280字）</h3>
-      <p><label class="field-label" for="introduction">紹介文（250〜280字）</label><textarea id="introduction" class="haiku" name="introduction" placeholder="チームの紹介文（250〜280字）" minlength="250" maxlength="280" rows="8" required></textarea></p>
+      <p><label class="field-label" for="introduction">紹介文（250〜280字）</label><textarea id="introduction" class="haiku" name="introduction" placeholder="チームの紹介文（250〜280字）" aria-describedby="introduction-note introduction-count" rows="8" required></textarea></p>
+      <p id="introduction-note" class="form-note">改行・空白もそれぞれ1字として数えます。</p>
+      <p id="introduction-count" class="form-status" role="status" aria-live="polite">0字 / 250〜280字</p>
       <h3>コメント・特記事項</h3>
       <p><label class="field-label" for="specialNote">コメント・特記事項</label><textarea id="specialNote" class="haiku" name="specialNote" placeholder="コメント・特記事項（任意）" maxlength="2000" rows="5"></textarea></p>
 

@@ -84,7 +84,7 @@ test('空白の位置だけ変えた同じ作者はリーグ戦で重複し、�
 
 test('氏名・学年・所属校が一致するメンバーは要連絡とし、空白だけの氏名は拒否する', () => {
   const { values, entry } = sample(3, 'AAABC');
-  const members = JSON.stringify(['文芸　太郎', '文芸 太郎', '文芸花子'].map(name => ({ name, grade: '高2', school: '' })));
+  const members = JSON.stringify(['文芸　太郎', '文芸 太郎', '文芸　花子'].map(name => ({ name, grade: '高2', school: '' })));
   assert.match(server.validateAuthors(values, { ...entry, members }), /実行委員会へ連絡/);
   assert.match(server.validateEntryMembers({ ...entry, members }), /実行委員会へ連絡/);
   const blank = JSON.stringify(['A', 'B', ' \t　'].map(name => ({ name, grade: '高2', school: '' })));

@@ -492,12 +492,12 @@ test('メンバー登録は人数・学年・合同チームの所属校を検�
   assert.match(context.validateEntryMembers({ ...data, members: JSON.stringify([members[0], members[0], members[2]]) }), /実行委員会へ連絡/);
   assert.equal(context.validateEntryMembers({ ...data, members: JSON.stringify([members[0], { ...members[0], grade: '高1' }, members[2]]) }), '');
   assert.match(context.validateEntryMembers({ ...data, members: JSON.stringify(members.map(m => ({ ...m, grade: '' }))) }), /学年/);
-  const joint = { ...data, isJointTeam: 'true', schoolName2: 'B高校', members: JSON.stringify(members.map(m => ({ ...m, school: 'B高校' }))) };
+  const joint = { ...data, isJointTeam: 'true', schoolName2: 'B高校', members: JSON.stringify(members.map((m, index) => ({ ...m, school: index === 0 ? 'A高校' : 'B高校' }))) };
   assert.equal(context.validateEntryMembers(joint), '');
   assert.match(context.validateEntryMembers({ ...joint, schoolName2: 'C高校' }), /所属校/);
   assert.match(context.validateEntryMembers({ ...joint, isJointTeam: 'false' }), /単独チーム/);
   const body = context.formatMembers(joint.members);
-  assert.equal(body, '甲　太郎（B高校・高2）\n乙　花子（B高校・高2）\n丙　三郎（B高校・高2）');
+  assert.equal(body, '甲　太郎（A高校・高2）\n乙　花子（B高校・高2）\n丙　三郎（B高校・高2）');
 });
 
 test('GAS管理者が設定した試験用兼題で保存・メール送信でき、フォームの値では切り替えない', () => {
@@ -528,12 +528,97 @@ test('不正な試験用兼題は保存せず、クライアントが兼題を�
   assert.deepEqual(unset.events, ['fetch']);
 });
 
+test('紹介文の改行はLF・CRLF・CRとも1字で数え、250〜280字の境界判定を一致させる', () => {
+  const { context } = setup();
+  const front = vm.createContext({});
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '../js/entryRules.js'), 'utf8').replace(/export /g, ''), front);
+  const data = { schoolName: 'A高校', plannedTeamCount: '1', teamName: 'A高校チーム', responsibleName: '佐藤　花子',
+    responsibleRole: '顧問', email: 'test@example.com', memberCount: '3',
+    members: JSON.stringify(['甲　太郎', '乙　花子', '丙　三郎'].map(name => ({ name, grade: '高2', school: '' }))),
+    termsConsent: 'true', inputConfirmation: 'true', contactConfirmation: 'true' };
+  for (const length of [249, 250, 280, 281]) for (const newline of ['\n', '\r\n', '\r']) {
+    const introduction = 'あ'.repeat(length - 7) + '𠮷😀 ' + newline + newline + 'い' + newline;
+    const payload = { ...data, introduction }; const before = JSON.stringify(payload);
+    assert.equal(front.introductionLength(introduction), length);
+    assert.equal(context.introductionLength(introduction), length);
+    assert.equal(context.validateEntry(payload) === '', length >= 250 && length <= 280, `${length}字・${JSON.stringify(newline)}`);
+    assert.equal(JSON.stringify(payload), before, '改行は文字数判定時だけ揃え、保存する入力値を書き換えない');
+  }
+});
+
+test('学年リストの選択肢は画面とGASで一致し、リスト外の値は保存前に拒否する', () => {
+  const state = setup(); const { context } = state;
+  context.getReceptionError = () => '';
+  context.makeIdentityHash = () => assert.fail('不正な学年では照合・保存へ進めない');
+  const data = {
+    schoolName: 'A高校', plannedTeamCount: '1', teamName: 'A高校チーム', responsibleName: '佐藤　花子',
+    responsibleRole: '顧問', email: 'test@example.com', memberCount: '3',
+    introduction: 'あ'.repeat(250), termsConsent: 'true', inputConfirmation: 'true', contactConfirmation: 'true',
+  };
+  const members = ['甲　太郎', '乙　花子', '丙　三郎'].map(name => ({ name, grade: '高2', school: '' }));
+  const front = vm.createContext({});
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '../js/entryRules.js'), 'utf8').replace(/export /g, ''), front);
+  assert.equal(vm.runInContext('JSON.stringify(ENTRY_GRADES)', front), vm.runInContext('JSON.stringify(ENTRY_GRADES)', context));
+  for (const grade of ['中1', '中2', '中3', '高1', '高2', '高3']) {
+    assert.equal(context.validateEntry({ ...data, members: JSON.stringify(members.map(member => ({ ...member, grade }))) }), '');
+  }
+  for (const grade of ['', ' 高2', '高2 ', '高４', '高4', '大学1年', 2, null, ['高2']]) {
+    const result = context.handleEntry({ ...data, members: JSON.stringify(members.map(member => ({ ...member, grade }))) });
+    assert.equal(result.ok, false); assert.match(result.message, /学年/);
+  }
+  assert.equal(state.saved.length + state.mails.length, 0); assert.deepEqual(state.events, []);
+});
+
+test('姓名間スペースは責任者・メンバーとも保存前に検証し、全角・半角の原表記を保持する', () => {
+  const state = setup(); const { context } = state;
+  context.getReceptionError = () => '';
+  context.makeIdentityHash = () => assert.fail('不正な氏名では照合・保存へ進めない');
+  const members = ['甲　太郎', '乙　花子', '丙　三郎'].map(name => ({ name, grade: '高2', school: '' }));
+  const data = { schoolName: 'A高校', plannedTeamCount: '1', teamName: 'A高校チーム', responsibleName: '佐藤　花子',
+    responsibleRole: '顧問', email: 'test@example.com', memberCount: '3', members: JSON.stringify(members),
+    introduction: 'あ'.repeat(250), termsConsent: 'true', inputConfirmation: 'true', contactConfirmation: 'true' };
+  for (const name of ['山田太郎', ' 山田太郎　', '山田\t太郎', '山田\n太郎', '山田　']) {
+    for (const payload of [{ ...data, responsibleName: name }, { ...data, members: JSON.stringify([{ ...members[0], name }, ...members.slice(1)]) }]) {
+      const result = context.handleEntry(payload); assert.equal(result.ok, false); assert.match(result.message, /姓と名の間|前後に空白/);
+    }
+  }
+  for (const name of ['山田　太郎', '山田 太郎', '山田  太郎', '山田　太郎 次郎']) {
+    const payload = { ...data, responsibleName: name, members: JSON.stringify([{ ...members[0], name }, ...members.slice(1)]) };
+    const before = JSON.stringify(payload); assert.equal(context.validateEntry(payload), ''); assert.equal(JSON.stringify(payload), before);
+    assert.ok(context.formatMembers(payload.members).includes(name));
+  }
+  assert.equal(state.saved.length + state.mails.length, 0); assert.deepEqual(state.events, []);
+});
+
+test('合同チームは2〜5校のすべてから選手が必要で、画面を回避しても選手0人の学校を保存前に拒否する', () => {
+  const state = setup(); const { context } = state;
+  context.getReceptionError = () => '';
+  context.makeIdentityHash = () => assert.fail('全校から選手がいなければ照合・保存へ進めない');
+  for (const [schoolCount, assignments, valid] of [
+    [2, 'AAB', true], [2, 'BBB', false], [2, 'AAA', false], [2, 'BBAAB', true],
+    [3, 'ABC', true], [3, 'ABA', false], [4, 'ABC', false],
+    [5, 'ABCDE', true], [5, 'ABCDA', false], [5, 'ABCD', false],
+  ]) {
+    const schools = 'ABCDE'.slice(0, schoolCount).split('').map(letter => `${letter}高校`);
+    const data = { ...Object.fromEntries(schools.map((school, index) => [index ? `schoolName${index + 1}` : 'schoolName', school])),
+      isJointTeam: 'true', plannedTeamCount: '1', teamName: '合同チーム', responsibleName: '責任　者', responsibleRole: '顧問', email: 'test@example.com',
+      memberCount: String(assignments.length), members: JSON.stringify(assignments.split('').map((letter, index) => ({ name: `選手　${index + 1}`, grade: '高2', school: `${letter}高校` }))),
+      introduction: 'あ'.repeat(250), termsConsent: 'true', inputConfirmation: 'true', contactConfirmation: 'true' };
+    assert.equal(context.validateEntry(data) === '', valid, `${schoolCount}校・${assignments}`);
+    if (!valid) {
+      const result = context.handleEntry(data); assert.equal(result.ok, false); assert.match(result.message, /すべての学校から1人以上/);
+      for (const school of schools.filter(school => !assignments.includes(school[0]))) assert.ok(result.message.includes(`「${school}」`));
+    }
+  }
+  assert.equal(state.saved.length + state.mails.length, 0); assert.deepEqual(state.events, []);
+});
+
 test('合同チームの学校名重複は、ブラウザーの確認を回避してもGASが拒否する', () => {
   const { context } = setup();
   const data = {
     schoolName: 'A高校', schoolName2: 'B高校', isJointTeam: 'true', plannedTeamCount: '1', teamName: '合同チーム',
-    responsibleName: '責任者', responsibleRole: '顧問', email: 'test@example.com',
-    memberCount: '3', members: JSON.stringify(['甲', '乙', '丙'].map(name => ({ name, grade: '高2', school: 'A高校' }))),
+    responsibleName: '責任　者', responsibleRole: '顧問', email: 'test@example.com',
+    memberCount: '3', members: JSON.stringify(['甲　太郎', '乙　花子', '丙　三郎'].map((name, index) => ({ name, grade: '高2', school: index === 1 ? 'B高校' : 'A高校' }))),
     introduction: 'あ'.repeat(250), termsConsent: 'true', inputConfirmation: 'true', contactConfirmation: 'true',
   };
   assert.equal(context.validateEntry(data), '');
@@ -545,8 +630,8 @@ test('単独チームでは未送信の任意学校名欄を許容し、入力�
   const { context } = setup();
   const data = {
     schoolName: 'テスト高等学校', plannedTeamCount: '1', teamName: 'テスト高等学校Ａ',
-    responsibleName: 'テスト責任者', responsibleRole: '顧問', email: 'test@example.com',
-    memberCount: '3', members: JSON.stringify(['甲', '乙', '丙'].map(name => ({ name, grade: '高2', school: '' }))), introduction: 'あ'.repeat(250),
+    responsibleName: 'テスト　責任者', responsibleRole: '顧問', email: 'test@example.com',
+    memberCount: '3', members: JSON.stringify(['甲　太郎', '乙　花子', '丙　三郎'].map(name => ({ name, grade: '高2', school: '' }))), introduction: 'あ'.repeat(250),
     termsConsent: 'true', inputConfirmation: 'true', contactConfirmation: 'true',
   };
   assert.equal(context.validateEntry(data), '');
@@ -560,8 +645,8 @@ test('ドットのないメールアドレスはエントリー・投句とも�
   state.context.makeIdentityHash = () => assert.fail('形式不正のメールアドレスを照合してはいけない');
   const entry = {
     schoolName: 'テスト高等学校', plannedTeamCount: '1', teamName: 'テスト高等学校Ａ',
-    responsibleName: 'テスト責任者', responsibleRole: '顧問', email: 'example@example',
-    memberCount: '3', members: JSON.stringify(['甲', '乙', '丙'].map(name => ({ name, grade: '高2', school: '' }))), introduction: 'あ'.repeat(250),
+    responsibleName: 'テスト　責任者', responsibleRole: '顧問', email: 'example@example',
+    memberCount: '3', members: JSON.stringify(['甲　太郎', '乙　花子', '丙　三郎'].map(name => ({ name, grade: '高2', school: '' }))), introduction: 'あ'.repeat(250),
     termsConsent: 'true', inputConfirmation: 'true', contactConfirmation: 'true',
   };
   for (const result of [
@@ -586,8 +671,8 @@ test('エントリー処理中に締切を過ぎた場合、保存直前の確�
   state.context.Utilities.getUuid = () => 'entry-id';
   const result = state.context.handleEntry({
     schoolName: 'テスト高等学校', plannedTeamCount: '1', teamName: 'テスト高等学校Ａ',
-    responsibleName: 'テスト責任者', responsibleRole: '顧問', email: 'test@example.com',
-    memberCount: '3', members: JSON.stringify(['甲', '乙', '丙'].map(name => ({ name, grade: '高2', school: '' }))), introduction: 'あ'.repeat(250),
+    responsibleName: 'テスト　責任者', responsibleRole: '顧問', email: 'test@example.com',
+    memberCount: '3', members: JSON.stringify(['甲　太郎', '乙　花子', '丙　三郎'].map(name => ({ name, grade: '高2', school: '' }))), introduction: 'あ'.repeat(250),
     termsConsent: 'true', inputConfirmation: 'true', contactConfirmation: 'true',
   });
   assert.equal(result.action, 'entry');
