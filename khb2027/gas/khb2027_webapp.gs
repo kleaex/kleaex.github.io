@@ -124,10 +124,10 @@ function checkTeam(data) {
   const identityHash = makeIdentityHash(data.teamName, data.email);
   const entry = findActiveEntry(identityHash);
   if (!entry) {
-    return reply('check-team', false, '事前エントリーと一致しません。チーム名とメールアドレスを確認してください。', extra);
+    return reply('check-team', false, 'エントリーと一致しません。チーム名とメールアドレスを確認してください。', extra);
   }
   extra.memberCount = Number(entry.values.memberCount);
-  return reply('check-team', true, '事前エントリーを確認しました。', extra);
+  return reply('check-team', true, 'エントリーを確認しました。', extra);
 }
 
 const EMAIL_CODE_TTL_MS = 10 * 60 * 1000;
@@ -166,7 +166,7 @@ function emailAuthContext(data) {
   if (error) return { error };
   const identityHash = makeIdentityHash(data.teamName, data.email);
   const entry = findActiveEntry(identityHash);
-  if (!entry) return { error: '事前エントリーと一致しません。チーム名とメールアドレスを確認してください。' };
+  if (!entry) return { error: 'エントリーと一致しません。チーム名とメールアドレスを確認してください。' };
   return { identityHash, entry: entry.values };
 }
 
@@ -295,7 +295,7 @@ function checkSubmission(data) {
   const entry = findActiveEntry(identityHash);
   if (!entry) {
     logEvent('check-submission', 'entry-not-found', identityHash, '');
-    return reply('check-submission', false, '事前エントリーと一致しません。チーム名とメールアドレスを確認してください。');
+    return reply('check-submission', false, 'エントリーと一致しません。チーム名とメールアドレスを確認してください。');
   }
   const authError = getEmailAuthError(data, identityHash, entry.values);
   if (authError) return reply('check-submission', false, authError, { requiresEmailVerification: true });
@@ -319,7 +319,7 @@ function submitSubmission(data) {
   const identityHash = makeIdentityHash(data.teamName, data.email);
   const entry = findActiveEntry(identityHash);
   if (!entry) {
-    return reply('submit-submission', false, '事前エントリーと一致しません。チーム名とメールアドレスを確認してください。');
+    return reply('submit-submission', false, 'エントリーと一致しません。チーム名とメールアドレスを確認してください。');
   }
   // 同一内容なら兼題の取得も不要。保存時と同じロックの中で現行内容を再確認する。
   const authError = getEmailAuthError(data, identityHash, entry.values);
@@ -332,7 +332,7 @@ function submitSubmission(data) {
       if (receptionError) return reply('submit-submission', false, receptionError);
       const duplicateEntry = findActiveEntry(identityHash);
       if (!duplicateEntry) {
-        return reply('submit-submission', false, '事前エントリーと一致しません。チーム名とメールアドレスを確認してください。');
+        return reply('submit-submission', false, 'エントリーと一致しません。チーム名とメールアドレスを確認してください。');
       }
       const authError = getEmailAuthError(data, identityHash, duplicateEntry.values);
       if (authError) return reply('submit-submission', false, authError, { requiresEmailVerification: true });
@@ -363,7 +363,7 @@ function submitSubmission(data) {
     if (receptionError) return reply('submit-submission', false, receptionError);
     const latestEntry = findActiveEntry(identityHash);
     if (!latestEntry) {
-      return reply('submit-submission', false, '事前エントリーと一致しません。チーム名とメールアドレスを確認してください。');
+      return reply('submit-submission', false, 'エントリーと一致しません。チーム名とメールアドレスを確認してください。');
     }
 
     const existing = findCurrentSubmission(identityHash);

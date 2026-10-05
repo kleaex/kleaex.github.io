@@ -2,10 +2,10 @@ import { GAS_MESSAGE_SOURCE, GAS_WEB_APP_URL } from './gasConfig.js';
 import { SUBMISSION_FIELDS, storageKey } from './formFields.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-  const displayIds = ['k4_5', 'k4_4', 'k4_3', 'k4_2', 'k4_1', 'k3_5', 'k3_3', 'k3_1', 'k2_5', 'k2_3', 'k2_1', 'k1_5', 'k1_3', 'k1_1', 'teamName'];
+  const displayIds = SUBMISSION_FIELDS.filter((id) => !['agree', 'authorToken'].includes(id));
   displayIds.forEach((id) => {
     const element = document.getElementById(id);
-    if (element) element.textContent = sessionStorage.getItem(storageKey(id)) || '';
+    if (element) element.textContent = sessionStorage.getItem(storageKey(id)) || (id === 'specialNote' ? 'なし' : '');
   });
 
   const form = document.getElementById('finalForm');
@@ -14,7 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const status = document.getElementById('submission-status');
   const dialog = document.getElementById('overwrite-dialog');
   if (!form) return;
-  const header = form.closest('header');
   let state = 'idle';
   let pending = null;
   let responseTimer;
@@ -41,10 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return input;
   }
 
-  function syncHeaderHeight() {
-    if (header) document.documentElement.style.setProperty('--header-height', `${header.getBoundingClientRect().height}px`);
-  }
-
   function show(nextState, message = '') {
     state = nextState;
     const locked = !['idle', 'unchanged'].includes(state);
@@ -53,7 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
     status.hidden = !message;
     status.textContent = message;
     status.setAttribute('aria-busy', String(state === 'checking' || state === 'sending'));
-    syncHeaderHeight();
   }
 
   function fail(message) {
@@ -74,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
     pending = { action: kind, requestId: requestId.value };
     form.setAttribute('action', GAS_WEB_APP_URL);
     show(kind === 'check-submission' ? 'checking' : 'sending',
-      kind === 'check-submission' ? '事前エントリーと投句内容を確認しています…' : '送信しています…');
+      kind === 'check-submission' ? 'エントリーと投句内容を確認しています…' : '送信しています…');
     responseTimer = setTimeout(() => fail(kind === 'check-submission'
       ? '確認結果を受信できませんでした。通信環境を確認し、もう一度送信してください。'
       : '送信結果を受信できませんでした。受付済みの可能性もあるため、自動返信メールを確認してください。'), 90000);
@@ -159,8 +153,6 @@ document.addEventListener('DOMContentLoaded', () => {
   backButton.addEventListener('click', () => {
     if (state === 'idle' || state === 'unchanged') window.location.href = 'submit.html';
   });
-  window.addEventListener('resize', syncHeaderHeight);
-  if (header && typeof ResizeObserver === 'function') new ResizeObserver(syncHeaderHeight).observe(header);
   show('idle', hasSubmission ? '' : '投句内容が揃っていません。「修正に戻る」から入力を確認してください。');
 });
 

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -9,91 +8,74 @@
   <link rel="stylesheet" href="css/confirm.css">
 </head>
 <body>
-  <header>
-    <h2>関西俳句バトル2027　投句内容確認</h2>
-    <div class="header-actions">
-      <p id="submission-status" role="status" aria-live="polite" hidden></p>
-      <form id="finalForm" class="top-buttons" method="POST" target="hidden_iframe">
-        <button type="button" id="backButton" class="submit">修正に戻る</button>
-        <input id="finalSubmit" class="submit" type="submit" value="送信">
-      </form>
+  <header class="page-header">
+    <div class="page-header-inner">
+      <div class="header-top"><p class="event-name">関西俳句バトル 2027</p><a class="event-link" href="index.html">大会ページへ</a></div>
+      <h1>投句内容の確認</h1>
+      <p class="page-description">俳句・作者・表記をご確認ください。この画面では、まだ投句は完了していません。</p>
+      <ol class="form-steps" aria-label="投句の手順">
+        <li class="is-complete"><span class="step-number">1</span>投句入力</li>
+        <li aria-current="step"><span class="step-number">2</span>内容確認</li>
+        <li><span class="step-number">3</span>受付完了</li>
+      </ol>
     </div>
   </header>
-  <section id="top">
-    <div id="wrapper">
-      <div class="right2">
-        <h3>大将</h3>
-        <div class="right"><div id="k4_5" class="kunakami"></div></div>
+  <main class="page-main">
+    <p class="notice">投句締切は日本時間を基準とします。内容に誤りがなければ、ページ下部の「この内容で送信する」を押してください。</p>
+    <dl class="confirmation-details"><dt>チーム名</dt><dd id="teamName"></dd><dt>メールアドレス</dt><dd id="email"></dd></dl>
+    <section class="review-round" aria-labelledby="kendai1">
+      <h2 id="kendai1">リーグ戦①</h2>
+
+      <div class="poem-review">
+        <article class="poem-card"><h3>先鋒</h3><div class="poem-slot"><div id="k1_1" class="poem-text"></div></div><p id="k1_5_author" class="poem-author"></p></article>
+        <article class="poem-card"><h3>中堅</h3><div class="poem-slot"><div id="k1_3" class="poem-text"></div></div><p id="k1_3_author" class="poem-author"></p></article>
+        <article class="poem-card"><h3>大将</h3><div class="poem-slot"><div id="k1_5" class="poem-text"></div></div><p id="k1_1_author" class="poem-author"></p></article>
       </div>
-      <div class="left2">
-        <h3>副将</h3>
-        <div class="left"><div id="k4_4" class="kunakami"></div></div>
+    </section>
+    <section class="review-round" aria-labelledby="kendai2">
+      <h2 id="kendai2">リーグ戦②</h2>
+
+      <div class="poem-review">
+        <article class="poem-card"><h3>先鋒</h3><div class="poem-slot"><div id="k2_1" class="poem-text"></div></div><p id="k2_5_author" class="poem-author"></p></article>
+        <article class="poem-card"><h3>中堅</h3><div class="poem-slot"><div id="k2_3" class="poem-text"></div></div><p id="k2_3_author" class="poem-author"></p></article>
+        <article class="poem-card"><h3>大将</h3><div class="poem-slot"><div id="k2_5" class="poem-text"></div></div><p id="k2_1_author" class="poem-author"></p></article>
       </div>
-      <div class="right2">
-        <h3>中堅</h3>
-        <div class="right"><div id="k4_3" class="kunakami"></div></div>
+    </section>
+    <section class="review-round" aria-labelledby="kendai3">
+      <h2 id="kendai3">リーグ戦③</h2>
+
+      <div class="poem-review">
+        <article class="poem-card"><h3>先鋒</h3><div class="poem-slot"><div id="k3_1" class="poem-text"></div></div><p id="k3_5_author" class="poem-author"></p></article>
+        <article class="poem-card"><h3>中堅</h3><div class="poem-slot"><div id="k3_3" class="poem-text"></div></div><p id="k3_3_author" class="poem-author"></p></article>
+        <article class="poem-card"><h3>大将</h3><div class="poem-slot"><div id="k3_5" class="poem-text"></div></div><p id="k3_1_author" class="poem-author"></p></article>
       </div>
-      <div class="left2">
-        <h3>次鋒</h3>
-        <div class="left"><div id="k4_2" class="kunakami"></div></div>
+    </section>
+    <section class="review-round" aria-labelledby="kendai4">
+      <h2 id="kendai4">決勝戦</h2>
+      <p class="review-note" hidden>句の欄が収まらない場合は、横にスクロールして確認してください。</p>
+      <div class="poem-review" tabindex="0" role="region" aria-label="決勝戦の5句">
+        <article class="poem-card"><h3>先鋒</h3><div class="poem-slot"><div id="k4_1" class="poem-text"></div></div><p id="k4_5_author" class="poem-author"></p></article>
+        <article class="poem-card"><h3>次鋒</h3><div class="poem-slot"><div id="k4_2" class="poem-text"></div></div><p id="k4_4_author" class="poem-author"></p></article>
+        <article class="poem-card"><h3>中堅</h3><div class="poem-slot"><div id="k4_3" class="poem-text"></div></div><p id="k4_3_author" class="poem-author"></p></article>
+        <article class="poem-card"><h3>副将</h3><div class="poem-slot"><div id="k4_4" class="poem-text"></div></div><p id="k4_2_author" class="poem-author"></p></article>
+        <article class="poem-card"><h3>大将</h3><div class="poem-slot"><div id="k4_5" class="poem-text"></div></div><p id="k4_1_author" class="poem-author"></p></article>
       </div>
-      <div class="right2">
-        <h3>先鋒</h3>
-        <div class="left"><div id="k4_1" class="kunakami"></div></div>
-      </div>
-      <div class="space"><div id="kendai4"></div></div>
-      <div class="left2">
-        <h3>大将</h3>
-        <div class="left"><div id="k3_5" class="kunakami"></div></div>
-      </div>
-      <div class="right2">
-        <h3>中堅</h3>
-        <div class="right"><div id="k3_3" class="kunakami"></div></div>
-      </div>
-      <div class="left2">
-        <h3>先鋒</h3>
-        <div class="left"><div id="k3_1" class="kunakami"></div></div>
-      </div>
-      <div class="space"><div id="kendai3"></div></div>
-      <div class="right2">
-        <h3>大将</h3>
-        <div class="right"><div id="k2_5" class="kunakami"></div></div>
-      </div>
-      <div class="left2">
-        <h3>中堅</h3>
-        <div class="left"><div id="k2_3" class="kunakami"></div></div>
-      </div>
-      <div class="right2">
-        <h3>先鋒</h3>
-        <div class="right"><div id="k2_1" class="kunakami"></div></div>
-      </div>
-      <div class="space"><div id="kendai2"></div></div>
-      <div class="left2">
-        <h3>大将</h3>
-        <div class="left"><div id="k1_5" class="kunakami"></div></div>
-      </div>
-      <div class="right2">
-        <h3>中堅</h3>
-        <div class="right"><div id="k1_3" class="kunakami"></div></div>
-      </div>
-      <div class="left2">
-        <h3>先鋒</h3>
-        <div class="left"><div id="k1_1" class="kunakami"></div></div>
-      </div>
-      <div class="space"><div id="kendai1"></div></div>
-      <div class="right2">
-        <h3></h3>
-        <div class="right"><div id="teamName" class="kunakami"></div></div>
-      </div>
+    </section>
+    <dl class="confirmation-details"><dt>特記事項</dt><dd id="specialNote"></dd></dl>
+    <div class="confirmation-actions">
+      <p class="form-note">投句は、すべて自作・未発表であることを宣誓します。また、投句内容に誤りがないことを確認しました。</p>
+      <p id="submission-status" class="form-status" role="status" aria-live="polite" hidden></p>
+      <form id="finalForm" class="form-actions" method="POST" target="hidden_iframe">
+        <button type="button" id="backButton" class="secondary-button">修正に戻る</button>
+        <input id="finalSubmit" class="submit" type="submit" value="この内容で送信する">
+      </form>
     </div>
-  </section>
+  </main>
+  <footer class="page-footer"><p>関西文芸交流会 · 関西俳句バトル実行委員会</p><p><a href="mailto:klea.ex+khb@gmail.com">klea.ex+khb@gmail.com</a></p></footer>
   <dialog id="overwrite-dialog" aria-labelledby="overwrite-title">
     <h3 id="overwrite-title">すでに投句を受け付けています</h3>
     <p>今回の内容で上書きしますか？</p>
-    <div class="dialog-actions">
-      <button type="button" id="cancelOverwrite" class="submit">キャンセル</button>
-      <button type="button" id="confirmOverwrite" class="submit">上書きする</button>
-    </div>
+    <div class="dialog-actions"><button type="button" id="cancelOverwrite" class="secondary-button">キャンセル</button><button type="button" id="confirmOverwrite" class="submit">上書きする</button></div>
   </dialog>
   <iframe name="hidden_iframe" id="hidden_iframe" title="投句送信処理" hidden></iframe>
   <script src="js/kintou.js"></script>

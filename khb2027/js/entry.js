@@ -15,7 +15,6 @@ const roleOther = document.querySelector('#responsibleRoleOther');
 const introduction = document.querySelector('#introduction');
 const introductionCount = document.querySelector('#introduction-count');
 const responsibleName = document.querySelector('#responsibleName');
-const responsibleNameStatus = document.querySelector('#responsible-name-status');
 let sending = false;
 
 const MAX_SCHOOLS = 5;
@@ -33,12 +32,10 @@ function schoolInputs() {
 function updateSubmitButton() {
   const nameIssue = entryNameIssue(responsibleName.value);
   responsibleName.setCustomValidity(nameIssue);
-  responsibleNameStatus.textContent = responsibleName.value ? nameIssue : '';
-  responsibleNameStatus.hidden = !responsibleNameStatus.textContent;
   const length = introductionLength(introduction.value);
-  introductionCount.textContent = `${length}字 / 250〜280字`;
+  introductionCount.textContent = `${length}/280`;
   introduction.setCustomValidity(length >= 250 && length <= 280 ? '' : '紹介文は250〜280字で入力してください。');
-  submitButton.disabled = sending || !form.checkValidity();
+  submitButton.disabled = sending;
 }
 
 function addSchoolField() {
@@ -124,7 +121,7 @@ form.addEventListener('submit', (event) => {
 window.addEventListener('message', (event) => {
   const fromGas = event.origin === 'https://script.google.com' || event.origin.endsWith('.googleusercontent.com');
   const message = event.data;
-  if (!fromGas || !message || message.source !== GAS_MESSAGE_SOURCE || message.action !== 'entry') return;
+  if (!fromGas || !sending || !message || message.source !== GAS_MESSAGE_SOURCE || message.action !== 'entry' || typeof message.ok !== 'boolean') return;
 
   sending = false;
   status.textContent = message.message || '送信結果を確認できませんでした。';
@@ -132,6 +129,7 @@ window.addEventListener('message', (event) => {
     form.reset();
     memberFields.reset();
     toggleConditionalFields();
+    window.location.href = 'entry-finish.html';
   }
   updateSubmitButton();
 });

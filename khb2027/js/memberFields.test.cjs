@@ -18,7 +18,7 @@ function setup() {
     dispatch(type, target = this) { for (const handler of this.handlers[type] || []) handler({ target }); }
     setCustomValidity(value) { this.validationMessage = value; }
   }
-  const elements = Object.fromEntries(['memberCount', 'member-fields', 'members', 'schoolName', 'schoolName2', 'member-name-warning', 'school-name-error'].map(id => [id, new Element()]));
+  const elements = Object.fromEntries(['memberCount', 'member-fields', 'members', 'schoolName', 'schoolName2', 'member-name-warning'].map(id => [id, new Element()]));
   elements.schoolName.value = 'A高校'; elements.schoolName2.value = 'B高校'; elements.schoolName2.disabled = true;
   const form = new Element();
   form.querySelectorAll = () => Object.entries(elements).filter(([id]) => /^schoolName\d*$/.test(id)).map(([, input]) => input);
@@ -69,7 +69,7 @@ test('同姓同名は警告で登録を妨げず、空白だけの氏名は拒�
   assert.equal(s.input('member-2-name').validationMessage, '');
   assert.equal(s.elements['member-name-warning'].hidden, false);
   assert.match(s.elements['member-name-warning'].textContent, /メンバー1・メンバー2/);
-  assert.match(s.elements['member-name-warning'].textContent, /同姓同名の場合は登録できます/);
+  assert.match(s.elements['member-name-warning'].textContent, /入力の重複でないか確認/);
   s.input('member-2-name').value = '別の　氏名'; s.elements['member-fields'].dispatch('input');
   assert.equal(s.input('member-1-name').validationMessage, '');
   assert.equal(s.elements['member-name-warning'].hidden, true);
@@ -98,7 +98,7 @@ test('姓名間の全角・半角スペースを認め、区切りなし・前�
   for (const value of ['山田太郎', ' 山田太郎　', '山田\t太郎', '山田\n太郎', '山田　']) {
     name.value = value; s.elements['member-fields'].dispatch('input');
     assert.match(name.validationMessage, /姓と名の間/);
-    assert.equal(s.elements['member-name-warning'].hidden, false);
+    assert.equal(s.elements['member-name-warning'].hidden, true, '入力条件の不備は氏名欄の標準警告だけで表示する');
   }
   for (const value of ['山田　太郎', '山田 太郎', '山田  太郎', '山田　太郎 次郎']) {
     name.value = value; s.serialize(); assert.equal(name.validationMessage, '');
@@ -111,23 +111,20 @@ test('合同チームの同じ学校名は両欄で拒否し、修正・合同�
   s.joint.checked = true; s.elements.schoolName2.disabled = false;
   s.elements.schoolName2.value = s.elements.schoolName.value; s.controller.syncSchools();
   for (const field of ['schoolName', 'schoolName2']) assert.match(s.elements[field].validationMessage, /同じ学校名/);
-  assert.equal(s.elements['school-name-error'].hidden, false);
   s.elements.schoolName2.value = 'B高校'; s.form.dispatch('input', { id: 'schoolName2' });
   s.input('member-1-school').value = 'A高校'; s.input('member-2-school').value = 'B高校';
   s.elements['member-fields'].dispatch('change');
   for (const field of ['schoolName', 'schoolName2']) assert.equal(s.elements[field].validationMessage, '');
-  assert.equal(s.elements['school-name-error'].hidden, true);
   s.elements.schoolName2.value = 'A高校'; s.controller.syncSchools();
   s.joint.checked = false; s.elements.schoolName2.disabled = true; s.controller.syncSchools();
   for (const field of ['schoolName', 'schoolName2']) assert.equal(s.elements[field].validationMessage, '');
-  assert.equal(s.elements['school-name-error'].hidden, true);
 });
 
 test('同姓同名・同学年・同校は要連絡とし、学年か所属校を直すと警告だけになる', () => {
   const s = setup(); s.count(3);
   for (const index of [1, 2]) { s.input(`member-${index}-name`).value = '同じ　氏名'; s.input(`member-${index}-grade`).value = '高2'; }
   s.serialize();
-  for (const index of [1, 2]) assert.match(s.input(`member-${index}-name`).validationMessage, /実行委員会へ連絡/);
+  for (const index of [1, 2]) assert.match(s.input(`member-${index}-name`).validationMessage, /実行委員会へご連絡/);
   s.input('member-2-grade').value = '高1'; s.elements['member-fields'].dispatch('input');
   for (const index of [1, 2]) assert.equal(s.input(`member-${index}-name`).validationMessage, '');
   assert.equal(s.elements['member-name-warning'].hidden, false);
@@ -136,7 +133,7 @@ test('同姓同名・同学年・同校は要連絡とし、学年か所属校�
   s.input('member-1-school').value = 'A高校'; s.input('member-2-school').value = 'B高校'; s.elements['member-fields'].dispatch('change');
   for (const index of [1, 2]) assert.equal(s.input(`member-${index}-name`).validationMessage, '');
   s.input('member-2-school').value = 'A高校'; s.elements['member-fields'].dispatch('change');
-  for (const index of [1, 2]) assert.match(s.input(`member-${index}-name`).validationMessage, /実行委員会へ連絡/);
+  for (const index of [1, 2]) assert.match(s.input(`member-${index}-name`).validationMessage, /実行委員会へご連絡/);
 });
 
 test('受付完了後のリセットでは入力済みメンバーの下書きを消去する', () => {
@@ -152,21 +149,25 @@ test('合同チームは全校から1人以上を必要とし、所属校の変�
   assert.match(s.elements.schoolName2.validationMessage, /「B高校」の選手が登録されていません/);
   assert.equal(s.elements.schoolName.validationMessage, '');
   s.input('member-2-school').value = 'B高校'; s.elements['member-fields'].dispatch('change');
-  assert.equal(s.elements.schoolName2.validationMessage, ''); assert.equal(s.elements['school-name-error'].hidden, true);
+  assert.equal(s.elements.schoolName2.validationMessage, '');
   s.elements.schoolName2.value = 'C高校'; s.form.dispatch('input', { id: 'schoolName2' });
   assert.equal(s.input('member-2-school').value, ''); assert.match(s.elements.schoolName2.validationMessage, /「C高校」/);
   s.input('member-2-school').value = 'C高校'; s.elements['member-fields'].dispatch('change');
-  assert.equal(s.elements['school-name-error'].hidden, true);
+  assert.equal(s.elements.schoolName2.validationMessage, '');
   s.input('member-2-school').value = 'A高校'; s.elements['member-fields'].dispatch('change');
   s.joint.checked = false; s.elements.schoolName2.disabled = true; s.controller.syncSchools();
-  assert.equal(s.elements.schoolName2.validationMessage, ''); assert.equal(s.elements['school-name-error'].hidden, true);
+  assert.equal(s.elements.schoolName2.validationMessage, '');
 });
 
 test('5校・5人は全校参加なら有効で、人数を3人へ減らすと参加者が消えた学校を検出する', () => {
   const s = setup(); s.count(5); s.joint.checked = true; s.elements.schoolName2.disabled = false;
   s.addSchool(3, 'C高校'); s.addSchool(4, 'D高校'); s.addSchool(5, 'E高校');
   for (const [index, school] of ['A高校', 'B高校', 'C高校', 'D高校', 'E高校'].entries()) s.input(`member-${index + 1}-school`).value = school;
-  s.serialize(); assert.equal(s.elements['school-name-error'].hidden, true);
-  s.count(3); assert.match(s.elements['school-name-error'].textContent, /「D高校」・「E高校」/);
-  s.count(5); assert.equal(s.elements['school-name-error'].hidden, true, '人数を戻すと保持した所属校で再判定');
+  s.serialize();
+  for (const number of [1, 2, 3, 4, 5]) assert.equal(s.elements[`schoolName${number === 1 ? '' : number}`].validationMessage, '');
+  s.count(3);
+  assert.match(s.elements.schoolName4.validationMessage, /「D高校」/);
+  assert.match(s.elements.schoolName5.validationMessage, /「E高校」/);
+  s.count(5);
+  for (const number of [4, 5]) assert.equal(s.elements[`schoolName${number}`].validationMessage, '', '人数を戻すと保持した所属校で再判定');
 });

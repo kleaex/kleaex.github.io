@@ -1,19 +1,38 @@
-<html>
+<!DOCTYPE html>
+<html lang="ja">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>関西俳句バトル2027　投句フォーム</title>
+  <title>関西俳句バトル2027　投句完了</title>
   <link rel="icon" href="../img/favicon.ico">
-  <link rel="stylesheet" href="css/submit.css" type="text/css">
+  <link rel="stylesheet" href="css/forms.css">
 </head>
 <body>
-  <div class="header">
-    <h2>関西俳句バトル2027　投句フォーム</h2>
-  </div>
-  <h3>投句完了</h3>
-  <p> 投句を受け付けました。入力いただいたメールアドレスに自動返信メールをお送りいたしましたので、ご確認ください。<br>
-  通常、メールは1分以内に届きます。迷惑メールなどを確認したうえで、メールが届いていない場合は、すみやかに関西文芸交流会 関西俳句バトル実行委員会(<a href="mailto:klea.ex+khb@gmail.com">klea.ex+khb@gmail.com</a>)にご連絡ください。<br>
-  また、質問や疑問点がおありの場合は、年末年始期間中でも、できるだけ早くご連絡いただきますよう、お願いいたします。
-  その際、投句内容についてのご質問がある場合は、メールのタイトルに「関西俳句バトル2027　投句についてのお問い合わせ」と明記いただくようお願いいたします。
-  </p>
+  <header class="page-header">
+    <div class="page-header-inner">
+      <div class="header-top"><p class="event-name">関西俳句バトル 2027</p><a class="event-link" href="index.html">大会ページへ</a></div>
+      <h1>投句完了</h1>
+      <ol class="form-steps" aria-label="投句の手順">
+        <li class="is-complete"><span class="step-number">1</span>投句入力</li>
+        <li class="is-complete"><span class="step-number">2</span>内容確認</li>
+        <li aria-current="step"><span class="step-number">3</span>受付完了</li>
+      </ol>
+    </div>
+  </header>
+  <main class="page-main">
+    <section class="completion" aria-labelledby="completion-heading">
+      <div class="completion-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4 10-10"/></svg></div>
+      <h2 id="completion-heading">投句を受け付けました</h2>
+      <p>入力いただいたメールアドレスに自動返信メールをお送りしました。投句内容をご確認ください。</p>
+      <div class="notice"><p>通常、メールは1分以内に届きます。迷惑メールフォルダーなどを確認しても届いていない場合は、すみやかに実行委員会へご連絡ください。</p></div>
+      <div class="completion-next">
+        <h3>投句についてのお問い合わせ</h3>
+        <p>質問や疑問点がある場合は、年末年始期間中でも、できるだけ早くご連絡ください。メールの件名に「関西俳句バトル2027　投句についてのお問い合わせ」と明記してください。</p>
+        <p><a href="mailto:klea.ex+khb@gmail.com?subject=関西俳句バトル2027%E3%80%80投句についてのお問い合わせ">klea.ex+khb@gmail.com</a></p>
+      </div>
+      <div class="form-actions"><a class="submit" href="index.html">大会ページへ戻る</a></div>
+    </section>
+  </main>
+  <footer class="page-footer"><p>関西文芸交流会 · 関西俳句バトル実行委員会</p><p><a href="mailto:klea.ex+khb@gmail.com">klea.ex+khb@gmail.com</a></p></footer>
 </body>
+</html>

@@ -8,7 +8,7 @@ const fieldsSource = fs.readFileSync(path.join(__dirname, 'formFields.js'), 'utf
 const source = fs.readFileSync(path.join(__dirname, 'confirmGas.js'), 'utf8').replace(/^import .*;\r?\n/gm, '');
 
 function setup({ missing = '', throwOnSubmit = false } = {}) {
-  const posts = [], timers = new Map(), windowHandlers = {}, storage = new Map(), properties = {};
+  const posts = [], timers = new Map(), windowHandlers = {}, storage = new Map();
   let sequence = 0;
   class Element {
     constructor() { this.handlers = {}; this.children = []; this.hidden = false; this.disabled = false; this.value = ''; }
@@ -18,7 +18,6 @@ function setup({ missing = '', throwOnSubmit = false } = {}) {
     setAttribute(key, value) { this[key] = value; }
     showModal() { this.open = true; }
     close() { this.open = false; }
-    closest() { return header; }
   }
   class Form extends Element {
     submit() {
@@ -27,18 +26,16 @@ function setup({ missing = '', throwOnSubmit = false } = {}) {
     }
   }
   const elements = {};
-  for (const id of ['finalSubmit', 'backButton', 'submission-status', 'overwrite-dialog', 'cancelOverwrite', 'confirmOverwrite', 'teamName']) elements[id] = new Element();
+  for (const id of ['finalSubmit', 'backButton', 'submission-status', 'overwrite-dialog', 'cancelOverwrite', 'confirmOverwrite', 'teamName', 'email', 'k1_1', 'k1_5_author', 'specialNote']) elements[id] = new Element();
   elements.finalForm = new Form();
   // DOMの名前付きプロパティでsubmitが隠れていても、標準の送信メソッドを呼べることを確認する。
   elements.finalForm.submit = {};
-  const header = { getBoundingClientRect: () => ({ height: 80 }) };
   let ready;
   const context = vm.createContext({
     GAS_MESSAGE_SOURCE: 'khb2027', GAS_WEB_APP_URL: 'https://script.google.com/macros/s/test/exec',
     document: {
       addEventListener: (type, handler) => { if (type === 'DOMContentLoaded') ready = handler; },
       getElementById: id => elements[id] || null, createElement: () => new Element(),
-      documentElement: { style: { setProperty: (key, value) => { properties[key] = value; } } },
     },
     window: { location: { origin: 'http://127.0.0.1:8766', href: 'confirm.html' }, addEventListener: (type, handler) => { (windowHandlers[type] ||= []).push(handler); } },
     HTMLFormElement: Form,
@@ -57,7 +54,7 @@ function setup({ missing = '', throwOnSubmit = false } = {}) {
       source: 'khb2027', action: post.data.action, requestId: post.data.requestId, ok: true, ...extra,
     } });
   }
-  return { context, elements, posts, storage, properties, tick, reply, submit: () => elements.finalForm.dispatch('submit') };
+  return { context, elements, posts, storage, tick, reply, submit: () => elements.finalForm.dispatch('submit') };
 }
 
 test('事前確認→保存成功→完了ページ遷移まで両ボタンをロックし、投句のデータだけ消去する', () => {
@@ -85,13 +82,12 @@ test('事前確認→保存成功→完了ページ遷移まで両ボタンを�
   assert.equal(s.elements.backButton.disabled, true);
 });
 
-test('保存前エラーをヘッダー内に表示し、両ボタンと入力データを復元する', () => {
+test('保存前エラーを表示し、両ボタンと入力データを復元する', () => {
   const s = setup(); s.submit();
   s.reply(s.posts[0], { hasExistingSubmission: false }); s.tick(0);
   s.reply(s.posts[1], { ok: false, message: '兼題情報を確認できないため、投句は保存していません。' });
   assert.equal(s.elements['submission-status'].hidden, false);
   assert.match(s.elements['submission-status'].textContent, /保存していません/);
-  assert.equal(s.properties['--header-height'], '80px');
   assert.equal(s.elements.backButton.disabled, false);
   assert.equal(s.elements.finalSubmit.disabled, false);
   assert.ok(s.storage.has('khb2027:submission:k1_1'));
@@ -169,6 +165,15 @@ for (const stage of ['check', 'save']) {
     s.elements.backButton.dispatch('click'); assert.equal(s.context.window.location.href, 'submit.html');
   });
 }
+
+test('確認画面に俳句・対応する作者・チーム・メール・特記事項を文字列として表示する', () => {
+  const s = setup();
+  for (const id of ['teamName', 'email', 'k1_1', 'k1_5_author', 'specialNote']) {
+    assert.equal(s.elements[id].textContent, `入力:${id}`);
+  }
+  const empty = setup({ missing: 'specialNote' });
+  assert.equal(empty.elements.specialNote.textContent, 'なし');
+});
 
 test('送信開始時の例外と入力データの欠落では送信せず、修正に戻れる', () => {
   const failed = setup({ throwOnSubmit: true }); failed.submit();

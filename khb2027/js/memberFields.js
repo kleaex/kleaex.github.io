@@ -6,7 +6,6 @@ export function setupMemberFields(form, jointTeam) {
   const container = document.getElementById('member-fields');
   const payload = document.getElementById('members');
   const nameWarning = document.getElementById('member-name-warning');
-  const schoolError = document.getElementById('school-name-error');
   const drafts = [];
   let rows = [];
 
@@ -57,33 +56,25 @@ export function setupMemberFields(form, jointTeam) {
     const missing = jointTeam.checked && rows.length ? schoolInputs.filter((input) => !input.disabled && input.value
       && !rows.some((row) => row.school.input.value === input.value)) : [];
     const participationMessage = '合同チームは、登録したすべての学校から1人以上の選手を登録してください。';
-    let hasDuplicates = false;
     for (const input of schoolInputs) {
       const duplicate = jointTeam.checked && !input.disabled && input.value.trim()
         && values.filter((value) => value === input.value.trim()).length > 1;
       input.setCustomValidity(duplicate ? '合同チームに同じ学校名を複数登録することはできません。'
         : missing.includes(input) ? `「${input.value}」の選手が登録されていません。${participationMessage}` : '');
-      if (duplicate) hasDuplicates = true;
     }
-    schoolError.textContent = hasDuplicates ? '合同チームに同じ学校名を複数登録することはできません。学校名を確認してください。'
-      : missing.length ? `${[...new Set(missing.map((input) => `「${input.value}」`))].join('・')}の選手が登録されていません。${participationMessage}` : '';
-    schoolError.hidden = !schoolError.textContent;
   }
 
   function validateMembers() {
     const names = rows.map((row) => authorNameKey(row.name.input.value));
     const members = rows.map((row) => ({ name: row.name.input.value, grade: row.grade.input.value, school: jointTeam.checked ? row.school.input.value : '' }));
     const unresolved = indistinguishableMembers(members).filter((index) => !jointTeam.checked || members[index].school);
-    const contactMessage = '氏名・学年・所属校がすべて同じメンバーがいます。別人として区別する必要があるため、実行委員会へ連絡してください。';
+    const contactMessage = '氏名・学年・所属校がすべて同じメンバーがいます。別人として区別する必要があるため、実行委員会へご連絡ください。';
     for (const [index, row] of rows.entries()) {
       row.name.input.setCustomValidity(entryNameIssue(row.name.input.value) || (unresolved.includes(index) ? contactMessage : ''));
     }
     const groups = [...new Set(names.filter(Boolean))].map((name) => names.flatMap((value, index) => value === name ? [index + 1] : []))
       .filter((indexes) => indexes.length > 1);
-    const nameIssues = rows.flatMap((row, index) => row.name.input.value && entryNameIssue(row.name.input.value)
-      ? [`メンバー${index + 1}：${entryNameIssue(row.name.input.value)}`] : []);
-    const duplicateWarning = unresolved.length ? contactMessage : groups.length ? `${groups.map((indexes) => indexes.map((index) => `メンバー${index}`).join('・')).join('、')}の氏名が同じです。学年・所属校が異なる同姓同名の場合は登録できます。入力の重複でないか確認してください。` : '';
-    nameWarning.textContent = [...nameIssues, duplicateWarning].filter(Boolean).join(' ');
+    nameWarning.textContent = !unresolved.length && groups.length ? `${groups.map((indexes) => indexes.map((index) => `メンバー${index}`).join('・')).join('、')}の氏名が同じです。入力の重複でないか確認してください。` : '';
     nameWarning.hidden = !nameWarning.textContent;
     validateSchools();
   }

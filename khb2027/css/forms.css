@@ -1,0 +1,125 @@
+@charset "UTF-8";
+@import url("./color.css");
+
+/* Latin glyphs use CMU Serif; Japanese glyphs fall through to Hiragino. */
+@font-face {
+  font-family: "KHB CMU Serif";
+  src: url("../../assets/fonts/CMUSerif-Roman.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-007F, U+00A0-024F;
+}
+@font-face {
+  font-family: "KHB CMU Serif";
+  src: url("../../assets/fonts/CMUSerif-Bold.ttf") format("truetype");
+  font-weight: 600 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-007F, U+00A0-024F;
+}
+:root {
+  --form-width: 880px;
+  --form-line: rgba(17, 17, 17, .16);
+  --form-soft: rgba(191, 255, 208, .18);
+  --form-muted: #555;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  background: var(--white);
+  color: var(--grey);
+  font-family: "KHB CMU Serif", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN", "Yu Gothic", Meiryo, sans-serif;
+  font-size: 16px;
+  line-height: 1.8;
+  -webkit-text-size-adjust: 100%;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: inherit; text-underline-offset: .22em; }
+a:hover { text-decoration-thickness: 2px; }
+h1, h2, h3, p { margin: 0; }
+h1 { font-size: clamp(1.75rem, 4vw, 2.4rem); line-height: 1.45; letter-spacing: .04em; color: var(--black); }
+h2 { font-size: 1.25rem; line-height: 1.6; color: var(--black); }
+h3 { font-size: 1.05rem; color: var(--black); }
+.page-header { background: var(--form-soft); border-top: 5px solid var(--accent); border-bottom: 1px solid var(--form-line); }
+.page-header-inner, .page-main, .page-footer { width: min(var(--form-width), calc(100% - 48px)); margin-inline: auto; }
+.page-header-inner { padding-block: 24px 32px; }
+.header-top { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; margin-bottom: 28px; }
+.event-name { font-size: .92rem; font-weight: 600; letter-spacing: .06em; }
+.event-link { font-size: .85rem; flex-shrink: 0; }
+.page-description { margin-top: 12px; color: var(--form-muted); font-size: .94rem; }
+.form-steps { display: flex; gap: 24px; list-style: none; margin: 24px 0 0; padding: 0; color: var(--form-muted); font-size: .86rem; }
+.form-steps li { display: flex; align-items: center; gap: 8px; }
+.step-number { display: inline-grid; place-items: center; width: 26px; height: 26px; border: 1px solid var(--form-line); border-radius: 50%; background: var(--white); font-size: 1rem; }
+.form-steps [aria-current="step"] { color: var(--black); font-weight: 600; }
+.form-steps [aria-current="step"] .step-number, .form-steps .is-complete .step-number { background: var(--accent); border-color: transparent; }
+.page-main { padding-block: 40px 64px; }
+.form-section { padding-block: 32px; border-bottom: 1px solid var(--form-line); min-width: 0; }
+.form-section:first-child { padding-top: 0; }
+.section-heading { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; }
+.section-number { color: var(--form-muted); font-size: 1.2rem; }
+.form-section > h3, .form-section > h2 { margin-bottom: 18px; }
+.form-section > p, .form-section > div > p { margin-block: 16px; }
+.field-label, .submitform label:not(.checkbox-field label) { display: block; margin-bottom: 8px; font-size: .92rem; font-weight: 600; }
+.haiku, .name, .submitform select, .submitform textarea {
+  width: 100%; min-width: 0; min-height: 48px; padding: 11px 14px;
+  border: 1px solid var(--form-line); border-radius: 6px; background: var(--white); line-height: 1.6;
+}
+input::placeholder, textarea::placeholder { color: #717171; opacity: 1; }
+.submitform textarea { resize: vertical; }
+.submitform select { padding-right: 30px; }
+.haiku:focus, .name:focus, .submitform select:focus, .submitform textarea:focus { border-color: var(--black); background: var(--form-soft); }
+:focus-visible { outline: 2px solid var(--black); outline-offset: 3px; }
+.field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-block: 20px; }
+.form-note, .field-hint { color: var(--form-muted); font-size: .87rem; line-height: 1.85; }
+.field-hint { margin-top: 8px; }
+.notice { padding: 18px 20px; border-left: 3px solid var(--deepaccent); background: var(--form-soft); font-size: .9rem; }
+.notice p + p { margin-top: 10px; }
+.form-status { margin-block: 16px; padding: 12px 16px; border: 1px solid var(--form-line); border-radius: 6px; background: var(--form-soft); font-size: .88rem; overflow-wrap: anywhere; }
+.form-status:empty { display: none; }
+.checkbox-field { display: flex; align-items: flex-start; gap: 12px; }
+.checkbox-field input { width: 18px; height: 18px; flex-shrink: 0; margin: .35em 0 0; accent-color: var(--black); }
+.checkbox-field label { font-size: .9rem; cursor: pointer; }
+.submit, .secondary-button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  appearance: none; min-height: 48px; padding: 12px 24px; border: 1px solid var(--black); border-radius: 6px;
+  background: var(--black); color: var(--white); font-weight: 600; line-height: 1.5; cursor: pointer; text-decoration: none;
+  transition: background-color .15s ease;
+}
+.submit:hover { background: var(--grey); }
+.secondary-button { background: var(--white); color: var(--black); font-size: .9rem; }
+.secondary-button:hover { background: var(--form-soft); }
+.submit:disabled, .secondary-button:disabled { opacity: .45; cursor: not-allowed; }
+.form-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.form-actions .submit { min-width: 220px; }
+.page-footer { border-top: 1px solid var(--form-line); padding-block: 24px 32px; color: var(--form-muted); font-size: .8rem; }
+.page-footer p + p { margin-top: 4px; }
+.honeypot { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.completion { max-width: 680px; margin-inline: auto; padding-block: 16px; }
+.completion-mark { display: grid; place-items: center; width: 56px; height: 56px; margin-bottom: 24px; background: var(--accent); border-radius: 50%; color: var(--black); }
+.completion-mark svg { width: 26px; height: 26px; }
+.completion h2 { font-size: clamp(1.4rem, 4vw, 1.8rem); margin-bottom: 16px; }
+.completion > p { margin-block: 16px; }
+.completion-next { border-top: 1px solid var(--form-line); margin-top: 28px; padding-top: 24px; }
+.completion-next h3 { margin-bottom: 10px; }
+.completion-next p + p { margin-top: 12px; }
+.completion a:not(.submit):not(.secondary-button) { overflow-wrap: anywhere; }
+dialog { max-width: min(460px, calc(100% - 32px)); padding: 28px; border: 1px solid var(--form-line); border-radius: 12px; background: var(--white); color: var(--grey); }
+dialog::backdrop { background: rgba(17, 17, 17, .4); }
+dialog h3 { margin-bottom: 12px; }
+.dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+@media (max-width: 600px) {
+  .page-header-inner, .page-main, .page-footer { width: calc(100% - 32px); }
+  .page-header-inner { padding-block: 18px 24px; }
+  .header-top { align-items: flex-start; gap: 12px; margin-bottom: 24px; }
+  .event-name { font-size: .82rem; }
+  .event-link { font-size: .78rem; }
+  .form-steps { gap: 16px; font-size: .8rem; }
+  .form-steps li { gap: 6px; }
+  .page-main { padding-block: 28px 44px; }
+  .form-section { padding-block: 28px; }
+  .field-grid { grid-template-columns: 1fr; gap: 16px; }
+  .form-actions > .submit, .completion .form-actions > a { width: 100%; min-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

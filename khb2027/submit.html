@@ -8,82 +8,103 @@
     <link rel="stylesheet" href="css/submit.css" type="text/css">
 </head>
     <body>
-        <div class="header">
-            <h2>関西俳句バトル2027　投句フォーム</h2>
-        </div>
-        <div id="form">
+        <header class="page-header">
+            <div class="page-header-inner">
+                <div class="header-top"><p class="event-name">関西俳句バトル 2027</p><a class="event-link" href="index.html">大会ページへ</a></div>
+                <h1>投句フォーム</h1>
+                <p class="page-description">チーム情報とメール本人確認の後、各兼題の俳句と作者を入力してください。</p>
+                <ol class="form-steps" aria-label="投句の手順">
+                    <li aria-current="step"><span class="step-number">1</span>投句入力</li>
+                    <li><span class="step-number">2</span>内容確認</li>
+                    <li><span class="step-number">3</span>受付完了</li>
+                </ol>
+            </div>
+        </header>
+        <main id="form" class="page-main">
             <form method="POST" class="submitform" id="haiku-form">
-                <p><strong>投句締切は日本時間を基準とします。投句締切は厳守ください。</strong></p>
-                <h3>チーム情報</h3>
-                <p><strong>エントリー時の情報と合わせてください。エントリー時の情報が分からない場合は、自動返信メールを確認してください。全角・半角に注意してください。</strong></p>
-                <p>
-                    <input id="teamName" class="haiku" placeholder="チーム名" aria-label="チーム名" aria-describedby="team-status" required><br>
-                    <input id="email" class="haiku" placeholder="メールアドレス" aria-label="メールアドレス" aria-describedby="team-status" type="email" pattern="[^\s@]+@[^\s@]+\.[^\s@]+" title="example@example.com のように、@の後にドットを含むメールアドレスを入力してください。" maxlength="254" required>
-                </p>
-                <p id="team-status" class="form-status" role="status" aria-live="polite">チーム名とメールアドレスを入力すると、事前エントリーを自動で確認します。</p>
-                <button id="retry-team-check" class="secondary-button" type="button" hidden>もう一度確認する</button>
-                <fieldset id="email-auth" hidden>
-                    <legend>メール本人確認</legend>
-                    <p>登録メールで本人確認を済ませてから、投句フォームに入力してください。</p>
-                    <button id="send-email-code" class="secondary-button" type="button" disabled>確認コードを送る・再送する</button>
-                    <p><label for="email-code">メールに届いた6桁の確認コード</label><input id="email-code" class="haiku" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" disabled></p>
-                    <button id="verify-email-code" class="secondary-button" type="button" disabled>コードを確認する</button>
+                <section class="form-section" aria-labelledby="team-heading">
+                <div class="section-heading"><span class="section-number" aria-hidden="true">01</span><h2 id="team-heading">チーム情報</h2></div>
+                <p class="form-note">エントリー時の情報と合わせてください。エントリー時の情報が分からない場合は、自動返信メールを確認してください。全角・半角に注意してください。</p>
+                <div class="field-grid">
+                    <p><label class="field-label" for="teamName">チーム名</label><input id="teamName" class="haiku" placeholder="チーム名" aria-describedby="team-status" required></p>
+                    <p><label class="field-label" for="email">メールアドレス</label><input id="email" class="haiku" placeholder="example@example.com" aria-describedby="team-status" type="email" pattern="[^\s@]+@[^\s@]+\.[^\s@]+" title="example@example.com のように、@の後にドットを含むメールアドレスを入力してください。" maxlength="254" autocomplete="email" required></p>
+                </div>
+                <p id="team-status" class="form-status" role="status" aria-live="polite"></p>
+                <button id="check-team" class="secondary-button" type="button">次へ</button>
+                </section>
+                <section id="email-auth" class="form-section" aria-labelledby="email-auth-heading" hidden>
+                    <div class="section-heading"><span class="section-number" aria-hidden="true">02</span><h2 id="email-auth-heading">メール本人確認</h2></div>
+                    <button id="send-email-code" class="secondary-button" type="button" disabled>確認コードを送る</button>
+                    <div id="email-code-fields" hidden>
+                        <p><label class="field-label" for="email-code">確認コード</label><input id="email-code" class="haiku" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" disabled></p>
+                        <button id="verify-email-code" class="secondary-button" type="button" disabled>コードを確認する</button>
+                    </div>
                     <p id="email-auth-status" class="form-status" role="status" aria-live="polite"></p>
-                </fieldset>
                 <input id="authorToken" type="hidden">
-                <p id="submission-access-status" class="form-status" role="status" aria-live="polite">メール本人確認が完了すると、投句フォームが表示されます。</p>
+                </section>
                 <fieldset id="submission-fields" aria-label="投句内容" disabled hidden>
+                <section class="form-section" aria-labelledby="poem-heading">
+                <div class="section-heading"><span class="section-number" aria-hidden="true">03</span><h2 id="poem-heading">投句内容</h2></div>
                 <p><strong>投句前に、投句の内容が詳細要項に記載の「投句方法」に準じているか、改めて確認してください。</strong><br>
-                俳句は基本的に一行棒書きで記入してください。アルファベットや記号などを含む句を投句するときは、縦書きで表記されることを踏まえ、全角・半角に注意してください。このほか、句の表記などについて、特に記載したいことがある場合は、特記事項欄に記入してください。特に指定がない場合は、投句された文字列をそのまま縦書きにして表記します。<br>
-                作者は、メール本人確認後に表示される登録メンバーから選択してください。<br>
+                俳句は基本的に一行棒書きで記入してください。アルファベットや記号などを含む句を投句するときは、縦書きで表記されることを踏まえ、全角・半角に注意してください。このほか、句の表記などについて、特に記載したいことがある場合は、特記事項欄に記入してください。特に指定がない場合は、投句された文字列をそのまま縦書きにして表記します（確認画面で縦書きでの表記を確認できます）。<br>
                 例）初暦真紅をもつて始まりぬ　　藤田　湘子</p>
-                <p class="form-note">作者は登録メンバーから選択してください。登録されていない作者の句は受け付けません。リーグ戦の3題は、各兼題の3句をそれぞれ別の作者にしてください。決勝の5句には、チーム全員の句を含めてください。決勝では同じ作者の複数句も可とし、投句順は問いません。</p>
-                <p id="author-status" class="form-status" role="status" aria-live="polite" hidden></p>
-                <p class="form-note">同姓同名のメンバーは学年・所属校で区別します。氏名・学年・所属校がすべて同じ場合は、実行委員会へ連絡してください。</p>
 
-                <h3><div id="kendai1"></div></h3>
+                </section>
+                <section class="form-section" aria-labelledby="kendai1">
+                <h2 id="kendai1">リーグ戦①</h2>
+                <div class="poem-fields">
+                    <div class="poem-row"><div class="field-grid"><p><label class="field-label" for="k1_1">先鋒句</label><input id="k1_1" class="haiku" placeholder="先鋒句" required></p><p><label class="field-label" for="k1_5_author">作者</label><input id="k1_5_author" class="name" placeholder="作者" required></p></div></div>
+                    <div class="poem-row"><div class="field-grid"><p><label class="field-label" for="k1_3">中堅句</label><input id="k1_3" class="haiku" placeholder="中堅句" required></p><p><label class="field-label" for="k1_3_author">作者</label><input id="k1_3_author" class="name" placeholder="作者" required></p></div></div>
+                    <div class="poem-row"><div class="field-grid"><p><label class="field-label" for="k1_5">大将句</label><input id="k1_5" class="haiku" placeholder="大将句" required></p><p><label class="field-label" for="k1_1_author">作者</label><input id="k1_1_author" class="name" placeholder="作者" required></p></div></div>
+                </div>
+
+                </section>
+                <section class="form-section" aria-labelledby="kendai2">
+                <h2 id="kendai2">リーグ戦②</h2>
+                <div class="poem-fields">
+                    <div class="poem-row"><div class="field-grid"><p><label class="field-label" for="k2_1">先鋒句</label><input id="k2_1" class="haiku" placeholder="先鋒句" required></p><p><label class="field-label" for="k2_5_author">作者</label><input id="k2_5_author" class="name" placeholder="作者" required></p></div></div>
+                    <div class="poem-row"><div class="field-grid"><p><label class="field-label" for="k2_3">中堅句</label><input id="k2_3" class="haiku" placeholder="中堅句" required></p><p><label class="field-label" for="k2_3_author">作者</label><input id="k2_3_author" class="name" placeholder="作者" required></p></div></div>
+                    <div class="poem-row"><div class="field-grid"><p><label class="field-label" for="k2_5">大将句</label><input id="k2_5" class="haiku" placeholder="大将句" required></p><p><label class="field-label" for="k2_1_author">作者</label><input id="k2_1_author" class="name" placeholder="作者" required></p></div></div>
+                </div>
+
+                </section>
+                <section class="form-section" aria-labelledby="kendai3">
+                <h2 id="kendai3">リーグ戦③</h2>
+                <div class="poem-fields">
+                    <div class="poem-row"><div class="field-grid"><p><label class="field-label" for="k3_1">先鋒句</label><input id="k3_1" class="haiku" placeholder="先鋒句" required></p><p><label class="field-label" for="k3_5_author">作者</label><input id="k3_5_author" class="name" placeholder="作者" required></p></div></div>
+                    <div class="poem-row"><div class="field-grid"><p><label class="field-label" for="k3_3">中堅句</label><input id="k3_3" class="haiku" placeholder="中堅句" required></p><p><label class="field-label" for="k3_3_author">作者</label><input id="k3_3_author" class="name" placeholder="作者" required></p></div></div>
+                    <div class="poem-row"><div class="field-grid"><p><label class="field-label" for="k3_5">大将句</label><input id="k3_5" class="haiku" placeholder="大将句" required></p><p><label class="field-label" for="k3_1_author">作者</label><input id="k3_1_author" class="name" placeholder="作者" required></p></div></div>
+                </div>
+
+                </section>
+                <section class="form-section" aria-labelledby="kendai4">
+                <h2 id="kendai4">決勝戦</h2>
+                <div class="poem-fields">
+                    <div class="poem-row"><div class="field-grid"><p><label class="field-label" for="k4_1">先鋒句</label><input id="k4_1" class="haiku" placeholder="先鋒句" required></p><p><label class="field-label" for="k4_5_author">作者</label><input id="k4_5_author" class="name" placeholder="作者" required></p></div></div>
+                    <div class="poem-row"><div class="field-grid"><p><label class="field-label" for="k4_2">次鋒句</label><input id="k4_2" class="haiku" placeholder="次鋒句" required></p><p><label class="field-label" for="k4_4_author">作者</label><input id="k4_4_author" class="name" placeholder="作者" required></p></div></div>
+                    <div class="poem-row"><div class="field-grid"><p><label class="field-label" for="k4_3">中堅句</label><input id="k4_3" class="haiku" placeholder="中堅句" required></p><p><label class="field-label" for="k4_3_author">作者</label><input id="k4_3_author" class="name" placeholder="作者" required></p></div></div>
+                    <div class="poem-row"><div class="field-grid"><p><label class="field-label" for="k4_4">副将句</label><input id="k4_4" class="haiku" placeholder="副将句" required></p><p><label class="field-label" for="k4_2_author">作者</label><input id="k4_2_author" class="name" placeholder="作者" required></p></div></div>
+                    <div class="poem-row"><div class="field-grid"><p><label class="field-label" for="k4_5">大将句</label><input id="k4_5" class="haiku" placeholder="大将句" required></p><p><label class="field-label" for="k4_1_author">作者</label><input id="k4_1_author" class="name" placeholder="作者" required></p></div></div>
+                </div>
+                </section>
+                <section class="form-section" aria-labelledby="submit-consent-heading">
+                <div class="section-heading"><span class="section-number" aria-hidden="true">04</span><h2 id="submit-consent-heading">特記事項・確認</h2></div>
                 <p>
-                    <input id="k1_1" class="haiku" placeholder="先鋒句" required>　　<input id="k1_5_author" class="name" placeholder="作者" required><br>
-                    <input id="k1_3" class="haiku" placeholder="中堅句" required>　　<input id="k1_3_author" class="name" placeholder="作者" required><br>
-                    <input id="k1_5" class="haiku" placeholder="大将句" required>　　<input id="k1_1_author" class="name" placeholder="作者" required>
+                    <label class="field-label" for="specialNote">特記事項（任意）</label>
+                    <textarea id="specialNote" class="haiku" placeholder="句の表記などについて補足があれば記入してください" rows="4"></textarea>
                 </p>
-                
-                <h3><div id="kendai2"></div></h3>
-                <p>
-                    <input id="k2_1" class="haiku" placeholder="先鋒句" required>　　<input id="k2_5_author" class="name" placeholder="作者" required><br>
-                    <input id="k2_3" class="haiku" placeholder="中堅句" required>　　<input id="k2_3_author" class="name" placeholder="作者" required><br>
-                    <input id="k2_5" class="haiku" placeholder="大将句" required>　　<input id="k2_1_author" class="name" placeholder="作者" required>
-                </p>
-                
-                <h3><div id="kendai3"></div></h3>
-                <p>
-                    <input id="k3_1" class="haiku" placeholder="先鋒句" required>　　<input id="k3_5_author" class="name" placeholder="作者" required><br>
-                    <input id="k3_3" class="haiku" placeholder="中堅句" required>　　<input id="k3_3_author" class="name" placeholder="作者" required><br>
-                    <input id="k3_5" class="haiku" placeholder="大将句" required>　　<input id="k3_1_author" class="name" placeholder="作者" required>
-                </p>
-                
-                <h3><div id="kendai4"></div></h3>
-                <p>
-                    <input id="k4_1" class="haiku" placeholder="先鋒句" required>　　<input id="k4_5_author" class="name" placeholder="作者" required><br>
-                    <input id="k4_2" class="haiku" placeholder="次鋒句" required>　　<input id="k4_4_author" class="name" placeholder="作者" required><br>
-                    <input id="k4_3" class="haiku" placeholder="中堅句" required>　　<input id="k4_3_author" class="name" placeholder="作者" required><br>
-                    <input id="k4_4" class="haiku" placeholder="副将句" required>　　<input id="k4_2_author" class="name" placeholder="作者" required><br>
-                    <input id="k4_5" class="haiku" placeholder="大将句" required>　　<input id="k4_1_author" class="name" placeholder="作者" required>
-                </p>
-                <h3>特記事項</h3>
-                <p>
-                    <input id="specialNote" class="haiku" placeholder="特記事項">
-                </p>
-                <p>
+                <p class="checkbox-field">
                     <input id="agree" type="checkbox" value="投句は、すべて自作・未発表であることを宣誓します。また、投句内容に誤りがないことを確認しました。" required/>
                     <label for="agree">投句は、すべて自作・未発表であることを宣誓します。また、投句内容に誤りがないことを確認しました。</label>
                 </p>
-                
-                <input id="submitting" class="submit" type="submit" value="確認へ" disabled>
+
+                </section>
+                <div class="form-actions"><input id="submitting" class="submit" type="submit" value="投句内容を確認する" disabled></div>
                 </fieldset>
             </form>
 
-        </div>
+        </main>
+        <footer class="page-footer"><p>関西文芸交流会 · 関西俳句バトル実行委員会</p><p><a href="mailto:klea.ex+khb@gmail.com">klea.ex+khb@gmail.com</a></p></footer>
         <script type="module" src="js/submit.js"></script>
         <script src="js/submit_viewkendai.js"></script>
     </body>

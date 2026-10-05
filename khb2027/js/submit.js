@@ -33,9 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     const issues = authorIssues(values, teamCheck?.getMemberCount());
     issues.forEach((issue) => issue.fields.forEach((id) => document.getElementById(id).setCustomValidity(issue.message)));
-    const status = document.getElementById('author-status');
-    status.hidden = !issues.length;
-    status.textContent = [...new Set(issues.map((issue) => issue.message))].join(' ');
   }
   function updateNext() {
     document.getElementById('submitting').disabled = !teamCheck?.isVerified() || !emailAuth?.isVerified();

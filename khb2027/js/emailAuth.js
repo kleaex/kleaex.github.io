@@ -11,10 +11,10 @@ export function setupEmailAuth(form, teamCheck, { onStateChange = () => {} } = {
   const send = document.getElementById('send-email-code');
   const verify = document.getElementById('verify-email-code');
   const code = document.getElementById('email-code');
+  const codeFields = document.getElementById('email-code-fields');
   const status = document.getElementById('email-auth-status');
   const tokenField = document.getElementById('authorToken');
   const submissionFields = document.getElementById('submission-fields');
-  const accessStatus = document.getElementById('submission-access-status');
   const selects = [];
   const drafts = new Map();
   for (const group of AUTHOR_GROUPS) for (const id of group.fields) {
@@ -31,6 +31,7 @@ export function setupEmailAuth(form, teamCheck, { onStateChange = () => {} } = {
   let verified = null;
   let pending = null;
   let challengeId = '';
+  let codeRequested = false;
   let retryAt = 0;
   let retryTimer;
   let responseTimer;
@@ -65,22 +66,25 @@ export function setupEmailAuth(form, teamCheck, { onStateChange = () => {} } = {
     const canInput = Boolean(isVerified() && tokenField.value);
     submissionFields.disabled = !canInput;
     submissionFields.hidden = !canInput;
-    accessStatus.hidden = canInput;
     box.hidden = !teamCheck.isVerified();
+    codeFields.hidden = !codeRequested || Boolean(isVerified());
+    send.textContent = codeRequested ? '再送する' : '確認コードを送る';
     send.disabled = !teamCheck.isVerified() || Boolean(pending) || Boolean(isVerified()) || Date.now() < retryAt;
     verify.disabled = !teamCheck.isVerified() || Boolean(pending) || !challengeId || Boolean(isVerified());
-    code.disabled = Boolean(isVerified()) || Boolean(pending) || !teamCheck.isVerified();
+    code.disabled = Boolean(isVerified()) || Boolean(pending) || !challengeId || !teamCheck.isVerified();
     status.setAttribute('aria-busy', String(Boolean(pending)));
     onStateChange();
   }
   function forget() {
     verified = null; tokenField.value = ''; clearTimeout(expiryTimer);
+    codeRequested = false; challengeId = ''; code.value = '';
     sessionStorage.removeItem(EMAIL_AUTH_STORAGE_KEY);
     sessionStorage.removeItem(storageKey('authorToken'));
     clearRoster();
   }
   function post(action, authorToken = '') {
-    if (!teamCheck.isVerified() || pending || !GAS_WEB_APP_URL) return;
+    if (!teamCheck.isVerified() || pending) return;
+    if (!GAS_WEB_APP_URL) { show('送信先を設定中です。'); return; }
     pending = { identity: currentIdentity(), action, requestId: crypto.randomUUID() };
     requestForm.setAttribute('action', GAS_WEB_APP_URL);
     inputs.action.value = action;
@@ -108,8 +112,9 @@ export function setupEmailAuth(form, teamCheck, { onStateChange = () => {} } = {
     }
     if (!teamCheck.isVerified()) {
       pending = null; verified = null; restoreAttempted = false;
+      codeRequested = false; challengeId = ''; code.value = ''; retryAt = 0; clearTimeout(retryTimer);
       clearTimeout(responseTimer); clearTimeout(expiryTimer); clearRoster();
-      show('チーム情報の確認後、登録メールで本人確認をしてください。'); return;
+      show(''); return;
     }
     if (isVerified()) { show(); return; }
     if (!restoreAttempted) {
@@ -121,11 +126,11 @@ export function setupEmailAuth(form, teamCheck, { onStateChange = () => {} } = {
       }
       forget();
     }
-    show('「確認コードを送る」を押し、登録メールに届く6桁のコードを入力してください。');
+    show('');
   }
   send.addEventListener('click', () => {
     if (send.disabled) return;
-    forget(); challengeId = ''; code.value = ''; post('send-email-code');
+    forget(); codeRequested = true; post('send-email-code');
   });
   verify.addEventListener('click', () => {
     if (verify.disabled) return;
@@ -149,7 +154,7 @@ export function setupEmailAuth(form, teamCheck, { onStateChange = () => {} } = {
       if (message.needsNewCode) challengeId = '';
       show(message.message || 'メール本人確認に失敗しました。'); return;
     }
-    if (action === 'send-email-code') { challengeId = message.challengeId; show(message.message); return; }
+    if (action === 'send-email-code') { challengeId = message.challengeId; show('確認コードを送りました。'); code.focus(); return; }
     if (!Array.isArray(message.authors) || message.authors.length < 3 || message.authors.length > 5
       || message.authors.some((author) => typeof author.value !== 'string' || !author.value || typeof author.label !== 'string')) {
       forget(); show('作者一覧を確認できませんでした。実行委員会へ連絡してください。'); return;

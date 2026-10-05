@@ -67,7 +67,7 @@ function setup() {
   const addWrap = add('add-school-wrap', 'p'); add('add-school', 'button', addWrap).type = 'button';
   const roleWrap = add('responsibleRoleOther-field', 'p'); add('responsibleRoleOther', 'input', roleWrap);
   add('member-fields', 'div'); add('members').type = 'hidden';
-  for (const id of ['member-name-warning', 'school-name-error', 'entry-status', 'responsible-name-status', 'introduction-count']) add(id, 'p');
+  for (const id of ['member-name-warning', 'entry-status', 'introduction-count']) add(id, 'p');
   add('introduction', 'textarea').required = true; add('specialNote', 'textarea');
   for (const id of ['termsConsent', 'inputConfirmation', 'contactConfirmation']) { const el = add(id); el.type = 'checkbox'; el.required = true; }
   const button = add('submit', 'button'); button.type = 'submit'; button.disabled = true;
@@ -85,48 +85,50 @@ function setup() {
     for (const id of ['termsConsent', 'inputConfirmation', 'contactConfirmation']) set(id, true, 'change');
   }
   function reply(ok) { listeners.message({ origin: 'https://script.google.com', data: { source: 'khb2027', action: 'entry', ok, message: ok ? '受付済み' : '送信失敗' } }); }
-  return { form, button, get, set, fill, reply };
+  return { form, button, get, set, fill, reply, context, listeners };
 }
 
-test('必須入力・メール形式・紹介文の文字数・確認事項をすべて満たしたときだけ送信できる', () => {
-  const s = setup(); assert.equal(s.button.disabled, true); s.fill(); assert.equal(s.button.disabled, false);
+test('未入力でも送信ボタンを押せ、必須入力・メール形式・文字数・確認事項の不備は送信時に止める', () => {
+  const s = setup(); assert.equal(s.button.disabled, false); assert.equal(s.form.dispatch('submit').prevented, true);
+  s.fill(); assert.equal(s.form.checkValidity(), true);
   for (const [id, invalid, valid, type] of [
     ['teamName', '', 'A高校チーム', 'input'], ['email', 'team@example', 'team@example.com', 'input'],
     ['introduction', 'あ'.repeat(249), 'あ'.repeat(250), 'input'], ['introduction', 'あ'.repeat(281), 'あ'.repeat(280), 'input'],
     ['member-3-grade', '', '高2', 'input'], ['contactConfirmation', false, true, 'change'],
   ]) {
-    s.set(id, invalid, type); assert.equal(s.button.disabled, true, id);
-    s.set(id, valid, type); assert.equal(s.button.disabled, false, id);
+    s.set(id, invalid, type); assert.equal(s.button.disabled, false, id);
+    assert.equal(s.form.checkValidity(), false, id); assert.equal(s.form.dispatch('submit').prevented, true, id);
+    s.set(id, valid, type); assert.equal(s.form.checkValidity(), true, id);
   }
 });
 
 test('責任者のその他欄と合同チームの学校・所属校も入力条件に含め、解除時に再判定する', () => {
-  const s = setup(); s.fill(); s.set('responsibleRole', 'その他', 'change'); assert.equal(s.button.disabled, true);
-  s.set('responsibleRoleOther', '保護者'); assert.equal(s.button.disabled, false);
+  const s = setup(); s.fill(); s.set('responsibleRole', 'その他', 'change'); assert.equal(s.form.checkValidity(), false);
+  s.set('responsibleRoleOther', '保護者'); assert.equal(s.form.checkValidity(), true);
   s.set('responsibleRole', '顧問', 'change'); assert.equal(s.get('responsibleRoleOther').value, '');
-  s.set('isJointTeam', true, 'change'); assert.equal(s.button.disabled, true);
+  s.set('isJointTeam', true, 'change'); assert.equal(s.form.checkValidity(), false);
   s.set('schoolName2', 'B高校');
   for (let i = 1; i <= 3; i++) s.set(`member-${i}-school`, 'A高校', 'change');
-  assert.equal(s.button.disabled, true); assert.match(s.get('school-name-error').textContent, /「B高校」/);
+  assert.equal(s.form.checkValidity(), false); assert.match(s.get('schoolName2').validationMessage, /「B高校」/);
   s.set('member-2-school', 'B高校', 'change');
-  assert.equal(s.button.disabled, false);
-  s.set('schoolName2', 'A高校'); assert.equal(s.button.disabled, true);
-  s.set('schoolName2', 'B高校'); s.set('member-2-school', 'B高校', 'change'); assert.equal(s.button.disabled, false);
-  s.get('add-school').dispatch('click'); assert.equal(s.button.disabled, true, '学校追加直後の空欄も必須');
-  s.get('schoolName3').closest('p').querySelector('button').dispatch('click'); assert.equal(s.button.disabled, false);
-  s.set('schoolName2', '', 'input'); s.set('isJointTeam', false, 'change'); assert.equal(s.button.disabled, false);
+  assert.equal(s.form.checkValidity(), true);
+  s.set('schoolName2', 'A高校'); assert.equal(s.form.checkValidity(), false);
+  s.set('schoolName2', 'B高校'); s.set('member-2-school', 'B高校', 'change'); assert.equal(s.form.checkValidity(), true);
+  s.get('add-school').dispatch('click'); assert.equal(s.form.checkValidity(), false, '学校追加直後の空欄も必須');
+  s.get('schoolName3').closest('p').querySelector('button').dispatch('click'); assert.equal(s.form.checkValidity(), true);
+  s.set('schoolName2', '', 'input'); s.set('isJointTeam', false, 'change'); assert.equal(s.form.checkValidity(), true);
 });
 
 test('学校を追加したらその学校の選手が必要になり、学校数が人数を超えた場合も送信できない', () => {
   const s = setup(); s.fill(); s.set('isJointTeam', true, 'change'); s.set('schoolName2', 'B高校');
   for (const [index, school] of ['A高校', 'B高校', 'A高校'].entries()) s.set(`member-${index + 1}-school`, school, 'change');
-  assert.equal(s.button.disabled, false);
+  assert.equal(s.form.checkValidity(), true);
   s.get('add-school').dispatch('click'); s.set('schoolName3', 'C高校');
-  assert.equal(s.button.disabled, true); assert.match(s.get('school-name-error').textContent, /「C高校」/);
-  s.set('member-3-school', 'C高校', 'change'); assert.equal(s.button.disabled, false);
+  assert.equal(s.form.checkValidity(), false); assert.match(s.get('schoolName3').validationMessage, /「C高校」/);
+  s.set('member-3-school', 'C高校', 'change'); assert.equal(s.form.checkValidity(), true);
   s.get('add-school').dispatch('click'); s.set('schoolName4', 'D高校');
-  assert.equal(s.button.disabled, true); assert.match(s.get('school-name-error').textContent, /「D高校」/);
-  s.get('schoolName4').closest('p').querySelector('button').dispatch('click'); assert.equal(s.button.disabled, false);
+  assert.equal(s.form.checkValidity(), false); assert.match(s.get('schoolName4').validationMessage, /「D高校」/);
+  s.get('schoolName4').closest('p').querySelector('button').dispatch('click'); assert.equal(s.form.checkValidity(), true);
 });
 
 test('紹介文の表示文字数・送信可否は改行形式と補助漢字・絵文字でずれず、長すぎる入力を切り捨てない', () => {
@@ -137,27 +139,28 @@ test('紹介文の表示文字数・送信可否は改行形式と補助漢字�
   for (const length of [249, 250, 280, 281]) for (const newline of ['\n', '\r\n', '\r']) {
     const value = 'あ'.repeat(length - 6) + '𠮷😀 ' + newline + 'い' + newline;
     s.set('introduction', value);
-    assert.equal(s.get('introduction-count').textContent, `${length}字 / 250〜280字`);
-    assert.equal(s.button.disabled, length < 250 || length > 280);
+    assert.equal(s.get('introduction-count').textContent, `${length}/280`);
+    assert.equal(s.form.checkValidity(), length >= 250 && length <= 280);
     assert.equal(s.get('introduction').value, value, '入力内容を自動修正・切り捨てしない');
   }
-  s.set('introduction', ''); assert.equal(s.get('introduction-count').textContent, '0字 / 250〜280字');
+  s.set('introduction', ''); assert.equal(s.get('introduction-count').textContent, '0/280');
 });
 
 test('同姓同名・同学年・同校では無効にし、学年が違えば警告を残して有効にする', () => {
-  const s = setup(); s.fill(); s.set('member-2-name', '氏名　1'); assert.equal(s.button.disabled, true);
-  s.set('member-2-grade', '高1'); assert.equal(s.button.disabled, false);
+  const s = setup(); s.fill(); s.set('member-2-name', '氏名　1'); assert.equal(s.form.checkValidity(), false);
+  s.set('member-2-grade', '高1'); assert.equal(s.form.checkValidity(), true);
   assert.equal(s.get('member-name-warning').hidden, false);
 });
 
-test('メンバーと責任者の姓名にスペースがなければ送信を無効にし、修正時に案内を消す', () => {
-  const s = setup(); s.fill(); s.set('member-1-name', '山田太郎'); assert.equal(s.button.disabled, true);
-  assert.match(s.get('member-name-warning').textContent, /姓と名の間/);
-  s.set('member-1-name', '山田 太郎'); assert.equal(s.button.disabled, false);
-  s.set('responsibleName', '佐藤花子'); assert.equal(s.button.disabled, true);
-  assert.equal(s.get('responsible-name-status').hidden, false);
-  s.set('responsibleName', '佐藤 花子'); assert.equal(s.button.disabled, false);
-  assert.equal(s.get('responsible-name-status').hidden, true);
+test('メンバーと責任者の姓名の不備は該当欄の標準警告に設定し、修正で解除する', () => {
+  const s = setup(); s.fill(); s.set('member-1-name', '山田太郎'); assert.equal(s.form.checkValidity(), false);
+  assert.match(s.get('member-1-name').validationMessage, /姓と名の間/);
+  assert.equal(s.get('member-name-warning').hidden, true);
+  s.set('member-1-name', '山田 太郎'); assert.equal(s.form.checkValidity(), true);
+  s.set('responsibleName', '佐藤花子'); assert.equal(s.form.checkValidity(), false);
+  assert.match(s.get('responsibleName').validationMessage, /姓と名の間/);
+  s.set('responsibleName', '佐藤 花子'); assert.equal(s.form.checkValidity(), true);
+  assert.equal(s.get('responsibleName').validationMessage, '');
   assert.equal(s.form.dispatch('submit').prevented, false);
   assert.equal(s.get('responsibleName').value, '佐藤 花子');
   assert.equal(JSON.parse(s.get('members').value)[0].name, '山田 太郎');
@@ -167,11 +170,31 @@ test('送信中は入力しても無効のままで二重送信を防ぎ、失�
   const s = setup(); s.fill(); assert.equal(s.form.dispatch('submit').prevented, false);
   assert.equal(s.button.disabled, true); s.set('teamName', '変更後'); assert.equal(s.button.disabled, true);
   assert.equal(s.form.dispatch('submit').prevented, true); s.reply(false); assert.equal(s.button.disabled, false);
-  s.form.dispatch('submit'); s.set('teamName', ''); s.reply(false); assert.equal(s.button.disabled, true);
+  s.form.dispatch('submit'); s.set('teamName', ''); s.reply(false); assert.equal(s.button.disabled, false);
+  assert.equal(s.form.dispatch('submit').prevented, true);
 });
 
-test('受付成功後はフォームをリセットし、次の入力が揃うまで無効に戻す', () => {
+test('受付成功後はフォームをリセットし、エントリー完了画面へ進む', () => {
   const s = setup(); s.fill(); s.form.dispatch('submit'); s.reply(true);
-  assert.equal(s.button.disabled, true); assert.equal(s.get('teamName').value, '');
-  assert.equal(s.get('member-fields').children.length, 0); s.fill(); assert.equal(s.button.disabled, false);
+  assert.equal(s.button.disabled, false); assert.equal(s.form.checkValidity(), false); assert.equal(s.get('teamName').value, '');
+  assert.equal(s.get('member-fields').children.length, 0);
+  assert.equal(s.context.window.location.href, 'entry-finish.html');
+});
+
+test('未送信・失敗・無関係な応答では完了画面へ進まず、入力を保持する', () => {
+  const s = setup(); s.fill(); s.reply(true);
+  assert.equal(s.context.window.location.href, undefined);
+  assert.equal(s.get('teamName').value, 'A高校チーム');
+  s.form.dispatch('submit');
+  for (const [origin, extra] of [
+    ['https://example.com', {}],
+    ['https://script.google.com', { action: 'submit-submission' }],
+    ['https://script.google.com', { ok: 'true' }],
+  ]) s.listeners.message({ origin, data: { source: 'khb2027', action: 'entry', ok: true, ...extra } });
+  assert.equal(s.context.window.location.href, undefined);
+  assert.equal(s.button.disabled, true);
+  s.reply(false);
+  assert.equal(s.context.window.location.href, undefined);
+  assert.equal(s.get('teamName').value, 'A高校チーム');
+  assert.equal(s.button.disabled, false);
 });
