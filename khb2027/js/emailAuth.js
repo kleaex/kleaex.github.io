@@ -85,7 +85,7 @@ export function setupEmailAuth(form, teamCheck, { onStateChange = () => {} } = {
   function post(action, authorToken = '') {
     if (!teamCheck.isVerified() || pending) return;
     if (!GAS_WEB_APP_URL) { show('送信先を設定中です。'); return; }
-    pending = { identity: currentIdentity(), action, requestId: crypto.randomUUID() };
+    pending = { identity: currentIdentity(), action, requestId: crypto.randomUUID(), startedAt: Date.now() };
     requestForm.setAttribute('action', GAS_WEB_APP_URL);
     inputs.action.value = action;
     for (const name of ['teamName', 'email', 'requestId']) inputs[name].value = name === 'teamName' ? team.value : name === 'email' ? email.value : pending.requestId;
@@ -143,6 +143,7 @@ export function setupEmailAuth(form, teamCheck, { onStateChange = () => {} } = {
     if (!pending || !teamCheck.isVerified() || pending.identity !== currentIdentity() || !message
       || message.source !== GAS_MESSAGE_SOURCE || message.action !== pending.action || message.requestId !== pending.requestId || typeof message.ok !== 'boolean') return;
     const action = pending.action;
+    console.info('khb2027-timing', { action, requestId: pending.requestId, totalMs: Date.now() - pending.startedAt });
     pending = null; clearTimeout(responseTimer);
     inputs.code.value = ''; inputs.authorToken.value = '';
     if (message.retryAfter) {

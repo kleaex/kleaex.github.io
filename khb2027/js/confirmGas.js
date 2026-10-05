@@ -17,9 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let state = 'idle';
   let pending = null;
   let responseTimer;
-  let sendTimer;
-
-  const action = addHidden('action', 'check-submission');
+  const action = addHidden('action', 'submit-submission');
   const overwrite = addHidden('overwrite', 'false');
   const requestId = addHidden('requestId', '');
   addHidden('responseOrigin', window.location.origin);
@@ -47,31 +45,26 @@ document.addEventListener('DOMContentLoaded', () => {
     backButton.disabled = locked;
     status.hidden = !message;
     status.textContent = message;
-    status.setAttribute('aria-busy', String(state === 'checking' || state === 'sending'));
+    status.setAttribute('aria-busy', String(state === 'sending'));
   }
 
   function fail(message) {
     clearTimeout(responseTimer);
-    clearTimeout(sendTimer);
     pending = null;
     show('idle', message);
   }
 
-  function post(kind, allowOverwrite) {
+  function post(allowOverwrite) {
     if (!GAS_WEB_APP_URL) {
       fail('送信先を設定中です。');
       return;
     }
-    action.value = kind;
     overwrite.value = String(allowOverwrite);
     requestId.value = crypto.randomUUID();
-    pending = { action: kind, requestId: requestId.value };
+    pending = { action: action.value, requestId: requestId.value, startedAt: Date.now() };
     form.setAttribute('action', GAS_WEB_APP_URL);
-    show(kind === 'check-submission' ? 'checking' : 'sending',
-      kind === 'check-submission' ? 'エントリーと投句内容を確認しています…' : '送信しています…');
-    responseTimer = setTimeout(() => fail(kind === 'check-submission'
-      ? '確認結果を受信できませんでした。通信環境を確認し、もう一度送信してください。'
-      : '送信結果を受信できませんでした。受付済みの可能性もあるため、自動返信メールを確認してください。'), 90000);
+    show('sending', '送信しています…');
+    responseTimer = setTimeout(() => fail('送信結果を受信できませんでした。受付済みの可能性もあるため、自動返信メールを確認してください。'), 90000);
     try {
       HTMLFormElement.prototype.submit.call(form);
     } catch {
@@ -94,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
     event.preventDefault();
     if (state !== 'idle') return;
     if (!hasSubmission) { show('idle', '投句内容が揃っていません。「修正に戻る」から入力を確認してください。'); return; }
-    post('check-submission', false);
+    post(false);
   });
 
   document.getElementById('cancelOverwrite').addEventListener('click', cancelOverwrite);
@@ -103,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('confirmOverwrite').addEventListener('click', () => {
     if (state !== 'overwrite') return;
     dialog.close();
-    post('submit-submission', true);
+    post(true);
   });
 
   window.addEventListener('message', (event) => {
@@ -114,6 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 旧デプロイのIDなし応答も受け付ける。IDがある場合は遅延応答を区別する。
     if (message.requestId && message.requestId !== pending.requestId) return;
     clearTimeout(responseTimer);
+    console.info('khb2027-timing', { action: pending.action, requestId: pending.requestId, totalMs: Date.now() - pending.startedAt });
     pending = null;
 
     if (message.ok && message.alreadySubmitted) {
@@ -131,19 +125,10 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    if (message.action === 'check-submission') {
-      if (message.hasExistingSubmission) {
-        askOverwrite();
-      } else {
-        show('sending', '送信しています…');
-        // 照合応答のiframe内スクリプトが終了してから、保存リクエストへ進む。
-        sendTimer = setTimeout(() => post('submit-submission', false), 0);
-      }
-      return;
-    }
-
     if (message.action === 'submit-submission') {
       show('complete', message.message || '投句を受け付けました。');
+      if (message.mailSent === false) sessionStorage.setItem('khb2027:receipt-mail-failed', 'true');
+      else sessionStorage.removeItem('khb2027:receipt-mail-failed');
       SUBMISSION_FIELDS.forEach((field) => sessionStorage.removeItem(storageKey(field)));
       sessionStorage.removeItem('khb2027:email-auth');
       window.location.href = 'finish.html';

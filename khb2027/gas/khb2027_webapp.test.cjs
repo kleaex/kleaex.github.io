@@ -15,6 +15,7 @@ function setup({ status = 200, json = JSON.stringify(published), networkError = 
   const events = [], mails = [], saved = [], archived = [], logs = [];
   const context = vm.createContext({
     console: { error() {} },
+    SpreadsheetApp: { flush: () => events.push('flush') },
     PropertiesService: { getScriptProperties: () => ({ getProperty: key => properties[key] ?? (key === 'KHB_HMAC_SECRET' ? 'test-only-secret' : null) }) },
     UrlFetchApp: { fetch(url, options) {
       assert.equal(url, 'https://kleaex.github.io/khb2027/js/kendai.json');
@@ -65,7 +66,7 @@ test('新規投句は公開JSONを1回取得し、サイトと同じ兼題・読
   data.leagueTopics = '偽の兼題';
   const result = context.submitSubmission(data);
   assert.equal(result.ok, true);
-  assert.deepEqual(events, ['fetch', 'lock', 'append', 'mail', 'release']);
+  assert.deepEqual(events, ['fetch', 'lock', 'append', 'flush', 'release', 'mail']);
   assert.equal(saved[0].revision, 1);
   const body = mails[0].body;
   for (const [index, key] of ['dai1', 'dai2', 'dai3', 'dai4'].entries()) {
@@ -115,7 +116,7 @@ test('上書きも公開JSONを使い、履歴退避後に最新内容を保存�
   const { context, data, events, mails, saved, archived } = setup({ existing: { rowNumber: 2, values: oldRow }, json });
   data.overwrite = 'true';
   assert.equal(context.submitSubmission(data).overwritten, true);
-  assert.deepEqual(events, ['fetch', 'lock', 'archive', 'write', 'mail', 'release']);
+  assert.deepEqual(events, ['fetch', 'lock', 'archive', 'write', 'flush', 'release', 'mail']);
   assert.equal(saved[0].revision, 3);
   assert.equal(archived[0], oldRow);
   assert.ok(mails[0].body.includes('兼題①「花」　（はな）'));
@@ -510,7 +511,7 @@ test('GAS管理者が設定した試験用兼題で保存・メール送信で�
   assert.equal(result.ok, true);
   assert.equal(result.requestId, 'final-request');
   assert.equal(result.requestedOrigin, state.data.responseOrigin);
-  assert.deepEqual(state.events, ['lock', 'append', 'mail', 'release']);
+  assert.deepEqual(state.events, ['lock', 'append', 'flush', 'release', 'mail']);
   assert.ok(state.mails[0].body.includes('兼題①「春」'));
   assert.equal(state.saved.length, 1);
 });

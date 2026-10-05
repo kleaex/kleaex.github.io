@@ -77,7 +77,7 @@ export function setupTeamCheck(form, { onStateChange = () => {} } = {}) {
       return;
     }
     if (!GAS_WEB_APP_URL) { show('照合先を設定中です。'); return; }
-    pending = { ...currentValues(), requestId: crypto.randomUUID() };
+    pending = { ...currentValues(), requestId: crypto.randomUUID(), startedAt: Date.now() };
     checkForm.setAttribute('action', GAS_WEB_APP_URL);
     for (const name of ['teamName', 'email', 'requestId']) inputs[name].value = pending[name];
     show('エントリーを確認しています…');
@@ -115,6 +115,7 @@ export function setupTeamCheck(form, { onStateChange = () => {} } = {}) {
     if (!fromGas || !message || message.source !== GAS_MESSAGE_SOURCE || message.action !== 'check-team' || typeof message.ok !== 'boolean') return;
     if (!pending || message.requestId !== pending.requestId || !matches(pending)) return;
     clearTimeout(responseTimer);
+    console.info('khb2027-timing', { action: 'check-team', requestId: pending.requestId, totalMs: Date.now() - pending.startedAt });
     const checkedValues = pending;
     pending = null;
     if (message.ok === true) {

@@ -55,8 +55,46 @@ const SUBMISSION_HEADERS = [
 ];
 const HISTORY_HEADERS = ['archivedAt', 'reason'].concat(SUBMISSION_HEADERS);
 const LOG_HEADERS = ['at', 'action', 'result', 'identityHash', 'detail'];
+// doPostごとに作り直す。行データや認証状態は保持しない。
+let khbRequest = null;
+
+function measureRequestStep(name, operation) {
+  const request = khbRequest;
+  const startedAt = Date.now();
+  try { return operation(); }
+  finally {
+    if (request) request.timings[name] = (request.timings[name] || 0) + Date.now() - startedAt;
+  }
+}
+
+function waitForRequestLock(lock) {
+  measureRequestStep('lockWaitMs', () => lock.waitLock(30000));
+  if (khbRequest) khbRequest.locks.set(lock, Date.now());
+}
+
+function releaseRequestLock(lock) {
+  try { lock.releaseLock(); }
+  finally {
+    if (khbRequest && khbRequest.locks.has(lock)) {
+      khbRequest.timings.lockHeldMs = (khbRequest.timings.lockHeldMs || 0) + Date.now() - khbRequest.locks.get(lock);
+      khbRequest.locks.delete(lock);
+    }
+  }
+}
+
+function requestProperty(name) {
+  if (!khbRequest) return PropertiesService.getScriptProperties().getProperty(name);
+  if (!Object.prototype.hasOwnProperty.call(khbRequest.settings, name)) {
+    khbRequest.settings[name] = PropertiesService.getScriptProperties().getProperty(name);
+  }
+  return khbRequest.settings[name];
+}
 
 function doPost(e) {
+  const previousRequest = khbRequest;
+  khbRequest = { settings: Object.create(null), sheets: Object.create(null), spreadsheet: null,
+    timings: {}, locks: new Map() };
+  const startedAt = Date.now();
   const data = (e && e.parameter) || {};
   const action = String(data.action || '');
   const reply = replyTo(data);
@@ -74,6 +112,15 @@ function doPost(e) {
     console.error(error);
     logEvent(action || 'unknown', 'error', '', error.message || String(error));
     return reply(action, false, '送信を完了できませんでした。時間をおいて再度お試しください。', { requestId: String(data.requestId || '') });
+  } finally {
+    const timings = khbRequest.timings;
+    khbRequest = previousRequest;
+    // 計測には処理名・UUID・所要時間だけを記録する。
+    const knownAction = ['entry', 'check-team', 'send-email-code', 'verify-email-code', 'get-author-options',
+      'check-submission', 'submit-submission'].includes(action) ? action : 'unknown';
+    if (typeof console.info === 'function') console.info(JSON.stringify({ source: 'khb2027-timing', action: knownAction,
+      requestId: /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(String(data.requestId || '')) ? data.requestId : '',
+      totalMs: Date.now() - startedAt, ...timings }));
   }
 }
 
@@ -186,57 +233,103 @@ function sendEmailCode(data) {
   const context = emailAuthContext(data);
   if (context.error) return reply('send-email-code', false, context.error);
   const { identityHash } = context;
+  const properties = PropertiesService.getScriptProperties();
+  const key = 'KHB_EMAIL_CODE_' + identityHash;
+  let entry, code, state;
   const lock = LockService.getScriptLock();
-  lock.waitLock(30000);
+  waitForRequestLock(lock);
   try {
     const deadlineError = getReceptionError('SUBMISSION');
     if (deadlineError) return reply('send-email-code', false, deadlineError);
     const activeEntry = findActiveEntry(identityHash);
     if (!activeEntry) return reply('send-email-code', false, '有効なエントリーを確認できませんでした。');
-    const entry = activeEntry.values;
-    const properties = PropertiesService.getScriptProperties();
+    entry = activeEntry.values;
     const now = Date.now();
     const day = Utilities.formatDate(new Date(now), 'Asia/Tokyo', 'yyyy-MM-dd');
-    const key = 'KHB_EMAIL_CODE_' + identityHash;
     const previous = JSON.parse(properties.getProperty(key) || '{}');
     const wait = Math.ceil((Number(previous.sentAt || 0) + 60000 - now) / 1000);
     if (wait > 0) return reply('send-email-code', false, `再送は${wait}秒後にお試しください。`, { retryAfter: wait });
     const count = previous.day === day ? Number(previous.count || 0) : 0;
     const globalRate = JSON.parse(properties.getProperty('KHB_EMAIL_AUTH_RATE') || '{}');
     const total = globalRate.day === day ? Number(globalRate.count || 0) : 0;
+    // ロック外で発送中のメールも予約済みとして数え、残り20通を同時利用で使い切らない。
+    const pendingMail = Object.fromEntries(Object.entries(globalRate.pendingMail || {})
+      .filter(([, expiresAt]) => Number.isFinite(expiresAt) && expiresAt > now));
     const limit = Number(requiredProperty('KHB_AUTH_DAILY_LIMIT'));
     if (!Number.isInteger(limit) || limit < 1) throw new Error('確認メールの上限設定を確認してください。');
     if (count >= 10) return reply('send-email-code', false, 'このチームの本日の確認メール送信上限に達しました。実行委員会へ連絡してください。');
-    if (total >= limit || MailApp.getRemainingDailyQuota() <= 20) {
+    if (total >= limit || MailApp.getRemainingDailyQuota() - Object.keys(pendingMail).length <= 20) {
       return reply('send-email-code', false, '本日の確認メール送信枠が不足しています。実行委員会へ連絡してください。');
     }
     // サーバーの秘密値とランダムなnonceから生成し、平文コードは保存しない。
     const nonce = Utilities.getUuid().replace(/-/g, '');
-    const code = String(parseInt(authDigest('email-code-random:v1|' + nonce + Utilities.getUuid()).slice(0, 12), 16) % 1000000).padStart(6, '0');
+    code = String(parseInt(authDigest('email-code-random:v1|' + nonce + Utilities.getUuid()).slice(0, 12), 16) % 1000000).padStart(6, '0');
     const expiresAt = now + EMAIL_CODE_TTL_MS;
-    const state = { day, count: count + 1, sentAt: now, expiresAt, attempts: 0, nonce,
+    state = { day, count: count + 1, sentAt: now, expiresAt, attempts: 0, nonce,
       codeHash: authDigest(`email-code:v1|${identityHash}|${nonce}|${code}`) };
     properties.setProperty(key, JSON.stringify(state));
-    properties.setProperty('KHB_EMAIL_AUTH_RATE', JSON.stringify({ day, count: total + 1 }));
-    // 期限切れかつ前日以前のコード状態を除去し、プロパティを蓄積しない。
-    const all = properties.getProperties();
-    for (const storedKey of Object.keys(all)) {
-      if (!storedKey.startsWith('KHB_EMAIL_CODE_') || storedKey === key) continue;
-      const stored = JSON.parse(all[storedKey]);
-      if (stored.day !== day && stored.expiresAt <= now) properties.deleteProperty(storedKey);
-    }
+    pendingMail[nonce] = expiresAt;
+    properties.setProperty('KHB_EMAIL_AUTH_RATE', JSON.stringify({ day, count: total + 1, pendingMail }));
+  } finally { releaseRequestLock(lock); }
+  try {
+    // コードの控えをBCC・ログへ送らない。送信先は登録済みエントリーのメールだけ。
+    measureRequestStep('mailMs', () => MailApp.sendEmail({ to: entry.email, subject: '【関西俳句バトル2027】メール本人確認コード',
+      body: `投句フォームの確認コードは ${code} です。\n10分以内に入力してください。\nこのコードは他の人に共有しないでください。\n心当たりがない場合は、このメールを無視してください。`,
+      replyTo: requiredProperty('KHB_REPLY_TO'), name: '関西文芸交流会 関西俳句バトル実行委員会' }));
+  } catch {
+    // 送信中に発行された別のコードを失効させない。
+    waitForRequestLock(lock);
     try {
-      // コードの控えをBCC・ログへ送らない。送信先は登録済みエントリーのメールだけ。
-      MailApp.sendEmail({ to: entry.email, subject: '【関西俳句バトル2027】メール本人確認コード',
-        body: `投句フォームの確認コードは ${code} です。\n10分以内に入力してください。\nこのコードは他の人に共有しないでください。\n心当たりがない場合は、このメールを無視してください。`,
-        replyTo: requiredProperty('KHB_REPLY_TO'), name: '関西文芸交流会 関西俳句バトル実行委員会' });
-    } catch {
-      state.codeHash = ''; properties.setProperty(key, JSON.stringify(state));
-      return reply('send-email-code', false, '確認メールを送信できませんでした。時間をおいて再送してください。', { retryAfter: 60 });
+      const current = JSON.parse(properties.getProperty(key) || '{}');
+      if (current.nonce === state.nonce) {
+        current.codeHash = ''; properties.setProperty(key, JSON.stringify(current));
+      }
+      settleEmailReservation(properties, state.nonce);
+    } finally { releaseRequestLock(lock); }
+    return reply('send-email-code', false, '確認メールを送信できませんでした。時間をおいて再送してください。', { retryAfter: 60 });
+  }
+  measureRequestStep('cleanupMs', () => cleanupEmailCodes(state.nonce));
+  return reply('send-email-code', true, '登録メールへ確認コードを送りました。10分以内に入力してください。再送は60秒後にできます。',
+    { challengeId: state.nonce, expiresAt: state.expiresAt, retryAfter: 60 });
+}
+
+// 定期トリガーを作らず、メール送信後に最大10件を清掃する。
+const EMAIL_CODE_CLEANUP_LIMIT = 10;
+function settleEmailReservation(properties, nonce) {
+  const rate = JSON.parse(properties.getProperty('KHB_EMAIL_AUTH_RATE') || '{}');
+  if (rate.pendingMail && Object.prototype.hasOwnProperty.call(rate.pendingMail, nonce)) {
+    delete rate.pendingMail[nonce];
+    properties.setProperty('KHB_EMAIL_AUTH_RATE', JSON.stringify(rate));
+  }
+}
+
+function cleanupEmailCodes(sentNonce) {
+  const lock = LockService.getScriptLock();
+  let acquired = false;
+  try {
+    acquired = lock.tryLock(0);
+    if (!acquired) return;
+    if (khbRequest) khbRequest.locks.set(lock, Date.now());
+    const properties = PropertiesService.getScriptProperties();
+    settleEmailReservation(properties, sentNonce);
+    const now = Date.now();
+    const day = Utilities.formatDate(new Date(now), 'Asia/Tokyo', 'yyyy-MM-dd');
+    const all = properties.getProperties();
+    let deleted = 0;
+    for (const key of Object.keys(all)) {
+      if (!key.startsWith('KHB_EMAIL_CODE_')) continue;
+      let stored;
+      try { stored = JSON.parse(all[key]); } catch { continue; }
+      if (stored && typeof stored.day === 'string' && stored.day < day && Number.isFinite(stored.expiresAt)
+        && stored.expiresAt <= now) {
+        properties.deleteProperty(key);
+        if (++deleted >= EMAIL_CODE_CLEANUP_LIMIT) break;
+      }
     }
-    return reply('send-email-code', true, '登録メールへ確認コードを送りました。10分以内に入力してください。再送は60秒後にできます。',
-      { challengeId: nonce, expiresAt, retryAfter: 60 });
-  } finally { lock.releaseLock(); }
+  } catch {
+    // 清掃の失敗を確認メールの送信失敗として返さない。
+    console.error('KHB email-code cleanup failed');
+  } finally { if (acquired) releaseRequestLock(lock); }
 }
 
 function verifyEmailCode(data) {
@@ -245,7 +338,7 @@ function verifyEmailCode(data) {
   if (context.error) return reply('verify-email-code', false, context.error);
   const { identityHash } = context;
   const lock = LockService.getScriptLock();
-  lock.waitLock(30000);
+  waitForRequestLock(lock);
   try {
     const deadlineError = getReceptionError('SUBMISSION');
     if (deadlineError) return reply('verify-email-code', false, deadlineError);
@@ -272,7 +365,7 @@ function verifyEmailCode(data) {
     let authors;
     try { authors = authorOptions(entry); } catch (error) { return reply('verify-email-code', false, error.message); }
     return reply('verify-email-code', true, 'メール本人確認が完了しました。作者を選択してください。', { authorToken: token, expiresAt, authors });
-  } finally { lock.releaseLock(); }
+  } finally { releaseRequestLock(lock); }
 }
 
 function getAuthorOptions(data) {
@@ -326,7 +419,7 @@ function submitSubmission(data) {
   if (authError) return reply('submit-submission', false, authError, { requiresEmailVerification: true });
   if (isSameSubmission(data, findCurrentSubmission(identityHash))) {
     const duplicateLock = LockService.getScriptLock();
-    duplicateLock.waitLock(30000);
+    waitForRequestLock(duplicateLock);
     try {
       const receptionError = getReceptionError('SUBMISSION');
       if (receptionError) return reply('submit-submission', false, receptionError);
@@ -340,7 +433,7 @@ function submitSubmission(data) {
         return reply('submit-submission', true, '同じ内容ですでに投句されています。', { alreadySubmitted: true });
       }
     } finally {
-      duplicateLock.releaseLock();
+      releaseRequestLock(duplicateLock);
     }
   }
   // 通信はロック取得前に行う。保存と受付メールには、この1回で取得した同じ兼題を使う。
@@ -348,15 +441,16 @@ function submitSubmission(data) {
   if (authorError) return reply('submit-submission', false, authorError);
   let topics;
   try {
-    topics = fetchPublishedTopics();
+    topics = measureRequestStep('topicsMs', () => fetchPublishedTopics());
   } catch (error) {
     console.error(error);
     logEvent('submit-submission', 'topics-unavailable', identityHash, error.message || String(error));
     return reply('submit-submission', false, '兼題情報を確認できないため、投句は保存していません。時間をおいて再度お試しください。');
   }
 
+  let submission, overwritten;
   const lock = LockService.getScriptLock();
-  lock.waitLock(30000);
+  waitForRequestLock(lock);
   try {
     // ロック取得後に期限と照合を再確認し、事前確認との競合を防ぐ。
     const receptionError = getReceptionError('SUBMISSION');
@@ -379,23 +473,30 @@ function submitSubmission(data) {
     }
 
     const now = new Date();
-    const submission = makeSubmissionRow(data, identityHash, now, existing ? Number(existing.values.revision || 0) + 1 : 1);
+    submission = makeSubmissionRow(data, identityHash, now, existing ? Number(existing.values.revision || 0) + 1 : 1);
+    overwritten = Boolean(existing);
     const sheet = getSheet('投句', SUBMISSION_HEADERS);
     if (existing) {
       archiveSubmission(existing.values, now, '上書き');
       writeObject(sheet, SUBMISSION_HEADERS, existing.rowNumber, submission);
-      sendSubmissionMail(submission, true, topics);
-      logEvent('submit-submission', 'overwritten', identityHash, `revision ${submission.revision}`);
-      return reply('submit-submission', true, '投句を上書きして受け付けました。', { overwritten: true });
+    } else {
+      appendObject(sheet, SUBMISSION_HEADERS, submission);
     }
-
-    appendObject(sheet, SUBMISSION_HEADERS, submission);
-    sendSubmissionMail(submission, false, topics);
-    logEvent('submit-submission', 'accepted', identityHash, 'revision 1');
-    return reply('submit-submission', true, '投句を受け付けました。', { overwritten: false });
+    // 排他区間内で書き込みを確定し、メール通信は解放後に行う。
+    measureRequestStep('saveMs', () => SpreadsheetApp.flush());
   } finally {
-    lock.releaseLock();
+    releaseRequestLock(lock);
   }
+  logEvent('submit-submission', overwritten ? 'overwritten' : 'accepted', identityHash, `revision ${submission.revision}`);
+  let mailSent = true;
+  try { measureRequestStep('mailMs', () => sendSubmissionMail(submission, overwritten, topics)); }
+  catch {
+    mailSent = false;
+    logEvent('submit-submission', 'mail-failed', identityHash, `revision ${submission.revision}`);
+  }
+  const message = mailSent ? (overwritten ? '投句を上書きして受け付けました。' : '投句を受け付けました。')
+    : '投句は受け付けましたが、受付メールを送信できませんでした。再送信せず、実行委員会へご連絡ください。';
+  return reply('submit-submission', true, message, { overwritten, mailSent });
 }
 
 const ENTRY_GRADES = ['中1', '中2', '中3', '高1', '高2', '高3'];
@@ -564,27 +665,35 @@ function archiveSubmission(values, now, reason) {
 }
 
 function getSheet(name, headers) {
-  const spreadsheet = SpreadsheetApp.openById(requiredProperty('KHB_SPREADSHEET_ID'));
-  const sheet = spreadsheet.getSheetByName(name) || spreadsheet.insertSheet(name);
-  if (sheet.getLastRow() === 0) sheet.appendRow(headers);
-  // 旧版のエントリーシートには、既存列を動かさず入力確認日時を末尾へ追加する。
-  if (name === 'エントリー' && sheet.getLastColumn() === headers.length - 1) {
-    const currentHeaders = sheet.getRange(1, 1, 1, headers.length - 1).getValues()[0];
-    if (!currentHeaders.every((header, index) => header === headers[index])) {
-      throw new Error('エントリーシートの列構成を確認してください。');
+  if (khbRequest && khbRequest.sheets[name]) return khbRequest.sheets[name];
+  return measureRequestStep('sheetsMs', () => {
+    const spreadsheet = khbRequest && khbRequest.spreadsheet
+      || SpreadsheetApp.openById(requiredProperty('KHB_SPREADSHEET_ID'));
+    if (khbRequest) khbRequest.spreadsheet = spreadsheet;
+    const sheet = spreadsheet.getSheetByName(name) || spreadsheet.insertSheet(name);
+    if (sheet.getLastRow() === 0) sheet.appendRow(headers);
+    // 旧版のエントリーシートには、既存列を動かさず入力確認日時を末尾へ追加する。
+    if (name === 'エントリー' && sheet.getLastColumn() === headers.length - 1) {
+      const currentHeaders = sheet.getRange(1, 1, 1, headers.length - 1).getValues()[0];
+      if (!currentHeaders.every((header, index) => header === headers[index])) {
+        throw new Error('エントリーシートの列構成を確認してください。');
+      }
+      sheet.getRange(1, headers.length).setValue('inputConfirmationAt');
     }
-    sheet.getRange(1, headers.length).setValue('inputConfirmationAt');
-  }
-  return sheet;
+    if (khbRequest) khbRequest.sheets[name] = sheet;
+    return sheet;
+  });
 }
 
 function findRowByValue(sheet, key, value, conditionKey, conditionValue) {
-  if (sheet.getLastRow() < 2) return null;
-  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  // 見出しと行データは1回で読む。呼び出すたびに最新の値を取得する。
+  const values = measureRequestStep('sheetsMs', () => sheet.getDataRange().getValues());
+  if (values.length < 2) return null;
+  const headers = values[0];
   const keyIndex = headers.indexOf(key);
   const conditionIndex = conditionKey ? headers.indexOf(conditionKey) : -1;
   if (keyIndex < 0 || (conditionKey && conditionIndex < 0)) throw new Error(`列が見つかりません: ${key}`);
-  const rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, headers.length).getValues();
+  const rows = values.slice(1);
   for (let i = 0; i < rows.length; i += 1) {
     if (rows[i][keyIndex] !== value) continue;
     if (conditionKey && rows[i][conditionIndex] !== conditionValue) continue;
@@ -596,11 +705,11 @@ function findRowByValue(sheet, key, value, conditionKey, conditionValue) {
 }
 
 function appendObject(sheet, headers, object) {
-  sheet.appendRow(headers.map((header) => object[header] === undefined ? '' : object[header]));
+  measureRequestStep('saveMs', () => sheet.appendRow(headers.map((header) => object[header] === undefined ? '' : object[header])));
 }
 
 function writeObject(sheet, headers, rowNumber, object) {
-  sheet.getRange(rowNumber, 1, 1, headers.length).setValues([headers.map((header) => object[header] === undefined ? '' : object[header])]);
+  measureRequestStep('saveMs', () => sheet.getRange(rowNumber, 1, 1, headers.length).setValues([headers.map((header) => object[header] === undefined ? '' : object[header])]));
 }
 
 function getReceptionError(kind) {
@@ -634,7 +743,7 @@ function receptionDate(name) {
 }
 
 function requiredProperty(name) {
-  const value = PropertiesService.getScriptProperties().getProperty(name) || KHB_CONFIG[name];
+  const value = requestProperty(name) || KHB_CONFIG[name];
   if (!value) throw new Error(`Missing Script Property: ${name}`);
   return value;
 }
@@ -670,7 +779,7 @@ function sendEntryMail(entry) {
 function fetchPublishedTopics() {
   // 兼題の取得元はGAS側で指定する。フォームから渡された兼題や応答先では切り替えない。
   const siteOrigin = requiredProperty('KHB_SITE_ORIGIN');
-  let json = PropertiesService.getScriptProperties().getProperty('KHB_TEST_TOPICS_JSON')
+  let json = requestProperty('KHB_TEST_TOPICS_JSON')
     || KHB_CONFIG.KHB_TEST_TOPICS_JSON;
   if (!json) {
     const response = UrlFetchApp.fetch(siteOrigin + '/khb2027/js/kendai.json', { muteHttpExceptions: true });
@@ -803,7 +912,7 @@ function replyTo(data) {
 
 function getResponseOrigin(requestedOrigin) {
   const siteOrigin = requiredProperty('KHB_SITE_ORIGIN');
-  const previews = PropertiesService.getScriptProperties().getProperty('KHB_PREVIEW_ORIGINS')
+  const previews = requestProperty('KHB_PREVIEW_ORIGINS')
     ?? KHB_CONFIG.KHB_PREVIEW_ORIGINS;
   const allowed = [siteOrigin].concat(String(previews || '').split(',').map((origin) => origin.trim()).filter(Boolean));
   return allowed.includes(requestedOrigin) ? requestedOrigin : siteOrigin;

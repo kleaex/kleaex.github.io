@@ -8,22 +8,32 @@ const source = fs.readFileSync(path.join(__dirname, 'khb2027_webapp.gs'), 'utf8'
 
 function setup() {
   const state = { now: Date.parse('2026-11-10T10:00:00+09:00'), active: true, closed: false, quota: 100,
-    mails: [], saved: [], logs: [], events: [], properties: { KHB_HMAC_SECRET: 'a-secure-test-only-secret', KHB_AUTH_DAILY_LIMIT: '50' } };
+    mails: [], saved: [], logs: [], events: [], locked: false, properties: { KHB_HMAC_SECRET: 'a-secure-test-only-secret', KHB_AUTH_DAILY_LIMIT: '50' } };
   state.entry = { entryId: 'entry-1', email: 'Team@example.com', schoolName: 'A高校', memberCount: '3',
     members: JSON.stringify(['甲　太郎', '乙　花子', '丙　三郎'].map(name => ({ name, grade: '高2', school: '' }))) };
   class Clock extends Date { constructor(...args) { super(...(args.length ? args : [state.now])); } static now() { return state.now; } }
   const properties = { getProperty: key => state.properties[key] ?? null,
-    setProperty: (key, value) => { state.properties[key] = value; }, deleteProperty: key => { delete state.properties[key]; },
-    getProperties: () => ({ ...state.properties }) };
+    setProperty: (key, value) => { state.properties[key] = value; }, deleteProperty: key => {
+      if (state.cleanupFailure) throw new Error('cleanup failed');
+      assert.equal(state.locked, true); state.events.push('delete'); delete state.properties[key];
+    },
+    getProperties: () => { state.onCleanup?.(); return { ...state.properties }; } };
   const context = vm.createContext({ Date: Clock, console: { error: error => state.logs.push(String(error)) },
     PropertiesService: { getScriptProperties: () => properties },
+    SpreadsheetApp: { flush: () => { assert.equal(state.locked, true); state.events.push('flush'); } },
     Utilities: { getUuid: () => crypto.randomUUID(),
       formatDate: date => new Date(date.valueOf() + 9 * 3600000).toISOString().slice(0, 10),
       computeHmacSha256Signature: (value, secret) => [...crypto.createHmac('sha256', secret).update(value).digest()] },
     MailApp: { getRemainingDailyQuota: () => state.quota, sendEmail: mail => {
+      assert.equal(state.locked, false, 'メール通信中にはロックを保持しない'); state.events.push('mail'); state.onMail?.();
       if (state.mailFailure) throw new Error('mail unavailable'); state.mails.push(mail);
     } },
-    LockService: { getScriptLock: () => ({ waitLock: () => { state.events.push('lock'); state.onLock?.(); }, releaseLock: () => state.events.push('release') }) },
+    LockService: { getScriptLock: () => ({
+      waitLock: () => { assert.equal(state.locked, false); state.locked = true; state.events.push('lock'); state.onLock?.(); },
+      tryLock: timeout => { assert.equal(timeout, 0); if (state.cleanupBusy) return false;
+        assert.equal(state.locked, false); state.locked = true; state.events.push('cleanup-lock'); return true; },
+      releaseLock: () => { state.locked = false; state.events.push('release'); },
+    }) },
     UrlFetchApp: { fetch: () => { state.events.push('fetch'); state.beforeFetch?.(); return { getResponseCode: () => 200,
       getContentText: () => JSON.stringify(Object.fromEntries([1, 2, 3, 4].map(n => [`dai${n}`, ['', '「春」', '（はる）']]))) }; } },
   });
@@ -173,4 +183,78 @@ test('前日以前の期限切れコード状態だけを清掃し、設定や�
   s.state.properties.KHB_EMAIL_CODE_live = JSON.stringify({ day: '2026-11-09', expiresAt: s.state.now + 600000 });
   s.send();
   assert.equal(s.state.properties.KHB_EMAIL_CODE_old, undefined); assert.ok(s.state.properties.KHB_EMAIL_CODE_live); assert.ok(s.state.properties.KHB_HMAC_SECRET);
+});
+
+test('清掃はメール送信後だけに行い、当日の回数・将来日・不正な状態を残し、最大10件に制限する', () => {
+  const s = setup();
+  for (let index = 0; index < 12; index++) s.state.properties[`KHB_EMAIL_CODE_old${index}`] = JSON.stringify({ day: '2026-11-09', expiresAt: s.state.now - 1 });
+  s.state.properties.KHB_EMAIL_CODE_today = JSON.stringify({ day: '2026-11-10', count: 10, expiresAt: s.state.now - 1 });
+  s.state.properties.KHB_EMAIL_CODE_future = JSON.stringify({ day: '2026-11-11', expiresAt: s.state.now - 1 });
+  s.state.properties.KHB_EMAIL_CODE_invalid = 'invalid-json';
+  assert.equal(s.send().ok, true);
+  assert.equal(s.state.events.filter(event => event === 'delete').length, 10);
+  assert.ok(s.state.events.indexOf('mail') < s.state.events.indexOf('delete'));
+  assert.equal(Object.keys(s.state.properties).filter(key => key.startsWith('KHB_EMAIL_CODE_old')).length, 2);
+  assert.equal(JSON.parse(s.state.properties.KHB_EMAIL_CODE_today).count, 10);
+  assert.ok(s.state.properties.KHB_EMAIL_CODE_future); assert.ok(s.state.properties.KHB_EMAIL_CODE_invalid);
+  s.state.now += 60000; s.send();
+  assert.equal(Object.keys(s.state.properties).filter(key => key.startsWith('KHB_EMAIL_CODE_old')).length, 0);
+});
+
+test('清掃ロック取得不可・削除失敗でもコード送信成功と本人確認を保つ', () => {
+  for (const condition of ['cleanupBusy', 'cleanupFailure']) {
+    const s = setup(); s.state[condition] = true;
+    s.state.properties.KHB_EMAIL_CODE_old = JSON.stringify({ day: '2026-11-09', expiresAt: s.state.now - 1 });
+    const sent = s.send(); assert.equal(sent.ok, true); assert.ok(s.state.properties.KHB_EMAIL_CODE_old);
+    assert.equal(s.request('verify-email-code', { challengeId: sent.challengeId, code: sent.code }).ok, true);
+    assert.equal(s.state.locked, false);
+  }
+});
+
+test('送信失敗の後処理が新しく発行されたコードを失効させず、清掃も更新済みの状態を残す', () => {
+  const failed = setup(); const key = 'KHB_EMAIL_CODE_' + failed.identityHash;
+  failed.state.onMail = () => { failed.state.properties[key] = JSON.stringify({ nonce: 'newer-challenge', codeHash: 'newer-hash', attempts: 2, count: 2 }); };
+  failed.state.mailFailure = true; assert.equal(failed.send().ok, false);
+  assert.equal(JSON.parse(failed.state.properties[key]).codeHash, 'newer-hash');
+  assert.equal(JSON.parse(failed.state.properties[key]).attempts, 2);
+  const cleaned = setup();
+  cleaned.state.properties.KHB_EMAIL_CODE_other = JSON.stringify({ day: '2026-11-09', expiresAt: cleaned.state.now - 1 });
+  cleaned.state.onCleanup = () => { cleaned.state.properties.KHB_EMAIL_CODE_other = JSON.stringify({ day: '2026-11-10', expiresAt: cleaned.state.now + 600000 }); };
+  assert.equal(cleaned.send().ok, true); assert.ok(cleaned.state.properties.KHB_EMAIL_CODE_other);
+});
+
+test('受付メールの失敗でも保存済みを成功として返し、再試行で再保存・再通知しない', () => {
+  for (const overwrite of [false, true]) {
+    const s = setup(); const values = s.submission(s.login().authorToken);
+    if (overwrite) {
+      s.state.existing = { rowNumber: 2, values: { ...values, k1_1: '旧句', revision: 1 } };
+      s.context.archiveSubmission = () => s.state.events.push('archive');
+      s.context.writeObject = (sheet, headers, row, saved) => s.state.saved.push(saved);
+    }
+    s.state.mailFailure = true;
+    const result = s.request('submit-submission', { ...values, overwrite: String(overwrite) });
+    assert.equal(result.ok, true); assert.equal(result.mailSent, false); assert.equal(result.overwritten, overwrite);
+    assert.match(result.message, /受け付けました.*受付メール.*再送信せず/);
+    assert.equal(s.state.saved.length, 1); assert.equal(s.state.locked, false);
+    assert.ok(s.state.logs.some(log => log[1] === 'mail-failed'));
+    s.state.existing = { rowNumber: 2, values: s.state.saved[0] };
+    const retried = s.request('submit-submission', { ...values, overwrite: String(overwrite) });
+    assert.equal(retried.alreadySubmitted, true); assert.equal(s.state.saved.length, 1);
+    assert.equal(s.state.mails.length, 1, '確認コード以外のメールは成功していない');
+  }
+});
+
+test('ロック外でメールを発送中でも残り20通を予約で保護し、終了後に予約を解除する', () => {
+  const s = setup(); s.state.quota = 21;
+  s.context.findActiveEntry = () => ({ values: s.state.entry });
+  let concurrent;
+  s.state.onMail = () => { concurrent = s.request('send-email-code', { teamName: '別チーム' }); };
+  assert.equal(s.send().ok, true);
+  assert.equal(concurrent.ok, false); assert.match(concurrent.message, /送信枠/);
+  assert.equal(s.state.mails.length, 1);
+  assert.deepEqual(JSON.parse(s.state.properties.KHB_EMAIL_AUTH_RATE).pendingMail, {});
+  const expired = setup(); expired.state.quota = 21;
+  expired.state.properties.KHB_EMAIL_AUTH_RATE = JSON.stringify({ day: '2026-11-10', count: 1,
+    pendingMail: { expired: expired.state.now - 1 } });
+  assert.equal(expired.send().ok, true, '中断した発送の期限切れ予約は枠を永久に消費しない');
 });
