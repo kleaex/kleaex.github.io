@@ -158,7 +158,7 @@ export function setupEmailAuth(form, teamCheck, { onStateChange = () => {} } = {
     if (action === 'send-email-code') { challengeId = message.challengeId; show('確認コードを送りました。'); code.focus(); return; }
     if (!Array.isArray(message.authors) || message.authors.length < 3 || message.authors.length > 5
       || message.authors.some((author) => typeof author.value !== 'string' || !author.value || typeof author.label !== 'string')) {
-      forget(); show('作者一覧を確認できませんでした。実行委員会へ連絡してください。'); return;
+      forget(); show('作者一覧を確認できませんでした。お手数ですが、実行委員会までご連絡ください。'); return;
     }
     if (action === 'verify-email-code') verified = { identity, token: message.authorToken, expiresAt: Number(message.expiresAt) };
     if (!verified || typeof verified.token !== 'string' || !verified.token || !Number.isFinite(verified.expiresAt) || verified.expiresAt <= Date.now()) {

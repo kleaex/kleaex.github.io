@@ -31,7 +31,7 @@ function setup({ status = 200, json = JSON.stringify(published), networkError = 
     }) },
     Utilities: { formatDate: () => '2027/01/01 00:00:00',
       computeHmacSha256Signature: (value, secret) => [...crypto.createHmac('sha256', secret).update(value).digest()] },
-    MailApp: { sendEmail: mail => { events.push('mail'); mails.push(mail); } },
+    GmailApp: { sendEmail: (to, subject, body, options) => { events.push('mail'); mails.push({ to, subject, body, ...options }); } },
   });
   vm.runInContext(source, context);
   context.getReceptionError = kind => {
@@ -89,7 +89,7 @@ test('エントリー受付メールは長い紹介文を分割せず、入力�
   context.sendEntryMail({
     email: 'test@example.com', teamName: 'チームＡ', schoolName: 'テスト高校',
     plannedTeamCount: '1', responsibleName: '責任者', members: '甲\r\n乙\n丙',
-    introduction, specialNote: '一行目\n\n三行目', receivedAt: new Date(),
+    introduction, specialNote: '一行目\n\n三行目', updatedAt: new Date(),
   });
   assert.ok(mails[0].body.includes('紹介文：' + introduction + '\n'));
   assert.ok(mails[0].htmlBody.includes('紹介文：' + introduction + '<br>'));
@@ -97,7 +97,105 @@ test('エントリー受付メールは長い紹介文を分割せず、入力�
   assert.ok(mails[0].htmlBody.includes('一行目<br><br>三行目'));
   assert.equal(mails[0].bcc, 'klea.ex+khb@gmail.com');
   assert.equal(mails[0].replyTo, 'klea.ex+khb@gmail.com');
+  assert.equal(mails[0].from, 'klea.ex+autoreply@gmail.com');
 });
+
+test('両受付メールは同じ問い合わせ案内と最新受付日時を使い、エントリーの全回答を明示する', () => {
+  const { context, data, mails } = setup();
+  const receivedAt = new Date('2026-10-12T00:00:00+09:00');
+  const updatedAt = new Date('2026-10-13T00:00:00+09:00');
+  context.Utilities.formatDate = (date, zone, pattern) => {
+    assert.equal(date.valueOf(), updatedAt.valueOf());
+    assert.equal(zone, 'Asia/Tokyo');
+    assert.equal(pattern, 'yyyy/MM/dd HH:mm:ss');
+    return '2026/10/13 00:00:00';
+  };
+  context.sendEntryMail({
+    email: data.email, teamName: data.teamName, schoolName: 'A高校', schoolName2: 'B高校',
+    isJointTeam: true, plannedTeamCount: '2', responsibleName: '責任者　花子',
+    responsibleRole: 'その他', responsibleRoleOther: '外部指導者', memberCount: '3',
+    members: JSON.stringify(['甲　太郎', '乙　花子', '丙　三郎'].map((name, index) => ({ name, grade: '高2', school: index ? 'B高校' : 'A高校' }))),
+    introduction: '紹介文', specialNote: '連絡事項', receivedAt, updatedAt,
+    termsConsentAt: updatedAt, inputConfirmationAt: updatedAt, contactConfirmationAt: updatedAt,
+  });
+  context.sendSubmissionMail({ ...data, updatedAt, agreeAt: updatedAt }, false, { league: ['春', '夏', '秋'], final: '冬' });
+  const entryBody = mails[0].body;
+  for (const line of ['学校名：A高校、B高校', '合同チームである：はい', '出場予定チーム数：2チーム',
+    '責任者の種類：その他', '責任者の種類（具体的に記入ください）：外部指導者', 'チーム人数：3人',
+    '甲　太郎（A高校・高2）', '乙　花子（B高校・高2）', '紹介文：紹介文', 'コメント・特記事項：連絡事項']) {
+    assert.ok(entryBody.includes(line), line);
+  }
+  assert.ok(entryBody.includes('同意し、エントリーします'));
+  assert.ok(entryBody.includes('連絡確認（'));
+  assert.ok(!entryBody.includes('入力確認（'));
+  for (const [index, kind] of ['エントリー', '投句'].entries()) {
+    const mail = mails[index];
+    for (const line of context.mailInquiryLines(kind, 'klea.ex+khb@gmail.com')) assert.ok(mail.body.includes(line));
+    assert.ok(mail.body.includes('フォーム送信日時：2026/10/13 00:00:00（日本時間）'));
+    assert.equal(mail.from, 'klea.ex+autoreply@gmail.com');
+    assert.equal(mail.bcc, 'klea.ex+khb@gmail.com');
+    assert.equal(mail.replyTo, 'klea.ex+khb@gmail.com');
+  }
+});
+
+test('エントリーは入力確認を要求せず、旧列に確認済み日時を記録しない', () => {
+  const { context, saved, mails } = setup();
+  context.getReceptionError = () => '';
+  context.findRowByValue = () => null;
+  context.Utilities.getUuid = () => 'entry-id';
+  const data = {
+    schoolName: 'テスト高校', plannedTeamCount: '1', teamName: 'テスト高校Ａ',
+    responsibleName: '責任　者', responsibleRole: '顧問', email: 'test@example.com',
+    memberCount: '3', members: JSON.stringify(['甲　太郎', '乙　花子', '丙　三郎'].map(name => ({ name, grade: '高2', school: '' }))),
+    introduction: 'あ'.repeat(250), termsConsent: 'true', contactConfirmation: 'true',
+  };
+  assert.equal(context.handleEntry(data).ok, true);
+  assert.equal(saved[0].inputConfirmationAt, '');
+  assert.ok(!mails[0].body.includes('入力確認（'));
+  for (const key of ['termsConsent', 'contactConfirmation']) {
+    assert.match(context.validateEntry({ ...data, [key]: 'false' }), /確認事項への同意/);
+  }
+});
+
+for (const mailFailure of [false, true]) {
+  test(`エントリーは保存を確定し、メール${mailFailure ? '失敗でも受付成功と未送信' : '成功と受付成功'}を返す`, () => {
+    const state = setup();
+    const { context } = state;
+    context.getReceptionError = () => '';
+    context.findRowByValue = () => null;
+    context.Utilities.getUuid = () => 'entry-id';
+    const send = context.GmailApp.sendEmail;
+    context.GmailApp.sendEmail = (...args) => {
+      assert.equal(state.events.at(-1), 'flush', '保存確定後にメールを送る');
+      if (mailFailure) { state.events.push('mail'); throw new Error('mail unavailable'); }
+      send(...args);
+    };
+    const data = {
+      action: 'entry', schoolName: 'テスト高校', plannedTeamCount: '1', teamName: 'テスト高校Ａ',
+      responsibleName: '責任　者', responsibleRole: '顧問', email: 'test@example.com',
+      memberCount: '3', members: JSON.stringify(['甲　太郎', '乙　花子', '丙　三郎'].map(name => ({ name, grade: '高2', school: '' }))),
+      introduction: 'あ'.repeat(250), termsConsent: 'true', contactConfirmation: 'true',
+    };
+    const result = context.doPost({ parameter: data });
+    assert.equal(result.ok, true);
+    assert.equal(result.mailSent, !mailFailure);
+    assert.deepEqual(state.events, ['append', 'flush', 'mail']);
+    assert.equal(state.saved.length, 1);
+    assert.equal(state.logs[0][1], 'accepted');
+    if (mailFailure) {
+      assert.match(result.message, /受け付けました.*メールを送信できません.*再送信はせず/);
+      assert.equal(state.logs[1][1], 'mail-failed');
+      assert.equal(state.logs[1][3], 'entry-id');
+    }
+    context.findRowByValue = () => ({ values: state.saved[0] });
+    assert.equal(context.doPost({ parameter: data }).ok, false);
+    assert.deepEqual(state.events, ['append', 'flush', 'mail'], '重複送信で保存・メールを繰り返さない');
+    context.findRowByValue = () => null;
+    context.SpreadsheetApp.flush = () => { throw new Error('save unavailable'); };
+    assert.equal(context.doPost({ parameter: data }).ok, false);
+    assert.equal(state.events.filter(event => event === 'mail').length, 1, '保存の失敗後にはメールを送らない');
+  });
+}
 
 test('投句受付メールのHTMLでは入力されたタグや文字参照を文字として表示する', () => {
   const { context, data, mails } = setup();
@@ -490,7 +588,7 @@ test('メンバー登録は人数・学年・合同チームの所属校を検�
   const data = { memberCount: '3', members: JSON.stringify(members), schoolName: 'A高校' };
   assert.equal(context.validateEntryMembers(data), '');
   assert.match(context.validateEntryMembers({ ...data, memberCount: '4' }), /チーム人数分/);
-  assert.match(context.validateEntryMembers({ ...data, members: JSON.stringify([members[0], members[0], members[2]]) }), /実行委員会へ連絡/);
+  assert.match(context.validateEntryMembers({ ...data, members: JSON.stringify([members[0], members[0], members[2]]) }), /実行委員会.*連絡/);
   assert.equal(context.validateEntryMembers({ ...data, members: JSON.stringify([members[0], { ...members[0], grade: '高1' }, members[2]]) }), '');
   assert.match(context.validateEntryMembers({ ...data, members: JSON.stringify(members.map(m => ({ ...m, grade: '' }))) }), /学年/);
   const joint = { ...data, isJointTeam: 'true', schoolName2: 'B高校', members: JSON.stringify(members.map((m, index) => ({ ...m, school: index === 0 ? 'A高校' : 'B高校' }))) };

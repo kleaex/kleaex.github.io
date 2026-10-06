@@ -45,34 +45,37 @@
             <option value="3">3チーム</option>
           </select>
         </p>
-        <p class="form-note">エントリーフォームは1回につき1チームのみ登録できます。複数チームで出場する場合は、チームごとに送信してください。</p>
+        <p class="form-note">同一校から出場予定のチーム数を回答ください。<br>エントリーフォームは1回につき1チームのみ登録できます。複数チームで出場する場合は、チームごとに送信してください。</p>
         <p><label class="field-label" for="teamName">チーム名</label><input id="teamName" class="haiku" name="teamName" placeholder="チーム名" maxlength="200" required></p>
-        <p class="form-note">チーム名には学校名を含め、同一校から複数チーム出場する場合は互いに区別できる名称にしてください。アルファベット・数字は全角で記載してください。</p>
+        <p class="form-note">チーム名には学校名を含め、同一校から複数チーム出場する場合は互いに区別できる名称にしてください。<br>アルファベット・数字は全角で記載してください。</p>
 
       </section>
       <section class="form-section" aria-labelledby="responsible-heading">
         <div class="section-heading"><span class="section-number" aria-hidden="true">02</span><h2 id="responsible-heading">責任者情報</h2></div>
-        <p class="form-note">顧問の先生やコーチ、部長など、本大会に関する責任者の氏名を記載してください。</p>
+        <p class="form-note">顧問の先生やコーチなど、本大会に関する責任者の氏名を記載してください。</p>
         <p><label class="field-label" for="responsibleName">責任者氏名</label><input id="responsibleName" class="haiku" name="responsibleName" placeholder="責任者氏名（姓　名）" aria-describedby="responsible-name-note" maxlength="100" required></p>
         <p id="responsible-name-note" class="form-note">氏名は姓名間に全角スペースを入れてください。</p>
         <p>
-          <label class="field-label" for="responsibleRole">責任者の役割</label>
+          <label class="field-label" for="responsibleRole">責任者の種類</label>
           <select id="responsibleRole" name="responsibleRole" required>
-            <option value="">責任者の役割を選択してください</option>
+            <option value="">責任者の種類を選択してください</option>
             <option value="顧問">顧問</option>
             <option value="コーチ">コーチ</option>
-            <option value="選手">選手</option>
+            <option value="選手">選手</option>Ｓ
             <option value="その他">その他</option>
           </select>
         </p>
-        <p id="responsibleRoleOther-field" hidden><label class="field-label" for="responsibleRoleOther">役割（具体的に）</label><input id="responsibleRoleOther" class="haiku" name="responsibleRoleOther" placeholder="役割（具体的に）" maxlength="100"></p>
+        <p id="responsibleRoleOther-field" hidden><label class="field-label" for="responsibleRoleOther">責任者の種類（具体的に記入ください）</label><input id="responsibleRoleOther" class="haiku" name="responsibleRoleOther" placeholder="責任者の種類（具体的に記入ください）" maxlength="100"></p>
         <p><label class="field-label" for="email">責任者連絡先（メールアドレス）</label><input id="email" class="haiku" name="email" placeholder="責任者連絡先（メールアドレス）" type="email" pattern="[^\s@]+@[^\s@]+\.[^\s@]+" title="example@example.com のように、@の後にドットを含むメールアドレスを入力してください。" maxlength="254" autocomplete="email" required></p>
+        <p class="form-note">いただいたメールアドレスは、本大会および付帯する事業の実施および、主催団体からの本大会に関連するご連絡にのみ使用いたします。</p>
       </section>
       <section class="form-section" aria-labelledby="members-heading">
         <div class="section-heading"><span class="section-number" aria-hidden="true">03</span><h2 id="members-heading">チームメンバー</h2></div>
         <p><label class="field-label" for="memberCount">チーム人数</label><select id="memberCount" name="memberCount" required><option value="">選択してください</option><option value="3">3人</option><option value="4">4人</option><option value="5">5人</option></select></p>
         <input id="members" name="members" type="hidden">
-        <p class="form-note">チーム人数を選択すると、人数分の入力欄が表示されます。氏名は姓名間に全角スペースを入れてください。学年はリストから選択してください。合同チームは、登録したすべての学校から1人以上の選手を登録してください。記載順で当日配布パンフレットに掲載します。投句時の作者名は、ここで登録した氏名と合わせてください。</p>
+        <p class="form-note">チーム人数を選択すると、人数分の入力欄が表示されます。</p>
+        <h3 class="field-label">メンバー表</h3>
+        <p class="form-note">氏名は姓名間に全角スペースを入れてください。学年はリストから選択してください。大会には、中学生および高校3年生も参加できます。<br>ここに記載いただいた順番で、当日配布するパンフレットにメンバー一覧を掲載する予定です。<br>なお、試合時の着席順は当日確認しますので、この欄の回答で考慮いただく必要はありません。</p>
         <div id="member-fields"></div>
         <p id="member-name-warning" class="field-warning" role="status" aria-live="polite" hidden></p>
       </section>
@@ -90,8 +93,7 @@
       </section>
       <section class="form-section" aria-labelledby="consent-heading">
         <div class="section-heading"><span class="section-number" aria-hidden="true">05</span><h2 id="consent-heading">確認事項</h2></div>
-        <p class="checkbox-field"><input id="termsConsent" name="termsConsent" type="checkbox" value="true" required><label for="termsConsent">実施要項、詳細を確認し、参加費、著作権、および肖像権などの内容を理解し同意したうえで、「関西俳句バトル2027」にエントリーします。</label></p>
-        <p class="checkbox-field"><input id="inputConfirmation" name="inputConfirmation" type="checkbox" value="true" required><label for="inputConfirmation">入力内容を確認しました。</label></p>
+        <p class="checkbox-field"><input id="termsConsent" name="termsConsent" type="checkbox" value="true" required><label for="termsConsent">実施要項、詳細要項を確認し、参加費、著作権、および肖像権などの内容に同意したうえで、「関西俳句バトル2027」にエントリーします。</label></p>
         <p class="checkbox-field"><input id="contactConfirmation" name="contactConfirmation" type="checkbox" value="true" required><label for="contactConfirmation">エントリー内容に関する質問や変更がある場合は、すみやかに関西文芸交流会 関西俳句バトル実行委員会（klea.ex+khb@gmail.com）へ連絡することを確認しました。</label></p>
       </section>
       <div class="form-actions"><button class="submit" type="submit">エントリーする</button></div>

@@ -7,6 +7,7 @@ const read = file => fs.readFileSync(path.join(__dirname, file), 'utf8').replace
 
 function setup() {
   const listeners = {};
+  const storage = new Map();
   class Element {
     constructor(tag = 'input') { this.tag = tag; this.children = []; this.handlers = {}; this._value = ''; this.disabled = false; this.checked = false; this.id = ''; }
     get value() { return this._value; }
@@ -69,12 +70,13 @@ function setup() {
   add('member-fields', 'div'); add('members').type = 'hidden';
   for (const id of ['member-name-warning', 'entry-status', 'introduction-count']) add(id, 'p');
   add('introduction', 'textarea').required = true; add('specialNote', 'textarea');
-  for (const id of ['termsConsent', 'inputConfirmation', 'contactConfirmation']) { const el = add(id); el.type = 'checkbox'; el.required = true; }
+  for (const id of ['termsConsent', 'contactConfirmation']) { const el = add(id); el.type = 'checkbox'; el.required = true; }
   const button = add('submit', 'button'); button.type = 'submit'; button.disabled = true;
   const document = { querySelector: s => s === '#entry-form' ? form : form.querySelector(s), querySelectorAll: s => form.querySelectorAll(s),
     getElementById: id => form.querySelector(`#${id}`), createElement: tag => new Element(tag) };
   const context = vm.createContext({ document, window: { location: { origin: 'http://127.0.0.1:8766' }, addEventListener: (type, fn) => { listeners[type] = fn; } },
-    GAS_MESSAGE_SOURCE: 'khb2027', GAS_WEB_APP_URL: 'https://script.google.com/macros/s/test/exec' });
+    GAS_MESSAGE_SOURCE: 'khb2027', GAS_WEB_APP_URL: 'https://script.google.com/macros/s/test/exec',
+    sessionStorage: { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: key => storage.delete(key) } });
   vm.runInContext(read('entryRules.js') + '\n' + read('authorRules.js') + '\n' + read('memberFields.js') + '\n' + read('entry.js'), context);
   const get = id => document.getElementById(id);
   function set(id, value, type = 'input') { const el = get(id); if (el.type === 'checkbox') el.checked = value; else el.value = value; el.dispatch(type); }
@@ -82,10 +84,10 @@ function setup() {
     for (const [id, value] of Object.entries({ schoolName: 'A高校', teamName: 'A高校チーム', responsibleName: '責任　者', email: 'team@example.com', introduction: 'あ'.repeat(250) })) set(id, value);
     set('plannedTeamCount', '1', 'change'); set('responsibleRole', '顧問', 'change'); set('memberCount', '3', 'change');
     for (let i = 1; i <= 3; i++) { set(`member-${i}-name`, `氏名　${i}`); set(`member-${i}-grade`, '高2', 'change'); }
-    for (const id of ['termsConsent', 'inputConfirmation', 'contactConfirmation']) set(id, true, 'change');
+    for (const id of ['termsConsent', 'contactConfirmation']) set(id, true, 'change');
   }
-  function reply(ok) { listeners.message({ origin: 'https://script.google.com', data: { source: 'khb2027', action: 'entry', ok, message: ok ? '受付済み' : '送信失敗' } }); }
-  return { form, button, get, set, fill, reply, context, listeners };
+  function reply(ok, extra = {}) { listeners.message({ origin: 'https://script.google.com', data: { source: 'khb2027', action: 'entry', ok, message: ok ? '受付済み' : '送信失敗', ...extra } }); }
+  return { form, button, get, set, fill, reply, context, listeners, storage };
 }
 
 test('未入力でも送信ボタンを押せ、必須入力・メール形式・文字数・確認事項の不備は送信時に止める', () => {
@@ -179,6 +181,40 @@ test('受付成功後はフォームをリセットし、エントリー完了�
   assert.equal(s.button.disabled, false); assert.equal(s.form.checkValidity(), false); assert.equal(s.get('teamName').value, '');
   assert.equal(s.get('member-fields').children.length, 0);
   assert.equal(s.context.window.location.href, 'entry-finish.html');
+});
+
+test('受付メール失敗でも完了画面へ進み、再読み込み後も受付済み・未送信・要連絡を表示する', () => {
+  const s = setup(); s.fill(); s.form.dispatch('submit'); s.reply(true, { mailSent: false });
+  assert.equal(s.context.window.location.href, 'entry-finish.html');
+  assert.equal(s.storage.get('khb2027:entry-receipt-mail-failed'), 'true');
+  const html = fs.readFileSync(path.join(__dirname, '../entry-finish.html'), 'utf8');
+  for (const id of ['entry-receipt-message', 'entry-receipt-notice']) {
+    assert.ok(html.includes(`id="${id}"`));
+    const element = s.context.document.createElement('p'); element.id = id; s.form.appendChild(element);
+  }
+  assert.ok(html.includes('src="js/entryFinish.js"'));
+  for (let reload = 0; reload < 2; reload++) {
+    vm.runInContext(read('entryFinish.js'), s.context);
+    assert.match(s.get('entry-receipt-message').textContent, /保存は完了.*メールを送信できません/);
+    assert.match(s.get('entry-receipt-notice').textContent, /再送信せず.*チーム名.*実行委員会/);
+    assert.equal(s.get('entry-receipt-notice').hidden, false);
+  }
+  assert.equal(s.get('teamName').value, '');
+});
+
+test('メール成功でエントリーの未送信表示だけを消し、保存失敗では完了画面へ進まない', () => {
+  for (const mailSent of [true, undefined]) {
+    const s = setup(); s.storage.set('khb2027:entry-receipt-mail-failed', 'true');
+    s.storage.set('khb2027:receipt-mail-failed', 'true');
+    s.fill(); s.form.dispatch('submit'); s.reply(true, { mailSent });
+    assert.equal(s.storage.has('khb2027:entry-receipt-mail-failed'), false);
+    assert.equal(s.storage.get('khb2027:receipt-mail-failed'), 'true');
+    assert.equal(s.context.window.location.href, 'entry-finish.html');
+  }
+  const failed = setup(); failed.fill(); failed.form.dispatch('submit'); failed.reply(false);
+  assert.equal(failed.context.window.location.href, undefined);
+  assert.equal(failed.storage.has('khb2027:entry-receipt-mail-failed'), false);
+  assert.equal(failed.get('teamName').value, 'A高校チーム');
 });
 
 test('未送信・失敗・無関係な応答では完了画面へ進まず、入力を保持する', () => {

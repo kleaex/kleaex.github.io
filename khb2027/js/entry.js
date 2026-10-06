@@ -126,6 +126,8 @@ window.addEventListener('message', (event) => {
   sending = false;
   status.textContent = message.message || '送信結果を確認できませんでした。';
   if (message.ok) {
+    if (message.mailSent === false) sessionStorage.setItem('khb2027:entry-receipt-mail-failed', 'true');
+    else sessionStorage.removeItem('khb2027:entry-receipt-mail-failed');
     form.reset();
     memberFields.reset();
     toggleConditionalFields();

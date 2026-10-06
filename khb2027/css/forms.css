@@ -56,7 +56,7 @@ h3 { font-size: 1.05rem; color: var(--black); }
 .form-steps [aria-current="step"] .step-number, .form-steps .is-complete .step-number { background: var(--accent); border-color: transparent; }
 .page-main { padding-block: 40px 64px; }
 .form-section { padding-block: 32px; border-bottom: 1px solid var(--form-line); min-width: 0; }
-.form-section:first-child { padding-top: 0; }
+.submitform > .form-section:first-of-type { padding-top: 0; }
 .section-heading { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; }
 .section-number { color: var(--form-muted); font-size: 1.2rem; }
 .form-section > h3, .form-section > h2 { margin-bottom: 18px; }
@@ -97,9 +97,10 @@ input::placeholder, textarea::placeholder { color: #717171; opacity: 1; }
 .page-footer p + p { margin-top: 4px; }
 .honeypot { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
 .completion { max-width: 680px; margin-inline: auto; padding-block: 16px; }
-.completion-mark { display: grid; place-items: center; width: 56px; height: 56px; margin-bottom: 24px; background: var(--accent); border-radius: 50%; color: var(--black); }
+.completion-heading { display: flex; align-items: center; gap: 16px; margin-inline-start: -16px; margin-bottom: 16px; }
+.completion-mark { display: grid; place-items: center; flex: 0 0 56px; width: 56px; height: 56px; background: var(--accent); border-radius: 50%; color: var(--black); }
 .completion-mark svg { width: 26px; height: 26px; }
-.completion h2 { font-size: clamp(1.4rem, 4vw, 1.8rem); margin-bottom: 16px; }
+.completion h2 { min-width: 0; font-size: clamp(1.4rem, 4vw, 1.8rem); }
 .completion > p { margin-block: 16px; }
 .completion-next { border-top: 1px solid var(--form-line); margin-top: 28px; padding-top: 24px; }
 .completion-next h3 { margin-bottom: 10px; }
@@ -109,6 +110,10 @@ dialog { max-width: min(460px, calc(100% - 32px)); padding: 28px; border: 1px so
 dialog::backdrop { background: rgba(17, 17, 17, .4); }
 dialog h3 { margin-bottom: 12px; }
 .dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+@media (min-width: 840px) {
+  /* Align the center of the 56px icon with the body's left edge. */
+  .completion-heading { margin-inline-start: -28px; }
+}
 @media (max-width: 600px) {
   .page-header-inner, .page-main, .page-footer { width: calc(100% - 32px); }
   .page-header-inner { padding-block: 18px 24px; }
@@ -120,6 +125,7 @@ dialog h3 { margin-bottom: 12px; }
   .page-main { padding-block: 28px 44px; }
   .form-section { padding-block: 28px; }
   .field-grid { grid-template-columns: 1fr; gap: 16px; }
+  .completion-heading { margin-inline-start: -8px; }
   .form-actions > .submit, .completion .form-actions > a { width: 100%; min-width: 0; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

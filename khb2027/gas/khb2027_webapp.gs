@@ -17,7 +17,9 @@ const KHB_CONFIG = Object.freeze({
   KHB_SUBMISSION_START_JST: '2026-11-01T14:00:00+09:00',  // 投句受付開始
   // 運営への控え（BCC）の送信先。
   KHB_ADMIN_EMAIL: 'klea.ex+khb@gmail.com',
-  // 返信先・本文の問い合わせ先。実際の差出人はGASの実行アカウント。
+  // 差出人。GAS実行アカウントのGmailに送信元エイリアスとして登録する。
+  KHB_FROM_EMAIL: 'klea.ex+autoreply@gmail.com',
+  // 返信先・本文の問い合わせ先。
   KHB_REPLY_TO: 'klea.ex+khb@gmail.com',
   // サイトのオリジンのみ（末尾の / や /khb2027 は付けない）。
   KHB_SITE_ORIGIN: 'https://kleaex.github.io',
@@ -135,7 +137,7 @@ function handleEntry(data) {
   const entrySheet = getSheet('エントリー', ENTRY_HEADERS);
   if (findRowByValue(entrySheet, 'identityHash', identityHash, 'status', '有効')) {
     logEvent('entry', 'duplicate', identityHash, 'already active');
-    return reply('entry', false, '同じチーム名とメールアドレスのエントリーが既にあります。変更が必要な場合は実行委員会へご連絡ください。');
+    return reply('entry', false, '同じチーム名とメールアドレスのエントリーが既にあります。変更が必要な場合は実行委員会までご連絡ください。');
   }
 
   const now = new Date();
@@ -149,15 +151,23 @@ function handleEntry(data) {
     responsibleRoleOther: data.responsibleRole === 'その他' ? data.responsibleRoleOther : '',
     email: data.email, memberCount: data.memberCount, members: data.members,
     introduction: data.introduction, specialNote: data.specialNote || '',
-    termsConsentAt: now, contactConfirmationAt: now, identityHash: identityHash, note: '', inputConfirmationAt: now,
+    termsConsentAt: now, contactConfirmationAt: now, identityHash: identityHash, note: '', inputConfirmationAt: '',
   };
   // シートの読み込み中に締切を過ぎていないか、保存直前にも確認する。
   const finalReceptionError = getReceptionError('ENTRY');
   if (finalReceptionError) return reply('entry', false, finalReceptionError);
   appendObject(entrySheet, ENTRY_HEADERS, row);
-  sendEntryMail(row);
+  measureRequestStep('saveMs', () => SpreadsheetApp.flush());
   logEvent('entry', 'accepted', identityHash, row.entryId);
-  return reply('entry', true, 'エントリーを受け付けました。入力いただいたメールアドレスをご確認ください。');
+  let mailSent = true;
+  try { measureRequestStep('mailMs', () => sendEntryMail(row)); }
+  catch {
+    mailSent = false;
+    logEvent('entry', 'mail-failed', identityHash, row.entryId);
+  }
+  const message = mailSent ? 'エントリーを受け付けました。入力いただいたメールアドレスをご確認ください。'
+    : 'エントリーは受け付けましたが、確認メールを送信できませんでした。お手数ですが、再送信はせず、実行委員会までご連絡ください。';
+  return reply('entry', true, message, { mailSent });
 }
 
 // 俳句・宣誓の入力前に、チーム名とメールアドレスだけで照合する。
@@ -218,11 +228,11 @@ function emailAuthContext(data) {
 }
 
 function authorOptions(entry) {
-  if (!registeredNames(entry)) throw new Error('登録メンバー情報を確認してください。実行委員会へ連絡してください。');
+  if (!registeredNames(entry)) throw new Error('登録メンバー情報を確認してください。実行委員会までご連絡ください。');
   const members = parseMembers(entry.members);
   const labels = memberAuthorLabels(members);
   if (indistinguishableMembers(members).length || new Set(labels.map(authorNameKey)).size !== members.length) {
-    throw new Error('同姓同名のメンバーを区別できません。実行委員会へ連絡してください。');
+    throw new Error('同姓同名のメンバーを区別できません。実行委員会までご連絡ください。');
   }
   return members.map((member, index) => ({ value: labels[index],
     label: `${member.name}（${[member.school, member.grade].filter(Boolean).join('・')}）` }));
@@ -257,9 +267,9 @@ function sendEmailCode(data) {
       .filter(([, expiresAt]) => Number.isFinite(expiresAt) && expiresAt > now));
     const limit = Number(requiredProperty('KHB_AUTH_DAILY_LIMIT'));
     if (!Number.isInteger(limit) || limit < 1) throw new Error('確認メールの上限設定を確認してください。');
-    if (count >= 10) return reply('send-email-code', false, 'このチームの本日の確認メール送信上限に達しました。実行委員会へ連絡してください。');
+    if (count >= 10) return reply('send-email-code', false, 'このチームの本日の確認メール送信上限に達しました。実行委員会までご連絡ください。');
     if (total >= limit || MailApp.getRemainingDailyQuota() - Object.keys(pendingMail).length <= 20) {
-      return reply('send-email-code', false, '本日の確認メール送信枠が不足しています。実行委員会へ連絡してください。');
+      return reply('send-email-code', false, '本日の確認メール送信枠が不足しています。お手数ですが、実行委員会までご連絡ください。');
     }
     // サーバーの秘密値とランダムなnonceから生成し、平文コードは保存しない。
     const nonce = Utilities.getUuid().replace(/-/g, '');
@@ -273,9 +283,8 @@ function sendEmailCode(data) {
   } finally { releaseRequestLock(lock); }
   try {
     // コードの控えをBCC・ログへ送らない。送信先は登録済みエントリーのメールだけ。
-    measureRequestStep('mailMs', () => MailApp.sendEmail({ to: entry.email, subject: '【関西俳句バトル2027】メール本人確認コード',
-      body: `投句フォームの確認コードは ${code} です。\n10分以内に入力してください。\nこのコードは他の人に共有しないでください。\n心当たりがない場合は、このメールを無視してください。`,
-      replyTo: requiredProperty('KHB_REPLY_TO'), name: '関西文芸交流会 関西俳句バトル実行委員会' }));
+    measureRequestStep('mailMs', () => sendKHBMail(entry.email, '【関西俳句バトル2027】メール本人確認コード（自動送信）',
+      `投句フォームの確認コードは ${code} です。\n10分以内に入力してください。\nこのコードは他の人に共有しないでください。\n心当たりがない場合は、このメールを無視してください。`));
   } catch {
     // 送信中に発行された別のコードを失効させない。
     waitForRequestLock(lock);
@@ -364,7 +373,7 @@ function verifyEmailCode(data) {
     const token = `${payload}.${authDigest(`email-auth-token:v1|${identityHash}|${JSON.stringify([data.teamName, data.email])}|${payload}`)}`;
     let authors;
     try { authors = authorOptions(entry); } catch (error) { return reply('verify-email-code', false, error.message); }
-    return reply('verify-email-code', true, 'メール本人確認が完了しました。作者を選択してください。', { authorToken: token, expiresAt, authors });
+    return reply('verify-email-code', true, 'メール本人確認が完了しました。', { authorToken: token, expiresAt, authors });
   } finally { releaseRequestLock(lock); }
 }
 
@@ -374,7 +383,7 @@ function getAuthorOptions(data) {
   if (context.error) return reply('get-author-options', false, context.error);
   const error = getEmailAuthError(data, context.identityHash, context.entry);
   if (error) return reply('get-author-options', false, error, { requiresEmailVerification: true });
-  try { return reply('get-author-options', true, 'メール本人確認済みです。作者を選択してください。', { authors: authorOptions(context.entry) }); }
+  try { return reply('get-author-options', true, 'メール本人確認済みです。', { authors: authorOptions(context.entry) }); }
   catch (error) { return reply('get-author-options', false, error.message); }
 }
 
@@ -495,7 +504,7 @@ function submitSubmission(data) {
     logEvent('submit-submission', 'mail-failed', identityHash, `revision ${submission.revision}`);
   }
   const message = mailSent ? (overwritten ? '投句を上書きして受け付けました。' : '投句を受け付けました。')
-    : '投句は受け付けましたが、受付メールを送信できませんでした。再送信せず、実行委員会へご連絡ください。';
+    : '投句は受け付けましたが、確認メールを送信できませんでした。お手数ですが、再送信はせず、実行委員会までご連絡ください。';
   return reply('submit-submission', true, message, { overwritten, mailSent });
 }
 
@@ -514,7 +523,7 @@ function introductionLength(value) {
 function validateEntry(data) {
   const required = ['schoolName', 'plannedTeamCount', 'teamName', 'responsibleName', 'responsibleRole', 'email', 'memberCount', 'members', 'introduction'];
   for (const key of required) if (!hasText(data[key])) return '必須項目を入力してください。';
-  if (!checked(data.termsConsent) || !checked(data.inputConfirmation) || !checked(data.contactConfirmation)) return '確認事項への同意が必要です。';
+  if (!checked(data.termsConsent) || !checked(data.contactConfirmation)) return '確認事項への同意が必要です。';
   if (!['1', '2', '3'].includes(data.plannedTeamCount)) return '出場予定チーム数を選択してください。';
   if (!['顧問', 'コーチ', '選手', 'その他'].includes(data.responsibleRole)) return '責任者の役割を選択してください。';
   if (data.responsibleRole === 'その他' && !hasText(data.responsibleRoleOther)) return '責任者の役割を具体的に入力してください。';
@@ -586,7 +595,7 @@ function validateEntryMembers(data) {
     const missing = schools.filter((school) => !members.some((member) => member.school === school));
     if (missing.length) return `${missing.map((school) => `「${school}」`).join('・')}の選手が登録されていません。合同チームは、登録したすべての学校から1人以上の選手を登録してください。`;
   }
-  if (indistinguishableMembers(members).length) return '氏名・学年・所属校がすべて同じメンバーがいます。別人として区別する必要があるため、実行委員会へ連絡してください。';
+  if (indistinguishableMembers(members).length) return '氏名・学年・所属校がすべて同じメンバーがいます。別人として区別する必要があるため、実行委員会までご連絡ください。';
   return '';
 }
 
@@ -596,7 +605,7 @@ function validateAuthors(data, entry) {
     if (new Set(authors).size !== 3) return `リーグ戦の兼題${round}は、3句の作者をそれぞれ別のメンバーにしてください。`;
   }
   if (!registeredNames(entry)) return '登録メンバーの氏名を照合できません。実行委員会にメンバー登録情報の確認を依頼してください。';
-  if (indistinguishableMembers(parseMembers(entry.members)).length) return '氏名・学年・所属校がすべて同じメンバーがいます。実行委員会へ連絡してください。';
+  if (indistinguishableMembers(parseMembers(entry.members)).length) return '氏名・学年・所属校がすべて同じメンバーがいます。実行委員会までご連絡ください。';
   const names = memberAuthorLabels(parseMembers(entry.members)).map(authorNameKey);
   for (let round = 1; round <= 4; round += 1) {
     const slots = round === 4 ? [1, 2, 3, 4, 5] : [1, 3, 5];
@@ -772,7 +781,7 @@ function logEvent(action, result, identityHash, detail) {
 }
 
 function sendEntryMail(entry) {
-  const subject = '【関西俳句バトル2027】エントリーを受け付けました';
+  const subject = '【関西俳句バトル2027】エントリーを受け付けました（自動返信）';
   sendMail(entry.email, subject, makeEntryMailBody(entry));
 }
 
@@ -805,33 +814,36 @@ function fetchPublishedTopics() {
 }
 
 function sendSubmissionMail(submission, overwritten, topics) {
-  const subject = `【関西俳句バトル2027】投句を${overwritten ? '上書きして' : ''}受け付けました`;
+  const subject = `【関西俳句バトル2027】投句を${overwritten ? '上書きして' : ''}受け付けました（自動返信）`;
   sendMail(submission.email, subject, makeSubmissionMailBody(submission, topics));
 }
 
 function makeEntryMailBody(entry) {
+  const contact = requiredProperty('KHB_REPLY_TO');
   const schools = ['schoolName', 'schoolName2', 'schoolName3', 'schoolName4', 'schoolName5']
     .map((key) => entry[key]).filter(Boolean).join('、');
   return [
     `${entry.teamName}　様`,
     '「関西俳句バトル2027」へのエントリー、ありがとうございます。',
-    `以下の情報に誤りがないか確認してください。誤りがあった場合は、関西文芸交流会 関西俳句バトル実行委員会(${requiredProperty('KHB_REPLY_TO')})までご連絡ください。`,
-    'また、エントリー内容に関する質問がある場合、または変更がある場合は、年末年始期間中でも、できるだけ早く連絡いただきますよう、お願いいたします。',
+    ...mailInquiryLines('エントリー', contact),
     '', '',
     '---フォーム回答内容---',
     `学校名：${schools}`,
-    `出場チーム数：${entry.plannedTeamCount}チーム`,
+    `合同チームである：${entry.isJointTeam ? 'はい' : 'いいえ'}`,
+    `出場予定チーム数：${entry.plannedTeamCount}チーム`,
     `チーム名：${entry.teamName}`,
     `責任者氏名：${entry.responsibleName}`,
-    `責任者連絡先：${entry.email}`,
+    `責任者の種類：${entry.responsibleRole}`,
+    `責任者の種類（具体的に記入ください）：${entry.responsibleRoleOther || ''}`,
+    `責任者連絡先（メールアドレス）：${entry.email}`,
+    `チーム人数：${entry.memberCount}人`,
     `チームメンバー：${formatMembers(entry.members)}`,
     `紹介文：${entry.introduction}`,
-    `参加確認（実施要項を確認し、参加費、著作権、および肖像権などの内容を理解し同意したうえで、「関西俳句バトル2027」にエントリーします）：${entry.termsConsentAt ? '同意し、エントリーします' : '未確認'}`,
-    `入力確認（入力内容を確認しましたか）：${entry.inputConfirmationAt ? '確認しました' : '未確認'}`,
-    `連絡確認（連絡事項を確認しましたか）：${entry.contactConfirmationAt ? '確認しました' : '未確認'}`,
+    `参加確認（実施要項、詳細要項を確認し、参加費、著作権、および肖像権などの内容に同意したうえで、「関西俳句バトル2027」にエントリーします）：${entry.termsConsentAt ? '同意し、エントリーします' : '未確認'}`,
+    `連絡確認（エントリー内容に関する質問や変更がある場合は、すみやかに関西文芸交流会 関西俳句バトル実行委員会（${contact}）へ連絡することを確認しました）：${entry.contactConfirmationAt ? '確認しました' : '未確認'}`,
     `コメント・特記事項：${entry.specialNote || ''}`,
     '',
-    `フォーム送信日時：${formatMailDate(entry.receivedAt)}`,
+    `フォーム送信日時：${formatMailDate(entry.updatedAt)}`,
     mailSignature(),
   ].join('\n');
 }
@@ -849,9 +861,7 @@ function makeSubmissionMailBody(submission, topics) {
   const lines = [
     `${submission.teamName}　様`,
     '「関西俳句バトル2027」への投句を受け付けました。',
-    `以下の情報に誤りがないか確認してください。万一、誤りがあった場合は、年末年始期間中でも、至急、関西文芸交流会 関西俳句バトル実行委員会(${contact})までご連絡ください。`,
-    'また、疑問点やご質問がある場合も、上記連絡先までお問い合わせください。',
-    'その際、投句内容についてのお問い合わせには、メールのタイトルに「関西俳句バトル2027　投句についてのお問い合わせ」と明記いただくようお願いいたします。',
+    ...mailInquiryLines('投句', contact),
     '', '',
     '---投句内容---',
     `チーム名：${submission.teamName}`,
@@ -884,16 +894,31 @@ function formatMailDate(value) {
   return Utilities.formatDate(new Date(value), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss') + '（日本時間）';
 }
 
+function mailInquiryLines(kind, contact) {
+  return [
+    `以下の情報に誤りがないか確認してください。万一、誤りがあった場合は、年末年始期間中でも、至急、関西文芸交流会 関西俳句バトル実行委員会(${contact})までご連絡ください。`,
+    'また、疑問点やご質問がある場合も、上記連絡先までお問い合わせください。',
+    `その際、${kind}内容についてのお問い合わせには、メールのタイトルに「関西俳句バトル2027　${kind}についてのお問い合わせ」と明記いただくようお願いいたします。`,
+  ];
+}
+
 function mailSignature() {
-  return ['---', '関西文芸交流会', '関西俳句バトル実行委員会', requiredProperty('KHB_REPLY_TO')].join('\n');
+  return ['---', '関西文芸交流会', '関西学生文芸連合', '関西俳句バトル実行委員会', requiredProperty('KHB_REPLY_TO')].join('\n');
 }
 
 function sendMail(to, subject, body) {
-  MailApp.sendEmail({
-    to: to, subject: subject, body: body, htmlBody: makeMailHtmlBody(body),
+  sendKHBMail(to, subject, body, {
+    htmlBody: makeMailHtmlBody(body),
     bcc: requiredProperty('KHB_ADMIN_EMAIL'),
-    replyTo: requiredProperty('KHB_REPLY_TO'), name: '関西文芸交流会 関西俳句バトル実行委員会',
   });
+}
+
+function sendKHBMail(to, subject, body, options) {
+  GmailApp.sendEmail(to, subject, body, Object.assign({}, options || {}, {
+    from: requiredProperty('KHB_FROM_EMAIL'),
+    replyTo: requiredProperty('KHB_REPLY_TO'),
+    name: '関西文芸交流会 関西俳句バトル実行委員会',
+  }));
 }
 
 function makeMailHtmlBody(body) {

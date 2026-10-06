@@ -205,6 +205,7 @@ test('保存後のメール失敗でも完了ページへ進み、再読み込�
     vm.runInContext(finishSource, s.context);
     assert.match(s.elements['receipt-message'].textContent, /保存は完了.*送信できません/);
     assert.match(s.elements['receipt-notice'].textContent, /再送信せず/);
+    assert.equal(s.elements['receipt-notice'].hidden, false);
   }
   const succeeded = setup(); succeeded.storage.set('khb2027:receipt-mail-failed', 'true');
   succeeded.submit(); succeeded.reply(succeeded.posts[0], { mailSent: true });

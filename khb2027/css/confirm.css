@@ -13,7 +13,7 @@
 .poem-text { writing-mode: vertical-rl; text-orientation: mixed; white-space: pre; font-size: 1.35rem; line-height: 1.9; flex: 0 0 auto; width: max-content; text-align: left; transform-origin: top center; }
 .poem-author { margin-top: 30px; font-size: .75rem; word-break: keep-all; overflow-wrap: anywhere; white-space: pre-wrap; }
 .review-note { font-size: .8rem; color: var(--form-muted); margin-top: 8px; }
-.confirmation-actions { border-top: 1px solid var(--form-line); margin-top: 32px; padding-top: 24px; }
+.confirmation-actions { margin-top: 32px; padding-top: 24px; }
 @media (max-width: 600px) {
   .confirmation-details { grid-template-columns: 1fr; gap: 4px; padding: 18px; }
   .confirmation-details dd + dt { margin-top: 12px; }

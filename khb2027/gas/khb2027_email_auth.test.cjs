@@ -24,9 +24,10 @@ function setup() {
     Utilities: { getUuid: () => crypto.randomUUID(),
       formatDate: date => new Date(date.valueOf() + 9 * 3600000).toISOString().slice(0, 10),
       computeHmacSha256Signature: (value, secret) => [...crypto.createHmac('sha256', secret).update(value).digest()] },
-    MailApp: { getRemainingDailyQuota: () => state.quota, sendEmail: mail => {
+    MailApp: { getRemainingDailyQuota: () => state.quota },
+    GmailApp: { sendEmail: (to, subject, body, options) => {
       assert.equal(state.locked, false, 'メール通信中にはロックを保持しない'); state.events.push('mail'); state.onMail?.();
-      if (state.mailFailure) throw new Error('mail unavailable'); state.mails.push(mail);
+      if (state.mailFailure) throw new Error('mail unavailable'); state.mails.push({ to, subject, body, ...options });
     } },
     LockService: { getScriptLock: () => ({
       waitLock: () => { assert.equal(state.locked, false); state.locked = true; state.events.push('lock'); state.onLock?.(); },
@@ -68,6 +69,8 @@ test('チーム照合とコード送信だけでは名簿を返さず、登録�
   const sent = s.send(); assert.equal(sent.ok, true); assert.match(sent.code, /^\d{6}$/);
   assert.equal(sent.authors, undefined); assert.equal(sent.authorToken, undefined);
   assert.equal(s.state.mails[0].to, s.state.entry.email); assert.equal(s.state.mails[0].bcc, undefined);
+  assert.equal(s.state.mails[0].from, 'klea.ex+autoreply@gmail.com');
+  assert.equal(s.state.mails[0].replyTo, 'klea.ex+khb@gmail.com');
   const stored = JSON.parse(s.state.properties['KHB_EMAIL_CODE_' + s.identityHash]);
   assert.equal(stored.code, undefined); assert.match(stored.codeHash, /^[a-f0-9]{64}$/); assert.notEqual(stored.codeHash, sent.code);
   assert.equal(s.state.logs.length, 0);
@@ -152,7 +155,7 @@ test('同姓同名は学年・所属校付きの選択肢を返し、全部一�
     { name: '同じ　氏名', grade: '高2', school: '' }, { name: '同じ氏名', grade: '高2', school: '' }, { name: '別の氏名', grade: '高1', school: '' },
   ]);
   const sent = invalid.send(); const result = invalid.request('verify-email-code', { challengeId: sent.challengeId, code: sent.code });
-  assert.equal(result.ok, false); assert.match(result.message, /実行委員会へ連絡/); assert.equal(result.authors, undefined);
+  assert.equal(result.ok, false); assert.match(result.message, /実行委員会.*連絡/); assert.equal(result.authors, undefined);
 });
 
 test('60秒再送間隔・チームごと10通・全体上限・受付メール用の残枠をサーバーで制限する', () => {
@@ -234,7 +237,7 @@ test('受付メールの失敗でも保存済みを成功として返し、再�
     s.state.mailFailure = true;
     const result = s.request('submit-submission', { ...values, overwrite: String(overwrite) });
     assert.equal(result.ok, true); assert.equal(result.mailSent, false); assert.equal(result.overwritten, overwrite);
-    assert.match(result.message, /受け付けました.*受付メール.*再送信せず/);
+    assert.match(result.message, /受け付けました.*メール.*再送信.*せず/);
     assert.equal(s.state.saved.length, 1); assert.equal(s.state.locked, false);
     assert.ok(s.state.logs.some(log => log[1] === 'mail-failed'));
     s.state.existing = { rowNumber: 2, values: s.state.saved[0] };
