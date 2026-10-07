@@ -51,7 +51,8 @@ h3 { font-size: 1.05rem; color: var(--black); }
 .page-description { margin-top: 12px; color: var(--form-muted); font-size: .94rem; }
 .form-steps { display: flex; gap: 24px; list-style: none; margin: 24px 0 0; padding: 0; color: var(--form-muted); font-size: .86rem; }
 .form-steps li { display: flex; align-items: center; gap: 8px; }
-.step-number { display: inline-grid; place-items: center; width: 26px; height: 26px; border: 1px solid var(--form-line); border-radius: 50%; background: var(--white); font-size: 1rem; }
+/* Keep the text line box inside the circle so grid can center it. */
+.step-number { display: inline-grid; place-items: center; flex-shrink: 0; width: 26px; height: 26px; border: 1px solid var(--form-line); border-radius: 50%; background: var(--white); font-size: 1rem; line-height: 1; }
 .form-steps [aria-current="step"] { color: var(--black); font-weight: 600; }
 .form-steps [aria-current="step"] .step-number, .form-steps .is-complete .step-number { background: var(--accent); border-color: transparent; }
 .page-main { padding-block: 40px 64px; }
