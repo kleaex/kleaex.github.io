@@ -1,5 +1,3 @@
 if (sessionStorage.getItem('khb2027:entry-receipt-mail-failed') === 'true') {
-  document.getElementById('entry-receipt-message').textContent = 'エントリーの保存は完了していますが、受付メールを送信できませんでした。';
-  document.getElementById('entry-receipt-notice').textContent = '再送信せず、チーム名を添えて実行委員会へご連絡ください。';
-  document.getElementById('entry-receipt-notice').hidden = false;
+  document.getElementById('entry-receipt-message').textContent = 'エントリーは受け付けましたが、確認メールを送信できませんでした。お手数ですが、再送信はせず、実行委員会までご連絡ください。';
 }
