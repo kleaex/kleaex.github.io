@@ -80,7 +80,7 @@ export function setupTeamCheck(form, { onStateChange = () => {} } = {}) {
     pending = { ...currentValues(), requestId: crypto.randomUUID(), startedAt: Date.now() };
     checkForm.setAttribute('action', GAS_WEB_APP_URL);
     for (const name of ['teamName', 'email', 'requestId']) inputs[name].value = pending[name];
-    show('エントリーを確認しています…');
+    show('エントリーを確認しています……');
     responseTimer = setTimeout(() => {
       pending = null;
       show('確認結果を受信できませんでした。もう一度「次へ」を押してください。');

@@ -115,7 +115,7 @@ form.addEventListener('submit', (event) => {
   form.setAttribute('action', GAS_WEB_APP_URL);
   sending = true;
   submitButton.disabled = true;
-  status.textContent = '送信しています…';
+  status.textContent = '送信しています……';
 });
 
 window.addEventListener('message', (event) => {

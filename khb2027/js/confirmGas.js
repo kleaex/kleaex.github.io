@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     requestId.value = crypto.randomUUID();
     pending = { action: action.value, requestId: requestId.value, startedAt: Date.now() };
     form.setAttribute('action', GAS_WEB_APP_URL);
-    show('sending', '送信しています…');
+    show('sending', '送信しています……');
     responseTimer = setTimeout(() => fail('送信結果を受信できませんでした。受付済みの可能性もあるため、自動返信メールを確認してください。'), 90000);
     try {
       HTMLFormElement.prototype.submit.call(form);

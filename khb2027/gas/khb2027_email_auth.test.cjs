@@ -26,7 +26,7 @@ function setup() {
       computeHmacSha256Signature: (value, secret) => [...crypto.createHmac('sha256', secret).update(value).digest()] },
     MailApp: { getRemainingDailyQuota: () => state.quota },
     GmailApp: { sendEmail: (to, subject, body, options) => {
-      assert.equal(state.locked, false, 'メール通信中にはロックを保持しない'); state.events.push('mail'); state.onMail?.();
+      assert.equal(state.locked, false, 'メール通信中にはロックを保持しない'); state.events.push('mail'); state.onMail?.(to, subject, body);
       if (state.mailFailure) throw new Error('mail unavailable'); state.mails.push({ to, subject, body, ...options });
     } },
     LockService: { getScriptLock: () => ({
@@ -171,6 +171,16 @@ test('メール送信失敗・未登録・締切後・ロック中の無効化�
   const failed = setup(); failed.state.mailFailure = true;
   assert.equal(failed.send().ok, false); assert.equal(failed.state.mails.length, 0);
   assert.equal(JSON.parse(failed.state.properties['KHB_EMAIL_CODE_' + failed.identityHash]).codeHash, '');
+  const failure = failed.state.logs.find(log => Array.isArray(log) && log[1] === 'mail-failed');
+  assert.equal(failure[0], 'send-email-code');
+  assert.equal(failure[2], failed.identityHash);
+  assert.equal(failure[3], 'entry-1\nError: mail unavailable');
+  const errorLog = JSON.parse(failed.state.logs.find(log => typeof log === 'string'));
+  assert.equal(errorLog.source, 'khb2027-mail-error');
+  assert.equal(errorLog.action, 'send-email-code');
+  assert.equal(errorLog.reference, 'entry-1');
+  assert.equal(errorLog.errorMessage, 'mail unavailable');
+  assert.match(errorLog.stack, /Error: mail unavailable/);
   for (const condition of ['unregistered', 'closed', 'revoked']) {
     const s = setup();
     if (condition === 'unregistered') s.state.active = false;
@@ -178,6 +188,25 @@ test('メール送信失敗・未登録・締切後・ロック中の無効化�
     if (condition === 'revoked') s.state.onLock = () => { s.state.active = false; };
     assert.equal(s.send().ok, false); assert.equal(s.state.mails.length, 0);
   }
+});
+
+test('確認メールの例外に確認コードが含まれても応答・運用ログ・実行ログへ残さない', () => {
+  const s = setup(); let code;
+  s.state.onMail = (to, subject, body) => {
+    code = body.match(/コードは (\d{6}) /)[1];
+    throw new Error(`mail unavailable: code=${code}`);
+  };
+  const result = s.send();
+  assert.equal(result.ok, false);
+  assert.equal(JSON.stringify(result).includes(code), false);
+  assert.equal(JSON.stringify(s.state.logs).includes(code), false);
+  assert.ok(s.state.logs.some(log => Array.isArray(log) && log[3].includes('code=[redacted]')));
+  const errorLog = JSON.parse(s.state.logs.find(log => typeof log === 'string'));
+  assert.match(errorLog.stack, /code=\[redacted\]/);
+  const state = JSON.parse(s.state.properties['KHB_EMAIL_CODE_' + s.identityHash]);
+  assert.equal(state.codeHash, '');
+  assert.deepEqual(JSON.parse(s.state.properties.KHB_EMAIL_AUTH_RATE).pendingMail, {});
+  assert.equal(s.state.locked, false);
 });
 
 test('前日以前の期限切れコード状態だけを清掃し、設定や有効なコードを消去しない', () => {
@@ -240,6 +269,17 @@ test('受付メールの失敗でも保存済みを成功として返し、再�
     assert.match(result.message, /受け付けました.*メール.*再送信.*せず/);
     assert.equal(s.state.saved.length, 1); assert.equal(s.state.locked, false);
     assert.ok(s.state.logs.some(log => log[1] === 'mail-failed'));
+    const failure = s.state.logs.find(log => log[1] === 'mail-failed');
+    assert.equal(failure[3], `revision ${overwrite ? 2 : 1}\nError: mail unavailable`);
+    const errorLog = s.state.logs.filter(log => typeof log === 'string').map(log => JSON.parse(log))
+      .find(log => log.source === 'khb2027-mail-error');
+    assert.equal(errorLog.action, 'submit-submission');
+    assert.equal(errorLog.identityHash, s.identityHash);
+    assert.equal(errorLog.reference, `revision ${overwrite ? 2 : 1}`);
+    assert.equal(errorLog.requestId, '', 'UUID以外のリクエストIDをログに残さない');
+    assert.equal(errorLog.errorMessage, 'mail unavailable');
+    assert.match(errorLog.stack, /Error: mail unavailable/);
+    assert.equal(JSON.stringify(result).includes('mail unavailable'), false);
     s.state.existing = { rowNumber: 2, values: s.state.saved[0] };
     const retried = s.request('submit-submission', { ...values, overwrite: String(overwrite) });
     assert.equal(retried.alreadySubmitted, true); assert.equal(s.state.saved.length, 1);

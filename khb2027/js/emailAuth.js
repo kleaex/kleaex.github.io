@@ -92,7 +92,7 @@ export function setupEmailAuth(form, teamCheck, { onStateChange = () => {} } = {
     inputs.code.value = action === 'verify-email-code' ? code.value : '';
     inputs.challengeId.value = action === 'verify-email-code' ? challengeId : '';
     inputs.authorToken.value = authorToken;
-    show(action === 'send-email-code' ? '確認メールを送っています…' : 'メール本人確認を確認しています…');
+    show(action === 'send-email-code' ? '確認メールを送っています……' : 'メール本人確認を確認しています……');
     function failedPost(message) {
       clearTimeout(responseTimer); pending = null;
       inputs.code.value = ''; inputs.authorToken.value = '';
@@ -155,7 +155,7 @@ export function setupEmailAuth(form, teamCheck, { onStateChange = () => {} } = {
       if (message.needsNewCode) challengeId = '';
       show(message.message || 'メール本人確認に失敗しました。'); return;
     }
-    if (action === 'send-email-code') { challengeId = message.challengeId; show('確認コードを送りました。'); code.focus(); return; }
+    if (action === 'send-email-code') { challengeId = message.challengeId; show('確認コードを送信しました。'); code.focus(); return; }
     if (!Array.isArray(message.authors) || message.authors.length < 3 || message.authors.length > 5
       || message.authors.some((author) => typeof author.value !== 'string' || !author.value || typeof author.label !== 'string')) {
       forget(); show('作者一覧を確認できませんでした。お手数ですが、実行委員会までご連絡ください。'); return;

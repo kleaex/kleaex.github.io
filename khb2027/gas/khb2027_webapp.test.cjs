@@ -12,9 +12,9 @@ const published = {
 };
 
 function setup({ status = 200, json = JSON.stringify(published), networkError = false, existing = null, properties = {} } = {}) {
-  const events = [], mails = [], saved = [], archived = [], logs = [];
+  const events = [], mails = [], saved = [], archived = [], logs = [], errors = [];
   const context = vm.createContext({
-    console: { error() {} },
+    console: { error: error => errors.push(error) },
     SpreadsheetApp: { flush: () => events.push('flush') },
     PropertiesService: { getScriptProperties: () => ({ getProperty: key => properties[key] ?? (key === 'KHB_HMAC_SECRET' ? 'test-only-secret' : null) }) },
     UrlFetchApp: { fetch(url, options) {
@@ -57,7 +57,7 @@ function setup({ status = 200, json = JSON.stringify(published), networkError = 
   }
   const payload = `${Date.now() + 7200000}.${'a'.repeat(32)}.${context.authRosterDigest(context.findActiveEntry().values)}`;
   data.authorToken = `${payload}.${context.authDigest(`email-auth-token:v1|identity|${JSON.stringify([data.teamName, data.email])}|${payload}`)}`;
-  return { context, data, events, mails, saved, archived, logs };
+  return { context, data, events, mails, saved, archived, logs, errors };
 }
 
 test('新規投句は公開JSONを1回取得し、サイトと同じ兼題・読みをメールに使う', () => {
@@ -98,6 +98,25 @@ test('エントリー受付メールは長い紹介文を分割せず、入力�
   assert.equal(mails[0].bcc, 'klea.ex+khb@gmail.com');
   assert.equal(mails[0].replyTo, 'klea.ex+khb@gmail.com');
   assert.equal(mails[0].from, 'klea.ex+autoreply@gmail.com');
+});
+
+test('受付メールの絵文字・補助漢字をHTML文字参照で送り、入力したHTMLや文字参照は解釈させない', () => {
+  const { context, data, mails } = setup();
+  const specialNote = '👿 👩🏽‍💻 🇯🇵 𠮷 <script> & &#x1f47f;';
+  context.sendEntryMail({ email: data.email, teamName: data.teamName, schoolName: 'A高校',
+    introduction: '紹介文', members: '甲', specialNote, updatedAt: new Date() });
+  context.sendSubmissionMail({ ...data, specialNote, updatedAt: new Date() }, false,
+    { league: ['春', '夏', '秋'], final: '冬' });
+  for (const mail of mails) {
+    assert.ok(mail.body.includes(specialNote), 'テキスト本文に渡す入力は改変しない');
+    assert.ok(mail.htmlBody.includes('&#x1f47f;'), '報告された👿を1つのコードポイントとして送る');
+    assert.ok(mail.htmlBody.includes('&#x1f469;&#x1f3fd;\u200d&#x1f4bb;'), '肌色とZWJを保つ');
+    assert.ok(mail.htmlBody.includes('&#x1f1ef;&#x1f1f5;'), '国旗の組み合わせを保つ');
+    assert.ok(mail.htmlBody.includes('&#x20bb7;'), '補助漢字も保つ');
+    assert.ok(mail.htmlBody.includes('&lt;script&gt; &amp; &amp;#x1f47f;'));
+    assert.equal(/[\uD800-\uDFFF]/.test(mail.htmlBody), false, 'HTML本文にサロゲートを渡さない');
+    assert.equal(mail.from, 'klea.ex+autoreply@gmail.com');
+  }
 });
 
 test('両受付メールは同じ問い合わせ案内と最新受付日時を使い、エントリーの全回答を明示する', () => {
@@ -175,6 +194,7 @@ for (const mailFailure of [false, true]) {
       responsibleName: '責任　者', responsibleRole: '顧問', email: 'test@example.com',
       memberCount: '3', members: JSON.stringify(['甲　太郎', '乙　花子', '丙　三郎'].map(name => ({ name, grade: '高2', school: '' }))),
       introduction: 'あ'.repeat(250), termsConsent: 'true', contactConfirmation: 'true',
+      requestId: '12345678-1234-1234-1234-123456789abc',
     };
     const result = context.doPost({ parameter: data });
     assert.equal(result.ok, true);
@@ -185,7 +205,18 @@ for (const mailFailure of [false, true]) {
     if (mailFailure) {
       assert.match(result.message, /受け付けました.*メールを送信できません.*再送信はせず/);
       assert.equal(state.logs[1][1], 'mail-failed');
-      assert.equal(state.logs[1][3], 'entry-id');
+      assert.equal(state.logs[1][3], 'entry-id\nError: mail unavailable');
+      const errorLog = JSON.parse(state.errors[0]);
+      assert.equal(errorLog.source, 'khb2027-mail-error');
+      assert.equal(errorLog.action, 'entry');
+      assert.equal(errorLog.reference, 'entry-id');
+      assert.equal(errorLog.identityHash, 'identity');
+      assert.equal(errorLog.requestId, data.requestId);
+      assert.equal(errorLog.errorMessage, 'mail unavailable');
+      assert.match(errorLog.stack, /Error: mail unavailable/);
+      assert.equal(JSON.stringify(result).includes('mail unavailable'), false);
+    } else {
+      assert.equal(state.errors.length, 0);
     }
     context.findRowByValue = () => ({ values: state.saved[0] });
     assert.equal(context.doPost({ parameter: data }).ok, false);

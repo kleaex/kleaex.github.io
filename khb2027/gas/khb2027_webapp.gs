@@ -161,9 +161,9 @@ function handleEntry(data) {
   logEvent('entry', 'accepted', identityHash, row.entryId);
   let mailSent = true;
   try { measureRequestStep('mailMs', () => sendEntryMail(row)); }
-  catch {
+  catch (error) {
     mailSent = false;
-    logEvent('entry', 'mail-failed', identityHash, row.entryId);
+    logMailFailure('entry', identityHash, row.entryId, error, data.requestId);
   }
   const message = mailSent ? 'エントリーを受け付けました。入力いただいたメールアドレスをご確認ください。'
     : 'エントリーは受け付けましたが、確認メールを送信できませんでした。お手数ですが、再送信はせず、実行委員会までご連絡ください。';
@@ -285,7 +285,8 @@ function sendEmailCode(data) {
     // コードの控えをBCC・ログへ送らない。送信先は登録済みエントリーのメールだけ。
     measureRequestStep('mailMs', () => sendKHBMail(entry.email, '【関西俳句バトル2027】メール本人確認コード（自動送信）',
       `投句フォームの確認コードは ${code} です。\n10分以内に入力してください。\nこのコードは他の人に共有しないでください。\n心当たりがない場合は、このメールを無視してください。`));
-  } catch {
+  } catch (error) {
+    logMailFailure('send-email-code', identityHash, entry.entryId, error, data.requestId, code);
     // 送信中に発行された別のコードを失効させない。
     waitForRequestLock(lock);
     try {
@@ -298,7 +299,7 @@ function sendEmailCode(data) {
     return reply('send-email-code', false, '確認メールを送信できませんでした。時間をおいて再送してください。', { retryAfter: 60 });
   }
   measureRequestStep('cleanupMs', () => cleanupEmailCodes(state.nonce));
-  return reply('send-email-code', true, '登録メールへ確認コードを送りました。10分以内に入力してください。再送は60秒後にできます。',
+  return reply('send-email-code', true, '登録メールへ確認コードを送信しました。10分以内に入力してください。再送は60秒後にできます。',
     { challengeId: state.nonce, expiresAt: state.expiresAt, retryAfter: 60 });
 }
 
@@ -499,9 +500,9 @@ function submitSubmission(data) {
   logEvent('submit-submission', overwritten ? 'overwritten' : 'accepted', identityHash, `revision ${submission.revision}`);
   let mailSent = true;
   try { measureRequestStep('mailMs', () => sendSubmissionMail(submission, overwritten, topics)); }
-  catch {
+  catch (error) {
     mailSent = false;
-    logEvent('submit-submission', 'mail-failed', identityHash, `revision ${submission.revision}`);
+    logMailFailure('submit-submission', identityHash, `revision ${submission.revision}`, error, data.requestId);
   }
   const message = mailSent ? (overwritten ? '投句を上書きして受け付けました。' : '投句を受け付けました。')
     : '投句は受け付けましたが、確認メールを送信できませんでした。お手数ですが、再送信はせず、実行委員会までご連絡ください。';
@@ -780,6 +781,18 @@ function logEvent(action, result, identityHash, detail) {
   }
 }
 
+function logMailFailure(action, identityHash, reference, error, requestId, codeToRedact) {
+  // 例外に確認コードが含まれていても、その値をログへ残さない。
+  const redact = value => codeToRedact ? String(value).split(codeToRedact).join('[redacted]') : String(value);
+  const errorName = redact(error && error.name || 'Error');
+  const errorMessage = redact(error && error.message || error);
+  // 受付結果には例外の詳細を返さず、運営用のログで登録記録と照合する。
+  console.error(JSON.stringify({ source: 'khb2027-mail-error', action, identityHash, reference,
+    requestId: /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(String(requestId || '')) ? requestId : '',
+    errorName, errorMessage, stack: redact(error && error.stack || '') }));
+  logEvent(action, 'mail-failed', identityHash, `${reference}\n${errorName}: ${errorMessage}`);
+}
+
 function sendEntryMail(entry) {
   const subject = '【関西俳句バトル2027】エントリーを受け付けました（自動返信）';
   sendMail(entry.email, subject, makeEntryMailBody(entry));
@@ -925,7 +938,9 @@ function makeMailHtmlBody(body) {
   // 本文の改行だけを反映し、長い行はメール画面の幅に合わせて折り返す。
   // 入力内容をHTMLとして解釈させないよう、改行の変換より先にエスケープする。
   const escaped = String(body).replace(/&/g, '&amp;').replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+    // GmailAppでサロゲートペアが壊れないよう、補助文字はHTML文字参照にする。
+    .replace(/[\u{10000}-\u{10ffff}]/gu, character => `&#x${character.codePointAt(0).toString(16)};`);
   return '<div style="font-family:sans-serif;font-size:14px;line-height:1.6;white-space:pre-wrap;overflow-wrap:break-word;word-wrap:break-word;">'
     + escaped.replace(/\r\n|\r|\n/g, '<br>') + '</div>';
 }

@@ -35,7 +35,7 @@ contactForm.addEventListener('submit', (event) => {
   }
 
   submitButton.disabled = true;
-  formStatus.textContent = '送信しています…';
+  formStatus.textContent = '送信しています……';
 });
 
 window.addEventListener('message', (event) => {

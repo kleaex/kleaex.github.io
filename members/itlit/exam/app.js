@@ -102,7 +102,7 @@
     resultGrade = null;
     show('result');
     $('result-title').textContent = exam.title;
-    $('score').textContent = '採点中…'; $('verdict').textContent = '';
+    $('score').textContent = '採点中……'; $('verdict').textContent = '';
     $('show-certificate').hidden = $('retry-grade').hidden = true;
     $('result').focus();
     try {
