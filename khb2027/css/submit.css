@@ -7,6 +7,8 @@
 #email-auth > p, #email-code-fields > p { margin-block: 14px; }
 #email-code { max-width: 240px; letter-spacing: .12em; }
 .introduction-field { margin-block: 16px; }
+.entry-field { margin-block: 24px; }
+.entryform .entry-field > .form-note { margin: 0 0 12px; }
 .counted-textarea { position: relative; }
 .counted-textarea textarea { display: block; padding-bottom: 42px; }
 .character-count { position: absolute; right: 24px; bottom: 10px; color: var(--form-muted); font-size: .8rem; line-height: 1.5; font-variant-numeric: tabular-nums; pointer-events: none; }

@@ -12,7 +12,7 @@
     <div class="page-header-inner">
       <div class="header-top"><p class="event-name">関西俳句バトル 2027</p><a class="event-link" href="index.html">大会ページへ</a></div>
       <h1>エントリーフォーム</h1>
-      <p class="page-description">エントリー締め切り：2026年10月31日（土）（日本時間）</p>
+      <p class="page-description">エントリー締切：2026年10月31日（土）（日本時間）</p>
       <ol class="form-steps" aria-label="エントリーの手順">
         <li aria-current="step"><span class="step-number">1</span>情報入力</li>
         <li><span class="step-number">2</span>受付完了</li>
@@ -29,34 +29,43 @@
 
       <section class="form-section" aria-labelledby="school-heading">
         <div class="section-heading"><span class="section-number" aria-hidden="true">01</span><h2 id="school-heading">学校・チーム情報</h2></div>
-        <p class="form-note">学校名は正式名称で記載してください。例：関西学生文芸高等学校</p>
-        <p><label class="field-label" for="schoolName">学校名</label><input id="schoolName" class="haiku" name="schoolName" placeholder="学校名" maxlength="200" required></p>
+        <div class="entry-field">
+          <label class="field-label" for="schoolName">学校名</label>
+          <p class="form-note">学校名は正式名称で記載してください。例：関西学生文芸高等学校</p>
+          <input id="schoolName" class="haiku" name="schoolName" placeholder="学校名" maxlength="200" required>
+        </div>
         <p class="checkbox-field"><input id="isJointTeam" name="isJointTeam" type="checkbox" value="true"><label for="isJointTeam">合同チームである</label></p>
         <div id="additional-schools" hidden>
           <p><label class="field-label" for="schoolName2">学校名 2</label><input id="schoolName2" class="haiku school-name" name="schoolName2" placeholder="学校名 2" maxlength="200"></p>
         </div>
         <p id="add-school-wrap" hidden><button id="add-school" class="secondary-button" type="button">学校名を追加</button></p>
-        <p>
+        <div class="entry-field">
           <label class="field-label" for="plannedTeamCount">出場予定チーム数</label>
+          <p class="form-note">同一校から出場予定のチーム数を回答してください。<br>エントリーフォームは1回につき1チームのみ登録できます。複数チームで出場する場合は、チームごとに送信ください。</p>
           <select id="plannedTeamCount" name="plannedTeamCount" required>
             <option value="">選択してください</option>
             <option value="1">1チーム</option>
             <option value="2">2チーム</option>
             <option value="3">3チーム</option>
           </select>
-        </p>
-        <p class="form-note">同一校から出場予定のチーム数を回答ください。<br>エントリーフォームは1回につき1チームのみ登録できます。複数チームで出場する場合は、チームごとに送信してください。</p>
-        <p><label class="field-label" for="teamName">チーム名</label><input id="teamName" class="haiku" name="teamName" placeholder="チーム名" maxlength="200" required></p>
-        <p class="form-note">チーム名には学校名を含め、同一校から複数チーム出場する場合は互いに区別できる名称にしてください。<br>アルファベット・数字は全角で記載してください。</p>
+        </div>
+        <div class="entry-field">
+          <label class="field-label" for="teamName">チーム名</label>
+          <p class="form-note">チーム名には学校名を含め、同一校から複数チーム出場する場合は互いに区別できる名称にしてください。<br>アルファベット・数字は全角で記載してください。</p>
+          <input id="teamName" class="haiku" name="teamName" placeholder="チーム名" maxlength="200" required>
+        </div>
 
       </section>
       <section class="form-section" aria-labelledby="responsible-heading">
         <div class="section-heading"><span class="section-number" aria-hidden="true">02</span><h2 id="responsible-heading">責任者情報</h2></div>
-        <p class="form-note">顧問の先生やコーチなど、本大会に関する責任者の氏名を記載してください。</p>
-        <p><label class="field-label" for="responsibleName">責任者氏名</label><input id="responsibleName" class="haiku" name="responsibleName" placeholder="責任者氏名（姓　名）" aria-describedby="responsible-name-note" maxlength="100" required></p>
-        <p id="responsible-name-note" class="form-note">氏名は姓名間に全角スペースを入れてください。</p>
-        <p>
+        <div class="entry-field">
+          <label class="field-label" for="responsibleName">責任者氏名</label>
+          <p id="responsible-name-note" class="form-note">氏名は姓名間に全角スペースを入れてください。</p>
+          <input id="responsibleName" class="haiku" name="responsibleName" placeholder="責任者氏名（姓　名）" aria-describedby="responsible-name-note" maxlength="100" required>
+        </div>
+        <div class="entry-field">
           <label class="field-label" for="responsibleRole">責任者の種類</label>
+          <p class="form-note">基本的には、顧問の先生やコーチの方などを責任者とされることをおすすめします。</p>
           <select id="responsibleRole" name="responsibleRole" required>
             <option value="">責任者の種類を選択してください</option>
             <option value="顧問">顧問</option>
@@ -64,16 +73,22 @@
             <option value="選手">選手</option>Ｓ
             <option value="その他">その他</option>
           </select>
-        </p>
+        </div>
         <p id="responsibleRoleOther-field" hidden><label class="field-label" for="responsibleRoleOther">責任者の種類（具体的に記入ください）</label><input id="responsibleRoleOther" class="haiku" name="responsibleRoleOther" placeholder="責任者の種類（具体的に記入ください）" maxlength="100"></p>
-        <p><label class="field-label" for="email">責任者連絡先（メールアドレス）</label><input id="email" class="haiku" name="email" placeholder="責任者連絡先（メールアドレス）" type="email" pattern="[^\s@]+@[^\s@]+\.[^\s@]+" title="example@example.com のように、@の後にドットを含むメールアドレスを入力してください。" maxlength="254" autocomplete="email" required></p>
-        <p class="form-note">いただいたメールアドレスは、本大会および付帯する事業の実施および、主催団体からの本大会に関連するご連絡にのみ使用いたします。</p>
+        <div class="entry-field">
+          <label class="field-label" for="email">責任者連絡先（メールアドレス）</label>
+          <p class="form-note">いただいたメールアドレスは、本大会および付帯する事業の実施および、主催団体からの本大会に関連するご連絡にのみ使用いたします。</p>
+          <input id="email" class="haiku" name="email" placeholder="責任者連絡先（メールアドレス）" type="email" pattern="[^\s@]+@[^\s@]+\.[^\s@]+" title="example@example.com のように、@の後にドットを含むメールアドレスを入力してください。" maxlength="254" autocomplete="email" required>
+        </div>
       </section>
       <section class="form-section" aria-labelledby="members-heading">
         <div class="section-heading"><span class="section-number" aria-hidden="true">03</span><h2 id="members-heading">チームメンバー</h2></div>
-        <p><label class="field-label" for="memberCount">チーム人数</label><select id="memberCount" name="memberCount" required><option value="">選択してください</option><option value="3">3人</option><option value="4">4人</option><option value="5">5人</option></select></p>
+        <div class="entry-field">
+          <label class="field-label" for="memberCount">チーム人数</label>
+          <p class="form-note">チーム人数を選択すると、人数分の入力欄が表示されます。</p>
+          <select id="memberCount" name="memberCount" required><option value="">選択してください</option><option value="3">3人</option><option value="4">4人</option><option value="5">5人</option></select>
+        </div>
         <input id="members" name="members" type="hidden">
-        <p class="form-note">チーム人数を選択すると、人数分の入力欄が表示されます。</p>
         <h3 class="field-label">メンバー表</h3>
         <p class="form-note">氏名は姓名間に全角スペースを入れてください。学年はリストから選択してください。大会には、中学生および高校3年生も参加できます。<br>ここに記載いただいた順番で、当日配布するパンフレットにメンバー一覧を掲載する予定です。<br>なお、試合時の着席順は当日確認しますので、この欄の回答で考慮いただく必要はありません。</p>
         <div id="member-fields"></div>
@@ -81,15 +96,15 @@
       </section>
       <section class="form-section" aria-labelledby="introduction-heading">
         <div class="section-heading"><span class="section-number" aria-hidden="true">04</span><h2 id="introduction-heading">チーム紹介</h2></div>
-        <div class="introduction-field">
+        <div class="introduction-field entry-field">
           <label class="field-label" for="introduction">紹介文（250〜280字）</label>
+          <p id="introduction-note" class="form-note">パンフレットに掲載するチーム紹介文をお願いいたします。</p>
           <div class="counted-textarea">
             <textarea id="introduction" class="haiku" name="introduction" placeholder="チームの紹介文（250〜280字）" aria-describedby="introduction-note introduction-count" rows="8" required></textarea>
             <span id="introduction-count" class="character-count" role="status" aria-live="polite" aria-atomic="true">0/280</span>
           </div>
         </div>
         <p><label class="field-label" for="specialNote">コメント・特記事項</label><textarea id="specialNote" class="haiku" name="specialNote" placeholder="コメント・特記事項（任意）" maxlength="2000" rows="5"></textarea></p>
-
       </section>
       <section class="form-section" aria-labelledby="consent-heading">
         <div class="section-heading"><span class="section-number" aria-hidden="true">05</span><h2 id="consent-heading">確認事項</h2></div>
