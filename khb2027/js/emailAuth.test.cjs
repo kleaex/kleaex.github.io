@@ -8,8 +8,8 @@ const source = read('formFields.js') + '\n' + read('authorRules.js') + '\n' + re
 const html = fs.readFileSync(path.join(__dirname, '../submit.html'), 'utf8');
 const htmlIds = new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]));
 
-function setup(saved = null, { integrated = false } = {}) {
-  const state = { now: 1800000000000, teamVerified: false, storage: new Map(), posts: [], timers: new Map(), listeners: {}, changes: 0 };
+function setup(saved = null, { integrated = false, now = 1800000000000 } = {}) {
+  const state = { now, teamVerified: false, storage: new Map(), posts: [], timers: new Map(), listeners: {}, changes: 0 };
   let sequence = 0;
   const elements = {};
   class Element {
@@ -40,7 +40,11 @@ function setup(saved = null, { integrated = false } = {}) {
     const id = `k${round}_${slot}_author`; fields.push(id); elements[id] = new Element(); elements[id].id = id;
   }
   const form = new Form();
-  for (const id of ['team-status', 'check-team', 'submitting', 'agree', 'specialNote']) { elements[id] ||= new Element(); elements[id].id = id; }
+  for (const id of ['team-status', 'check-team', 'submitting', 'agree', 'specialNote', 'submission-start', 'submission-notice', 'submission-steps']) { elements[id] ||= new Element(); elements[id].id = id; }
+  elements['submission-start'].dateTime = /id="submission-start" datetime="([^"]+)"/.exec(html)[1];
+  elements['submission-notice'].hidden = false;
+  elements['submission-steps'].hidden = true;
+  form.hidden = true;
   elements.agree.type = 'checkbox'; elements.agree.checked = true;
   for (let round = 1; round <= 4; round += 1) for (const slot of round === 4 ? [1, 2, 3, 4, 5] : [1, 3, 5]) {
     const id = `k${round}_${slot}`; elements[id] = new Element(); elements[id].value = `句${round}-${slot}`;
@@ -213,6 +217,30 @@ test('送信開始例外で操作を復元し、不正な作者一覧では選�
   const invalid = setup(); invalid.startCode(); invalid.elements['email-code'].value = '123456'; invalid.elements['verify-email-code'].dispatch('click');
   invalid.reply(invalid.state.posts[1], { authorToken: 'token', expiresAt: invalid.state.now + 7200000, authors: [] });
   assert.equal(invalid.controller.isVerified(), false); assert.equal(invalid.elements.k1_1_author.disabled, true);
+});
+
+test('投句開始前はフォームを初期化せず、開始時刻から表示して本人確認を必要とする', () => {
+  const startsAt = Date.parse(/id="submission-start" datetime="([^"]+)"/.exec(html)[1]);
+  const gas = fs.readFileSync(path.join(__dirname, '../gas/khb2027_webapp.gs'), 'utf8');
+  assert.equal(startsAt, Date.parse(/KHB_SUBMISSION_START_JST: '([^']+)'/.exec(gas)[1]));
+  assert.match(html, /<form\b[^>]*id="haiku-form"[^>]*\bhidden/);
+  const s = setup(null, { integrated: true, now: startsAt - 60001 });
+  assert.equal(s.form.hidden, true);
+  assert.equal(s.elements['submission-notice'].hidden, false);
+  assert.equal(s.elements['submission-steps'].hidden, true);
+  assert.equal(s.form.handlers.submit, undefined, '開始前は照合・本人確認も初期化しない');
+  s.advance(60000);
+  assert.equal(s.form.hidden, true, '開始1ミリ秒前も非表示');
+  assert.equal(s.state.posts.length, 0);
+  s.advance(1);
+  assert.equal(s.form.hidden, false, 'ページを開いたままでも開始時刻に表示');
+  assert.equal(s.elements['submission-notice'].hidden, true);
+  assert.equal(s.elements['submission-steps'].hidden, false);
+  assert.equal(s.elements['submission-fields'].hidden, true, '表示後も本人確認まで投句欄を開かない');
+  assert.equal(s.elements.submitting.disabled, true);
+  assert.equal(s.state.posts.length, 0, '開始時刻になっても自動送信しない');
+  const atStart = setup(null, { integrated: true, now: startsAt });
+  assert.equal(atStart.form.hidden, false, '開始時刻ちょうどの読み込みでも表示');
 });
 
 test('投句画面全体でチーム照合だけでは進めず、メール本人確認・作者ルールの確認後にトークン付きで確認画面へ進む', () => {

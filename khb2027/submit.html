@@ -13,7 +13,7 @@
                 <div class="header-top"><p class="event-name">関西俳句バトル 2027</p><a class="event-link" href="index.html">大会ページへ</a></div>
                 <h1>投句フォーム</h1>
                 <p class="page-description">投句締切：2026年11月30日（月）（日本時間）</p>
-                <ol class="form-steps" aria-label="投句の手順">
+                <ol id="submission-steps" class="form-steps" aria-label="投句の手順" hidden>
                     <li aria-current="step"><span class="step-number">1</span>投句入力</li>
                     <li><span class="step-number">2</span>内容確認</li>
                     <li><span class="step-number">3</span>受付完了</li>
@@ -21,7 +21,12 @@
             </div>
         </header>
         <main id="form" class="page-main">
-            <form method="POST" class="submitform" id="haiku-form">
+            <div id="submission-notice" class="notice" role="status">
+                <p>投句受付は<time id="submission-start" datetime="2026-11-01T14:00:00+09:00">2026年11月1日（日）14:00（日本時間）</time>からです。</p>
+                <p>受付開始後に、このページで投句できます。</p>
+            </div>
+            <noscript><p class="form-note">投句フォームを利用するには、ブラウザーのJavaScriptを有効にしてください。</p></noscript>
+            <form method="POST" class="submitform" id="haiku-form" hidden>
                 <section class="form-section" aria-labelledby="team-heading">
                 <div class="section-heading"><span class="section-number" aria-hidden="true">01</span><h2 id="team-heading">チーム情報</h2></div>
                 <p class="form-note">エントリー時の情報と合わせてください。エントリー時の情報が分からない場合は、自動返信メールを確認してください。全角・半角に注意してください。</p>

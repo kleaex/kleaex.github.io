@@ -197,15 +197,14 @@ test('保存後のメール失敗でも完了ページへ進み、再読み込�
   assert.equal(s.storage.has('khb2027:submission:k1_1'), false);
   assert.equal(s.storage.get('khb2027:receipt-mail-failed'), 'true');
   const finishSource = fs.readFileSync(path.join(__dirname, 'finish.js'), 'utf8');
-  s.elements['receipt-message'] = {}; s.elements['receipt-notice'] = {};
+  s.elements['receipt-message'] = {};
   const html = fs.readFileSync(path.join(__dirname, '../finish.html'), 'utf8');
-  for (const id of ['receipt-message', 'receipt-notice']) assert.ok(html.includes(`id="${id}"`));
+  assert.ok(html.includes('id="receipt-message"'));
   assert.ok(html.includes('src="js/finish.js"'));
   for (let reload = 0; reload < 2; reload++) {
     vm.runInContext(finishSource, s.context);
     assert.match(s.elements['receipt-message'].textContent, /保存は完了.*送信できません/);
-    assert.match(s.elements['receipt-notice'].textContent, /再送信せず/);
-    assert.equal(s.elements['receipt-notice'].hidden, false);
+    assert.match(s.elements['receipt-message'].textContent, /再送信はせず.*実行委員会までご連絡/);
   }
   const succeeded = setup(); succeeded.storage.set('khb2027:receipt-mail-failed', 'true');
   succeeded.submit(); succeeded.reply(succeeded.posts[0], { mailSent: true });

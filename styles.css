@@ -1,4 +1,4 @@
-﻿@import url("common.css");
+@import url("common.css");
 
 main {
       overflow: hidden;
@@ -212,7 +212,7 @@ main {
     }
 
     .hero-visual::after {
-      content: "邏吶→蠅ｨ縲∽ｺ､豬√→謚陦・;
+      content: "";
       position: absolute;
       right: 4px;
       bottom: 12px;
@@ -270,6 +270,121 @@ main {
 
     .content-area > .section:first-child {
       padding-top: 0;
+    }
+
+    /* KHB2027の配色と見出し書体を、このバナー内に限定する。 */
+    .khb-banner-area {
+      display: flow-root;
+      background: #fff;
+    }
+
+    .khb-banner {
+      --khb-ink: #333;
+      --khb-mint: #7fffb9;
+      --khb-pastel: #bfffd0;
+      width: var(--page-width);
+      margin: clamp(24px, 4vw, 48px) auto;
+      padding: 0;
+      background: transparent;
+    }
+
+    .khb-banner-link {
+      display: block;
+      background: var(--khb-pastel);
+      color: var(--khb-ink);
+      /* CMU Serifが持つ英数字を先に使い、日本語はヒラギノを優先する。 */
+      font-family: "CMUSerif", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN", "Yu Gothic", Meiryo, sans-serif;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background-color 0.2s ease;
+    }
+
+    .khb-banner-inner {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.9fr);
+      align-items: center;
+      gap: clamp(24px, 4vw, 48px);
+      width: 100%;
+      margin-inline: auto;
+      padding: clamp(24px, 4vw, 48px);
+      text-align: left;
+    }
+
+    .khb-banner-link:hover,
+    .khb-banner-link:focus-visible {
+      background-color: var(--khb-mint);
+    }
+
+    .khb-banner-link:focus-visible {
+      outline: 3px solid var(--khb-ink);
+      outline-offset: -3px;
+    }
+
+    .khb-banner-organizers {
+      margin: 0 0 18px;
+      font-size: clamp(1rem, 2.5vw, 1.8rem);
+    }
+
+    .khb-banner-organizers > span {
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    .khb-banner h2 {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0 0.2em;
+      margin: 0;
+      font-family: "Dela Gothic One", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+      font-size: clamp(2rem, 4.5vw, 5rem);
+      font-weight: 400;
+      line-height: 1.45;
+      letter-spacing: 0;
+    }
+
+    .khb-banner-name,
+    .khb-banner-year {
+      white-space: nowrap;
+    }
+
+    .khb-banner-date,
+    .khb-banner-venue {
+      font-size: clamp(0.9rem, 2vw, 1.5rem);
+    }
+
+    .khb-banner-details {
+      align-self: center;
+    }
+
+    .khb-banner-date {
+      margin: 18px 0 0;
+      text-align: right;
+    }
+
+    .khb-banner-date time {
+      font-weight: 700;
+    }
+
+    .khb-banner-venue {
+      margin: 10px 0 24px;
+    }
+
+    .khb-banner-cta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      width: fit-content;
+      margin-inline: auto 0;
+      padding-bottom: 4px;
+      border-bottom: 1px solid currentColor;
+      font-size: 0.95rem;
+      font-family: "CMUSerif", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .khb-banner-link { transition: none; }
     }
 
     .content-area {
@@ -577,6 +692,24 @@ main {
     }
 
     @media (max-width: 820px) {
+      .khb-banner-inner {
+        grid-template-columns: 1fr;
+      }
+
+      .khb-banner h2 {
+        justify-content: center;
+        font-size: clamp(1.5rem, 6.5vw, 3.2rem);
+        text-align: center;
+      }
+
+      .khb-banner-date {
+        text-align: center;
+      }
+
+      .khb-banner-cta {
+        margin-inline: auto;
+      }
+
 .hero {
         grid-template-columns: 1fr;
       }
@@ -663,18 +796,3 @@ main {
         width: fit-content;
       }
 }
-
-
-/* 外部サイトへ移動するリンクは、一般的な外部リンク記号で示す。 */
-a[href^="http"] {
-      text-decoration: underline;
-      text-decoration-thickness: 1px;
-      text-underline-offset: 3px;
-    }
-
-    a[href^="http"]::after {
-      content: " ↗";
-      display: inline-block;
-      font-size: 0.82em;
-      text-decoration: none;
-    }

@@ -58,7 +58,24 @@ body {
   letter-spacing: 0.03em;
 }
 
-a { color: inherit; text-decoration: none; }
+a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+a[href^="#"] {
+  text-decoration: none;
+}
+
+/* ページ内リンクは下線を付けず、外部リンクには矢印も添える。 */
+a[href^="http"]::after {
+  content: " ↗";
+  display: inline-block;
+  font-size: 0.82em;
+  text-decoration: none;
+}
 
 .site-header {
   position: sticky;

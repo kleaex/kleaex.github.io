@@ -3,10 +3,7 @@ import { setupTeamCheck } from './teamCheck.js';
 import { AUTHOR_GROUPS, authorIssues } from './authorRules.js';
 import { setupEmailAuth } from './emailAuth.js';
 
-document.addEventListener('DOMContentLoaded', () => {
-  const form = document.querySelector('.submitform');
-  if (!form) return;
-
+function initializeSubmissionForm(form) {
   SUBMISSION_FIELDS.forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -56,4 +53,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     window.location.href = 'confirm.html';
   });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('.submitform');
+  const start = document.getElementById('submission-start');
+  if (!form || !start) return;
+  // 表示はブラウザーの時計で切り替え、最終的な受付可否はGAS側で判定する。
+  const startsAt = Date.parse(start.dateTime);
+  if (!Number.isFinite(startsAt)) return;
+
+  function showWhenOpen() {
+    const remaining = startsAt - Date.now();
+    if (remaining > 0) {
+      setTimeout(showWhenOpen, Math.min(remaining, 60000));
+      return;
+    }
+    initializeSubmissionForm(form);
+    document.getElementById('submission-notice').hidden = true;
+    document.getElementById('submission-steps').hidden = false;
+    form.hidden = false;
+  }
+  showWhenOpen();
 });
