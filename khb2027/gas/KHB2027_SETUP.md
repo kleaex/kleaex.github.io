@@ -19,7 +19,7 @@ Web Appとしてデプロイする。
 | 設定 | 値 |
 | --- | --- |
 | `KHB_SPREADSHEET_ID` | KHB用スプレッドシートのID |
-| `KHB_ENTRY_DEADLINE_JST` | 例：`2026-10-31T23:59:59+09:00` |
+| `KHB_ENTRY_DEADLINE_JST` | 例：`2026-11-07T23:59:59+09:00` |
 | `KHB_SUBMISSION_DEADLINE_JST` | 例：`2026-11-30T23:59:59+09:00` |
 | `KHB_ADMIN_EMAIL` | 運営控えのBCC送信先（初期値：`klea.ex+khb@gmail.com`） |
 | `KHB_FROM_EMAIL` | 全メールの差出人エイリアス（初期値：`klea.ex+autoreply@gmail.com`） |

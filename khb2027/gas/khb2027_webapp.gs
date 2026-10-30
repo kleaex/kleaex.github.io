@@ -10,11 +10,11 @@ const KHB_CONFIG = Object.freeze({
   // 保存先スプレッドシートURLの /d/ と /edit の間にあるID。
   KHB_SPREADSHEET_ID: '',
   // 受付開始・締切を日本時間（+09:00）で入力。例は本番の日程ではない。
-  // 記入例: '2026-10-31T23:59:59+09:00'
-  KHB_ENTRY_DEADLINE_JST: '2026-10-31T23:59:59+09:00',
+  // 記入例: '2026-11-07T23:59:59+09:00'
+  KHB_ENTRY_DEADLINE_JST: '2026-11-07T23:59:59+09:00',
   KHB_SUBMISSION_DEADLINE_JST: '2026-11-30T23:59:59+09:00',
   KHB_ENTRY_START_JST: '2026-10-11T14:00:00+09:00',       // エントリー受付開始
-  KHB_SUBMISSION_START_JST: '2026-11-01T14:00:00+09:00',  // 投句受付開始
+  KHB_SUBMISSION_START_JST: '2026-11-08T14:00:00+09:00',  // 投句受付開始
   // 運営への控え（BCC）の送信先。
   KHB_ADMIN_EMAIL: 'klea.ex+khb@gmail.com',
   // 差出人。GAS実行アカウントのGmailに送信元エイリアスとして登録する。
