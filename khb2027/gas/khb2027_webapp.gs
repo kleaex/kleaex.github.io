@@ -847,7 +847,7 @@ function makeEntryMailBody(entry) {
     `チーム名：${entry.teamName}`,
     `責任者氏名：${entry.responsibleName}`,
     `責任者の種類：${entry.responsibleRole}`,
-    `責任者の種類（具体的に記入ください）：${entry.responsibleRoleOther || ''}`,
+    ...(entry.responsibleRole === 'その他' ? [`責任者の種類（具体的に記入ください）：${entry.responsibleRoleOther || ''}`] : []),
     `責任者連絡先（メールアドレス）：${entry.email}`,
     `チーム人数：${entry.memberCount}人`,
     `チームメンバー：${formatMembers(entry.members)}`,
@@ -866,7 +866,7 @@ function formatMembers(value) {
   if (!members || members.some((member) => !member || !hasText(member.name))) return value;
   const labels = memberAuthorLabels(members);
   return members.map((member, index) => `${member.name}（${member.school ? member.school + '・' : ''}${member.grade || ''}）`
-    + (labels[index] !== member.name ? `\n  投句時の作者表記：${labels[index]}` : '')).join('\n');
+    + (labels[index] !== member.name ? `［投句時の作者表記：${labels[index]}］` : '')).join('、');
 }
 
 function makeSubmissionMailBody(submission, topics) {

@@ -627,7 +627,7 @@ test('メンバー登録は人数・学年・合同チームの所属校を検�
   assert.match(context.validateEntryMembers({ ...joint, schoolName2: 'C高校' }), /所属校/);
   assert.match(context.validateEntryMembers({ ...joint, isJointTeam: 'false' }), /単独チーム/);
   const body = context.formatMembers(joint.members);
-  assert.equal(body, '甲　太郎（A高校・高2）\n乙　花子（B高校・高2）\n丙　三郎（B高校・高2）');
+  assert.equal(body, '甲　太郎（A高校・高2）、乙　花子（B高校・高2）、丙　三郎（B高校・高2）');
 });
 
 test('GAS管理者が設定した試験用兼題で保存・メール送信でき、フォームの値では切り替えない', () => {
