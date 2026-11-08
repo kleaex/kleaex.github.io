@@ -70,7 +70,7 @@ test('リクエスト境界で設定・シートを破棄し、例外後も新�
 
 test('締切設定の再利用中も現在時刻を取り直し、待機中の締切超過を拒否する', () => {
   const s = setup();
-  s.state.properties.KHB_SUBMISSION_START_JST = '2026-11-01T14:00:00+09:00';
+  s.state.properties.KHB_SUBMISSION_START_JST = '2026-11-01T00:00:00+09:00';
   s.state.properties.KHB_SUBMISSION_DEADLINE_JST = '2026-11-10T10:00:01+09:00';
   s.context.checkTeam = () => {
     assert.equal(s.context.getReceptionError('SUBMISSION'), '');

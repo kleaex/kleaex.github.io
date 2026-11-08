@@ -13,8 +13,8 @@ const KHB_CONFIG = Object.freeze({
   // 記入例: '2026-11-07T23:59:59+09:00'
   KHB_ENTRY_DEADLINE_JST: '2026-11-07T23:59:59+09:00',
   KHB_SUBMISSION_DEADLINE_JST: '2026-11-30T23:59:59+09:00',
-  KHB_ENTRY_START_JST: '2026-10-11T14:00:00+09:00',       // エントリー受付開始
-  KHB_SUBMISSION_START_JST: '2026-11-08T14:00:00+09:00',  // 投句受付開始
+  KHB_ENTRY_START_JST: '2026-10-11T00:00:00+09:00',       // エントリー受付開始
+  KHB_SUBMISSION_START_JST: '2026-11-08T00:00:00+09:00',  // 投句受付開始
   // 運営への控え（BCC）の送信先。
   KHB_ADMIN_EMAIL: 'klea.ex+khb@gmail.com',
   // 差出人。GAS実行アカウントのGmailに送信元エイリアスとして登録する。
