@@ -1,0 +1,21 @@
+# Local scratch files and test output
+/tmp/
+
+# Dependencies
+node_modules/
+
+# Local environment and Apps Script credentials
+.env
+.env.*
+!.env.example
+!.env.*.example
+.clasprc.json
+
+# OS metadata and editor temporary files
+.DS_Store
+Thumbs.db
+Desktop.ini
+~$*
+*.swp
+*.swo
+*~
