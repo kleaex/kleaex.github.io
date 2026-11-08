@@ -8,7 +8,7 @@ const crypto = require('node:crypto');
 const source = fs.readFileSync(path.join(__dirname, 'khb2027_webapp.gs'), 'utf8');
 const published = {
   dai1: ['', '「春」', '（はる）'], dai2: ['', '「夏」', '（なつ）'],
-  dai3: ['', '「秋」', '（あき）'], dai4: ['', '「冬」', '（ふゆ）'],
+  dai3: ['', '「秋」', '（あき）'], dai4: ['', '「雪」', '（ゆき）'], dai5: ['', '「冬」', '（ふゆ）'],
 };
 
 function setup({ status = 200, json = JSON.stringify(published), networkError = false, existing = null, properties = {} } = {}) {
@@ -49,8 +49,8 @@ function setup({ status = 200, json = JSON.stringify(published), networkError = 
   context.logEvent = (...args) => logs.push(args);
   context.respond = (action, ok, message, extra, requestedOrigin) => ({ action, ok, message, ...extra, requestedOrigin });
   const data = { teamName: 'チームＡ', email: 'Team@example.com', agree: 'true', specialNote: '備考' };
-  for (let round = 1; round <= 4; round += 1) {
-    for (const slot of round === 4 ? [1, 2, 3, 4, 5] : [1, 3, 5]) {
+  for (let round = 1; round <= 5; round += 1) {
+    for (const slot of round === 5 ? [1, 2, 3, 4, 5] : [1, 3, 5]) {
       data[`k${round}_${slot}`] = `句${round}-${slot}`;
       data[`k${round}_${slot}_author`] = `作者${slot}`;
     }
@@ -69,13 +69,13 @@ test('新規投句は公開JSONを1回取得し、サイトと同じ兼題・読
   assert.deepEqual(events, ['fetch', 'lock', 'append', 'flush', 'release', 'mail']);
   assert.equal(saved[0].revision, 1);
   const body = mails[0].body;
-  for (const [index, key] of ['dai1', 'dai2', 'dai3', 'dai4'].entries()) {
-    const prefix = index < 3 ? `リーグ戦　兼題${['①', '②', '③'][index]}` : '決勝戦　兼題';
+  for (const [index, key] of ['dai1', 'dai2', 'dai3', 'dai4', 'dai5'].entries()) {
+    const prefix = index < 3 ? `リーグ戦　兼題${['①', '②', '③'][index]}` : index === 3 ? '準決勝　兼題' : '決勝戦　兼題';
     assert.ok(body.includes(prefix + published[key][1] + '　' + published[key][2]));
   }
   const positions = ['先鋒', '次鋒', '中堅', '副将', '大将'];
-  for (let round = 1; round <= 4; round += 1) {
-    for (const slot of round === 4 ? [1, 2, 3, 4, 5] : [1, 3, 5]) {
+  for (let round = 1; round <= 5; round += 1) {
+    for (const slot of round === 5 ? [1, 2, 3, 4, 5] : [1, 3, 5]) {
       assert.ok(body.includes(`${positions[slot - 1]}：句${round}-${slot}　　作者${6 - slot}`));
     }
   }
@@ -257,7 +257,7 @@ const badInputs = [
   ['HTTPエラー', { status: 404 }],
   ['JSON構文不正', { json: '<html>error</html>' }],
   ['null', { json: 'null' }],
-  ['兼題欠落', { json: JSON.stringify({ ...published, dai4: undefined }) }],
+  ['兼題欠落', { json: JSON.stringify({ ...published, dai5: undefined }) }],
   ['読みの型不正', { json: JSON.stringify({ ...published, dai2: ['', '「夏」', null] }) }],
   ['未設定の兼題', { json: JSON.stringify({ ...published, dai3: ['', '「」', '（）'] }) }],
   ['空白だけの兼題', { json: JSON.stringify({ ...published, dai1: ['', '「　」', '（）'] }) }],
@@ -568,7 +568,7 @@ test('作者ルール違反は確認時と最終送信時に拒否し、保存�
 });
 
 test('どの兼題でも空白を除いて未登録の作者を検出し、確認・最終送信とも保存しない', () => {
-  for (const field of ['k1_1_author', 'k2_3_author', 'k3_5_author', 'k4_1_author']) {
+  for (const field of ['k1_1_author', 'k2_3_author', 'k3_5_author', 'k5_1_author']) {
     const state = setup();
     state.data[field] = ' 未　登録 作者　';
     for (const handler of ['checkSubmission', 'submitSubmission']) {
@@ -810,4 +810,38 @@ test('エントリー処理中に締切を過ぎた場合、保存直前の確�
   assert.match(result.message, /受付は終了/);
   assert.equal(checks, 2);
   assert.equal(state.saved.length + state.mails.length, 0);
+});
+
+test('準決勝の句・作者の不足や文字数超過では保存もメール送信もしない', () => {
+  for (const field of ['k4_1', 'k4_3', 'k4_5', 'k4_1_author', 'k4_3_author', 'k4_5_author']) {
+    const s = setup(); s.data[field] = '';
+    assert.equal(s.context.submitSubmission(s.data).ok, false);
+    assert.equal(s.saved.length, 0); assert.equal(s.mails.length, 0);
+  }
+  const s = setup(); s.data.k4_3 = '句'.repeat(201);
+  assert.equal(s.context.submitSubmission(s.data).ok, false);
+  assert.equal(s.saved.length, 0);
+});
+
+test('準決勝の兼題が未設定なら保存しない', () => {
+  const s = setup({ json: JSON.stringify({ ...published, dai4: ['', '「」', '（）'] }) });
+  assert.equal(s.context.submitSubmission(s.data).ok, false);
+  assert.equal(s.saved.length, 0); assert.equal(s.mails.length, 0);
+});
+
+test('投句と履歴の空の旧シートだけを新構成に更新し、既存データのある旧シートは拒否する', () => {
+  for (const name of ['投句', '投句履歴']) {
+    const s = setup();
+    vm.runInContext(source.slice(source.indexOf('function getSheet('), source.indexOf('function findRowByValue(')), s.context);
+    let rows = 1, written;
+    const headers = ['new1', 'new2'];
+    const sheet = { getLastRow: () => rows, getLastColumn: () => 1,
+      getRange: () => ({ getValues: () => [['old']], setValues: values => { written = values; } }) };
+    s.context.SpreadsheetApp.openById = () => ({ getSheetByName: () => sheet });
+    s.context.requiredProperty = () => 'sheet';
+    s.context.getSheet(name, headers);
+    assert.equal(JSON.stringify(written), JSON.stringify([headers]));
+    rows = 2;
+    assert.throws(() => s.context.getSheet(name, headers), /列構成が旧版/);
+  }
 });

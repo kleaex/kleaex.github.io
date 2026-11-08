@@ -11,8 +11,8 @@ vm.runInContext(fs.readFileSync(path.join(__dirname, '../gas/khb2027_webapp.gs')
 function sample(count, final) {
   const names = ['A', 'B', 'C', 'D', 'E'].slice(0, count);
   const values = {};
-  for (let round = 1; round <= 3; round += 1) [1, 3, 5].forEach((slot, index) => { values[`k${round}_${slot}_author`] = names[index]; });
-  final.split('').forEach((name, index) => { values[`k4_${index + 1}_author`] = name; });
+  for (let round = 1; round <= 4; round += 1) [1, 3, 5].forEach((slot, index) => { values[`k${round}_${slot}_author`] = names[index]; });
+  final.split('').forEach((name, index) => { values[`k5_${index + 1}_author`] = name; });
   const entry = { memberCount: String(count), members: JSON.stringify(names.map(name => ({ name, grade: '高2', school: '' }))) };
   return { values, entry };
 }
@@ -41,17 +41,17 @@ for (const round of [1, 2, 3]) {
 
 test('人数だけを満たしても未登録の作者は拒否し、表記が異なる氏名も照合しない', () => {
   const { values, entry } = sample(3, 'AAABC');
-  values.k4_5_author = 'X';
+  values.k5_5_author = 'X';
   assert.match(server.validateAuthors(values, entry), /登録メンバーの氏名と一致しません/);
-  values.k4_5_author = 'Ｃ';
+  values.k5_5_author = 'Ｃ';
   assert.match(server.validateAuthors(values, entry), /一致しません/);
 });
 
 test('空白だけの作者名は画面で拒否し、空欄や人数未取得時に誤った決勝人数を決めない', () => {
   const { values } = sample(3, 'AAABC');
-  values.k4_1_author = ' \t　';
+  values.k5_1_author = ' \t　';
   assert.ok(client.authorIssues(values, 3).some(issue => /空白だけ/.test(issue.message)));
-  values.k4_1_author = '';
+  values.k5_1_author = '';
   assert.equal(client.authorIssues(values, 3).length, 0);
   assert.equal(client.authorIssues(sample(5, 'AABCD').values, null).length, 0);
 });
@@ -67,7 +67,7 @@ test('氏名の全角・半角スペースやタブの有無にかかわらず�
   assert.equal(client.authorIssues(values, 3).length, 0);
   assert.equal(server.validateAuthors(values, entry), '');
   assert.equal(JSON.stringify(values), before, '照合によって入力表記を書き換えない');
-  values.k4_5_author = ' 文　芸　四郎 ';
+  values.k5_5_author = ' 文　芸　四郎 ';
   assert.match(server.validateAuthors(values, entry), /登録メンバーの氏名と一致しません/);
 });
 
@@ -77,7 +77,7 @@ test('空白の位置だけ変えた同じ作者はリーグ戦で重複し、�
   assert.match(server.validateAuthors(values, entry), /兼題1/);
   assert.ok(client.authorIssues(values, 3).some(issue => /兼題1/.test(issue.message)));
   values.k1_3_author = 'B';
-  values.k4_5_author = ' A　';
+  values.k5_5_author = ' A　';
   assert.match(server.validateAuthors(values, entry), /全員/);
   assert.ok(client.authorIssues(values, 3).some(issue => /全員/.test(issue.message)));
 });
@@ -105,7 +105,7 @@ test('同姓同名を学年・所属校で別人として区別し、作者重�
     for (const field of Object.keys(values)) values[field] = labels[indexes[values[field]]];
     assert.equal(server.validateAuthors(values, entry), '');
     assert.equal(client.authorIssues(values, 3).length, 0);
-    values.k4_4_author = labels[0];
+    values.k5_4_author = labels[0];
     assert.match(server.validateAuthors(values, entry), /全員/);
     assert.ok(client.authorIssues(values, 3).some(issue => /全員/.test(issue.message)));
     values.k1_3_author = labels[0];
@@ -118,4 +118,13 @@ test('旧形式や人数の合わない名簿から登録氏名を推測しな�
   for (const members of ['A（高2）、B（高2）、C（高2）', 'null', '{bad', '[]']) {
     assert.match(server.validateAuthors(values, { ...entry, members }), /登録メンバーの氏名を照合できません/);
   }
+});
+
+test('準決勝は３人別々の登録作者を必須とし、決勝の全員参加とは別に検証する', () => {
+  const { values, entry } = sample(5, 'ABCDE');
+  values.k4_3_author = values.k4_1_author;
+  assert.match(server.validateAuthors(values, entry), /準決勝/);
+  assert.match(client.authorIssues(values, 5)[0].message, /準決勝/);
+  values.k4_3_author = 'X';
+  assert.match(server.validateAuthors(values, entry), /準決勝.*登録メンバー/);
 });

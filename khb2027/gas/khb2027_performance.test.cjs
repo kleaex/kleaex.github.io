@@ -11,6 +11,7 @@ function setup() {
     rows: [['identityHash', 'status', 'teamName'], ['same', '無効', 'old'], ['same', '有効', 'current']] };
   class Clock extends Date { constructor(...args) { super(...(args.length ? args : [state.now])); } static now() { return state.now; } }
   const sheet = {
+    getRange: () => ({ getValues: () => [state.rows[0]] }),
     getLastRow: () => state.rows.length, getLastColumn: () => state.rows[0].length,
     getDataRange: () => ({ getValues: () => { state.ranges++; return state.rows.map(row => [...row]); } }),
   };
@@ -42,7 +43,7 @@ test('1リクエスト内で設定とシートを再利用し、検索は見出�
     // ロック前後に名簿を再取得する場面を再現する。
     s.state.rows[2][1] = '無効';
     assert.equal(s.context.findRowByValue(sheet, 'identityHash', 'same', 'status', '有効'), null);
-    s.context.getSheet('投句', []);
+    s.context.getSheet('投句', ['identityHash', 'status', 'teamName']);
     return s.context.respond('check-team', true, 'checked');
   };
   assert.equal(s.request().ok, true);

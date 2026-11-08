@@ -36,7 +36,7 @@ function setup() {
       releaseLock: () => { state.locked = false; state.events.push('release'); },
     }) },
     UrlFetchApp: { fetch: () => { state.events.push('fetch'); state.beforeFetch?.(); return { getResponseCode: () => 200,
-      getContentText: () => JSON.stringify(Object.fromEntries([1, 2, 3, 4].map(n => [`dai${n}`, ['', '「春」', '（はる）']]))) }; } },
+      getContentText: () => JSON.stringify(Object.fromEntries([1, 2, 3, 4, 5].map(n => [`dai${n}`, ['', '「春」', '（はる）']]))) }; } },
   });
   vm.runInContext(source, context);
   context.getReceptionError = () => state.closed ? '投句受付は終了しました。' : '';
@@ -53,10 +53,10 @@ function setup() {
   function submission(token) {
     const values = { ...data, authorToken: token, agree: 'true', specialNote: '' };
     const labels = Array.from(context.memberAuthorLabels(JSON.parse(state.entry.members)));
-    for (let round = 1; round <= 4; round += 1) {
-      const slots = round === 4 ? [1, 2, 3, 4, 5] : [1, 3, 5];
+    for (let round = 1; round <= 5; round += 1) {
+      const slots = round === 5 ? [1, 2, 3, 4, 5] : [1, 3, 5];
       slots.forEach((slot, index) => { values[`k${round}_${slot}`] = `句${round}-${slot}`;
-        values[`k${round}_${slot}_author`] = labels[round === 4 ? [0, 0, 0, 1, 2][index] : index]; });
+        values[`k${round}_${slot}_author`] = labels[round === 5 ? [0, 0, 0, 1, 2][index] : index]; });
     }
     return values;
   }

@@ -52,8 +52,9 @@ const SUBMISSION_HEADERS = [
   'k1_1', 'k1_5_author', 'k1_3', 'k1_3_author', 'k1_5', 'k1_1_author',
   'k2_1', 'k2_5_author', 'k2_3', 'k2_3_author', 'k2_5', 'k2_1_author',
   'k3_1', 'k3_5_author', 'k3_3', 'k3_3_author', 'k3_5', 'k3_1_author',
-  'k4_1', 'k4_5_author', 'k4_2', 'k4_4_author', 'k4_3', 'k4_3_author',
-  'k4_4', 'k4_2_author', 'k4_5', 'k4_1_author', 'specialNote', 'agreeAt',
+  'k4_1', 'k4_5_author', 'k4_3', 'k4_3_author', 'k4_5', 'k4_1_author',
+  'k5_1', 'k5_5_author', 'k5_2', 'k5_4_author', 'k5_3', 'k5_3_author',
+  'k5_4', 'k5_2_author', 'k5_5', 'k5_1_author', 'specialNote', 'agreeAt',
 ];
 const HISTORY_HEADERS = ['archivedAt', 'reason'].concat(SUBMISSION_HEADERS);
 const LOG_HEADERS = ['at', 'action', 'result', 'identityHash', 'detail'];
@@ -601,20 +602,20 @@ function validateEntryMembers(data) {
 }
 
 function validateAuthors(data, entry) {
-  for (let round = 1; round <= 3; round += 1) {
+  for (let round = 1; round <= 4; round += 1) {
     const authors = [1, 3, 5].map((slot) => authorNameKey(data[`k${round}_${slot}_author`]));
-    if (new Set(authors).size !== 3) return `リーグ戦の兼題${round}は、3句の作者をそれぞれ別のメンバーにしてください。`;
+    if (new Set(authors).size !== 3) return `${round === 4 ? '準決勝' : `リーグ戦の兼題${round}`}は、3句の作者をそれぞれ別のメンバーにしてください。`;
   }
   if (!registeredNames(entry)) return '登録メンバーの氏名を照合できません。実行委員会にメンバー登録情報の確認を依頼してください。';
   if (indistinguishableMembers(parseMembers(entry.members)).length) return '氏名・学年・所属校がすべて同じメンバーがいます。実行委員会までご連絡ください。';
   const names = memberAuthorLabels(parseMembers(entry.members)).map(authorNameKey);
-  for (let round = 1; round <= 4; round += 1) {
-    const slots = round === 4 ? [1, 2, 3, 4, 5] : [1, 3, 5];
+  for (let round = 1; round <= 5; round += 1) {
+    const slots = round === 5 ? [1, 2, 3, 4, 5] : [1, 3, 5];
     if (slots.some((slot) => !names.includes(authorNameKey(data[`k${round}_${slot}_author`])))) {
-      return `${round === 4 ? '決勝' : `リーグ戦の兼題${round}`}の作者名が、登録メンバーの氏名と一致しません。同姓同名のメンバーは学年・所属校で区別してください。`;
+      return `${round === 5 ? '決勝' : round === 4 ? '準決勝' : `リーグ戦の兼題${round}`}の作者名が、登録メンバーの氏名と一致しません。同姓同名のメンバーは学年・所属校で区別してください。`;
     }
   }
-  const finalAuthors = new Set([1, 2, 3, 4, 5].map((slot) => authorNameKey(data[`k4_${slot}_author`])));
+  const finalAuthors = new Set([1, 2, 3, 4, 5].map((slot) => authorNameKey(data[`k5_${slot}_author`])));
   if (names.some((name) => !finalAuthors.has(name))) return '決勝の5句には、登録メンバー全員の句を含めてください。投句順の制限はありません。';
   return '';
 }
@@ -633,7 +634,7 @@ function validateSubmission(data) {
   if (!checked(data.agree)) return '宣誓への同意が必要です。';
   const teamError = validateTeam(data);
   if (teamError) return teamError;
-  if (!allWithin(data, { teamName: 200, email: 254, k1_1: 200, k1_3: 200, k1_5: 200, k2_1: 200, k2_3: 200, k2_5: 200, k3_1: 200, k3_3: 200, k3_5: 200, k4_1: 200, k4_2: 200, k4_3: 200, k4_4: 200, k4_5: 200, specialNote: 2000 })) return '入力できる文字数を超えています。';
+  if (!allWithin(data, { teamName: 200, email: 254, k1_1: 200, k1_3: 200, k1_5: 200, k2_1: 200, k2_3: 200, k2_5: 200, k3_1: 200, k3_3: 200, k3_5: 200, k4_1: 200, k4_3: 200, k4_5: 200, k5_1: 200, k5_2: 200, k5_3: 200, k5_4: 200, k5_5: 200, specialNote: 2000 })) return '入力できる文字数を超えています。';
   return '';
 }
 
@@ -682,6 +683,13 @@ function getSheet(name, headers) {
     if (khbRequest) khbRequest.spreadsheet = spreadsheet;
     const sheet = spreadsheet.getSheetByName(name) || spreadsheet.insertSheet(name);
     if (sheet.getLastRow() === 0) sheet.appendRow(headers);
+    if (name === '投句' || name === '投句履歴') {
+      const current = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      if (current.length !== headers.length || !current.every((value, index) => value === headers[index])) {
+        if (sheet.getLastRow() > 1) throw new Error('投句シートの列構成が旧版です。移行を確認してください。');
+        sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+      }
+    }
     // 旧版のエントリーシートには、既存列を動かさず入力確認日時を末尾へ追加する。
     if (name === 'エントリー' && sheet.getLastColumn() === headers.length - 1) {
       const currentHeaders = sheet.getRange(1, 1, 1, headers.length - 1).getValues()[0];
@@ -811,7 +819,7 @@ function fetchPublishedTopics() {
     json = response.getContentText('UTF-8');
   }
   const data = JSON.parse(json);
-  const labels = ['dai1', 'dai2', 'dai3', 'dai4'].map((key) => {
+  const labels = ['dai1', 'dai2', 'dai3', 'dai4', 'dai5'].map((key) => {
     const parts = data && data[key];
     if (!Array.isArray(parts) || typeof parts[1] !== 'string' || typeof parts[2] !== 'string') {
       throw new Error(`兼題JSONの形式が不正です: ${key}`);
@@ -823,7 +831,7 @@ function fetchPublishedTopics() {
     }
     return title + '　' + parts[2];
   });
-  return { league: labels.slice(0, 3), final: labels[3] };
+  return { league: labels.slice(0, 3), semifinal: labels[3], final: labels[4] };
 }
 
 function sendSubmissionMail(submission, overwritten, topics) {
@@ -888,9 +896,14 @@ function makeSubmissionMailBody(submission, topics) {
     });
     lines.push('');
   }
+  lines.push(`準決勝　兼題${topics.semifinal}`);
+  [['先鋒', 1, 5], ['中堅', 3, 3], ['大将', 5, 1]].forEach(([position, poem, author]) => {
+    lines.push(`${position}：${submission[`k4_${poem}`]}　　${submission[`k4_${author}_author`]}`);
+  });
+  lines.push('');
   lines.push(`決勝戦　兼題${topics.final}`);
   [['先鋒', 1, 5], ['次鋒', 2, 4], ['中堅', 3, 3], ['副将', 4, 2], ['大将', 5, 1]].forEach(([position, poem, author]) => {
-    lines.push(`${position}：${submission[`k4_${poem}`]}　　${submission[`k4_${author}_author`]}`);
+    lines.push(`${position}：${submission[`k5_${poem}`]}　　${submission[`k5_${author}_author`]}`);
   });
   lines.push(
     '',

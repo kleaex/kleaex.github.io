@@ -36,7 +36,7 @@ function setup(saved = null, { integrated = false, now = 1800000000000 } = {}) {
   }
   elements.teamName.value = 'チームＡ'; elements.email.value = 'Team@example.com';
   const fields = [];
-  for (let round = 1; round <= 4; round += 1) for (const slot of round === 4 ? [1, 2, 3, 4, 5] : [1, 3, 5]) {
+  for (let round = 1; round <= 5; round += 1) for (const slot of round === 5 ? [1, 2, 3, 4, 5] : [1, 3, 5]) {
     const id = `k${round}_${slot}_author`; fields.push(id); elements[id] = new Element(); elements[id].id = id;
   }
   const form = new Form();
@@ -46,7 +46,7 @@ function setup(saved = null, { integrated = false, now = 1800000000000 } = {}) {
   elements['submission-steps'].hidden = true;
   form.hidden = true;
   elements.agree.type = 'checkbox'; elements.agree.checked = true;
-  for (let round = 1; round <= 4; round += 1) for (const slot of round === 4 ? [1, 2, 3, 4, 5] : [1, 3, 5]) {
+  for (let round = 1; round <= 5; round += 1) for (const slot of round === 5 ? [1, 2, 3, 4, 5] : [1, 3, 5]) {
     const id = `k${round}_${slot}`; elements[id] = new Element(); elements[id].value = `句${round}-${slot}`;
   }
   const identity = JSON.stringify([elements.teamName.value, elements.email.value]);
@@ -253,9 +253,9 @@ test('投句画面全体でチーム照合だけでは進めず、メール本�
   s.elements['email-code'].value = '123456'; s.elements['verify-email-code'].dispatch('click');
   s.reply(s.state.posts.at(-1), { authorToken: 'valid-token', expiresAt: s.state.now + 7200000, authors: s.authors });
   assert.equal(s.elements.submitting.disabled, false);
-  for (let round = 1; round <= 4; round += 1) {
-    const slots = round === 4 ? [1, 2, 3, 4, 5] : [1, 3, 5];
-    slots.forEach((slot, index) => { s.elements[`k${round}_${slot}_author`].value = s.authors[round === 4 ? [0, 0, 0, 1, 2][index] : index].value; });
+  for (let round = 1; round <= 5; round += 1) {
+    const slots = round === 5 ? [1, 2, 3, 4, 5] : [1, 3, 5];
+    slots.forEach((slot, index) => { s.elements[`k${round}_${slot}_author`].value = s.authors[round === 5 ? [0, 0, 0, 1, 2][index] : index].value; });
   }
   s.elements.k1_3_author.value = '甲'; s.elements.k1_3_author.dispatch('change'); s.form.dispatch('submit');
   assert.notEqual(s.elements.k1_3_author.validationMessage, '', '作者ルール違反は該当欄の標準警告に設定する');
@@ -263,8 +263,8 @@ test('投句画面全体でチーム照合だけでは進めず、メール本�
   s.elements.k1_3_author.value = '乙'; s.elements.k1_3_author.dispatch('change'); s.form.dispatch('submit');
   assert.equal(s.elements.k1_3_author.validationMessage, '', '作者の修正で標準警告を解除する');
   assert.equal(s.context.window.location.href, 'confirm.html');
-  assert.equal(s.state.storage.get('khb2027:submission:authorToken'), 'valid-token');
-  assert.equal(s.state.storage.get('khb2027:submission:k4_4_author'), '乙');
+  assert.equal(s.state.storage.get('khb2027:submission:v2:authorToken'), 'valid-token');
+  assert.equal(s.state.storage.get('khb2027:submission:v2:k5_4_author'), '乙');
   s.elements.teamName.value = 'チームＢ'; s.elements.teamName.dispatch('input');
   assert.equal(s.elements.submitting.disabled, true); assert.equal(s.elements.k1_1_author.disabled, true);
   assert.equal(s.elements['email-auth'].hidden, true);

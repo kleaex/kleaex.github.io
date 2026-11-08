@@ -85,7 +85,7 @@ test('保存前エラーを表示し、両ボタンと入力データを復元�
   assert.match(s.elements['submission-status'].textContent, /保存していません/);
   assert.equal(s.elements.backButton.disabled, false);
   assert.equal(s.elements.finalSubmit.disabled, false);
-  assert.ok(s.storage.has('khb2027:submission:k1_1'));
+  assert.ok(s.storage.has('khb2027:submission:v2:k1_1'));
   assert.equal(s.context.window.location.href, 'confirm.html');
   s.elements.backButton.dispatch('click');
   assert.equal(s.context.window.location.href, 'submit.html');
@@ -138,7 +138,7 @@ test('通信タイムアウト後はデータを保持してロックを解除�
   assert.match(s.elements['submission-status'].textContent, /受付済みの可能性/);
   s.reply(s.posts[0]);
   assert.equal(s.context.window.location.href, 'confirm.html');
-  assert.ok(s.storage.has('khb2027:submission:k1_1'));
+  assert.ok(s.storage.has('khb2027:submission:v2:k1_1'));
 });
 
 for (const stage of ['initial', 'overwrite']) {
@@ -153,7 +153,7 @@ for (const stage of ['initial', 'overwrite']) {
     assert.equal(s.context.window.location.href, 'confirm.html');
     assert.equal(s.elements.finalSubmit.disabled, true);
     assert.equal(s.elements.backButton.disabled, false);
-    assert.ok(s.storage.has('khb2027:submission:k1_1'));
+    assert.ok(s.storage.has('khb2027:submission:v2:k1_1'));
     s.submit(); assert.equal(s.posts.length, stage === 'overwrite' ? 2 : 1);
     s.elements.backButton.dispatch('click'); assert.equal(s.context.window.location.href, 'submit.html');
   });
@@ -184,8 +184,8 @@ test('本人確認トークンを保存へ送り、失効時は確認状態を�
   assert.equal(s.posts[0].data.authorToken, '入力:authorToken');
   s.reply(s.posts[0], { ok: false, requiresEmailVerification: true, message: 'メール本人確認が必要です。' });
   assert.equal(s.storage.has('khb2027:email-auth'), false);
-  assert.equal(s.storage.has('khb2027:submission:authorToken'), false);
-  assert.equal(s.storage.has('khb2027:submission:k1_1'), true);
+  assert.equal(s.storage.has('khb2027:submission:v2:authorToken'), false);
+  assert.equal(s.storage.has('khb2027:submission:v2:k1_1'), true);
   assert.equal(s.elements.backButton.disabled, false);
   s.elements.backButton.dispatch('click'); assert.equal(s.context.window.location.href, 'submit.html');
 });
@@ -194,7 +194,7 @@ test('保存後のメール失敗でも完了ページへ進み、再読み込�
   const s = setup(); s.submit(); s.reply(s.posts[0], { mailSent: false });
   assert.equal(s.context.window.location.href, 'finish.html');
   assert.equal(s.posts.length, 1);
-  assert.equal(s.storage.has('khb2027:submission:k1_1'), false);
+  assert.equal(s.storage.has('khb2027:submission:v2:k1_1'), false);
   assert.equal(s.storage.get('khb2027:receipt-mail-failed'), 'true');
   const finishSource = fs.readFileSync(path.join(__dirname, 'finish.js'), 'utf8');
   s.elements['receipt-message'] = {};

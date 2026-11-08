@@ -24,7 +24,7 @@ export function setupEmailAuth(form, teamCheck, { onStateChange = () => {} } = {
     select.id = id; select.name = id; select.className = old.className;
     select.required = true; select.disabled = true;
     const position = { 1: '大将', 2: '副将', 3: '中堅', 4: '次鋒', 5: '先鋒' }[id.split('_')[1]];
-    select.setAttribute('aria-label', `${group.round === 4 ? '決勝' : `兼題${group.round}`}の${position}句の作者`);
+    select.setAttribute('aria-label', `${group.round === 5 ? '決勝' : group.round === 4 ? '準決勝' : `兼題${group.round}`}の${position}句の作者`);
     old.replaceWith(select); selects.push(select);
   }
   let identity = '';
